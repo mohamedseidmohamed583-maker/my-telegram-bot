@@ -136,7 +136,7 @@ async def start(
 
     await update.message.reply_text(
         "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-        "📢 በቻናላችን ላይ ማስታወቂያዎን በቀላሉ ያሰሩ።\n\n"
+        " Choose an option below | ከታች ካሉት አማራጮች ይምረጡ ⚡።\n\n"
         "👇 ከታች ያሉትን አማራጮች ይጠቀሙ።",
         reply_markup=reply_markup,
         parse_mode="HTML"
