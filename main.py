@@ -117,15 +117,15 @@ async def start(
     # ያሸበረቁ Inline Buttons
     keyboard = [
         [
-            InlineKeyboardButton("📢 ማስታወቂያ ለማሰራት", callback_data="cmd_order")
+            InlineKeyboardButton("📢ማስታወቂያ ለማሰራት🪪 ", callback_data="cmd_order")
         ],
         [
-            InlineKeyboardButton("💰 Price | ዋጋ", callback_data="cmd_price"),
+            InlineKeyboardButton("💰Price | ዋጋ ", callback_data="cmd_price"),
             InlineKeyboardButton("💳 Payment Method", callback_data="cmd_payment")
         ],
         [
-            InlineKeyboardButton("📊 የቻናሉ Statics", callback_data="cmd_statics"),
-            InlineKeyboardButton("👤 My Orders", callback_data="cmd_myorders")
+            InlineKeyboardButton("📊 የቻናሉ Statics 📊 ", callback_data="cmd_statics"),
+            InlineKeyboardButton("👤My Order ", callback_data="cmd_myorders")
         ],
         [
             InlineKeyboardButton("💬 Support | ድጋፍ", callback_data="cmd_support")
