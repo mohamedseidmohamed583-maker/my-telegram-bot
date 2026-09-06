@@ -136,8 +136,7 @@ async def start(
 
     await update.message.reply_text(
         "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-        " Choose an option below | ከታች ካሉት አማራጮች ይምረጡ ⚡።\n\n"
-        "👇 ከታች ያሉትን አማራጮች ይጠቀሙ።",
+        " 👇Choose an option below | ከታች ካሉት አማራጮች ይምረጡ ⚡።\n\n",
         reply_markup=reply_markup,
         parse_mode="HTML"
     )
