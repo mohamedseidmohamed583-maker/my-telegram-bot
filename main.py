@@ -158,10 +158,9 @@ async def button_callback(
     if data == "cmd_price":
         await query.message.reply_text(
             "💰 <b>የማስታወቂያ ዋጋዎች</b>\n\n"
-            "📌 12 Hours — <b>300 ETB</b>\n"
-            "📌 24 Hours — <b>500 ETB</b>\n"
-            "📌 48 Hours — <b>700 ETB</b>\n\n"
-            "📢 ማስታወቂያ ለማዘዝ👇\n"
+            "📌 12 Hours — <b>... ETB</b>\n"
+            "📌 24 Hours — <b>... ETB</b>\n"
+            "📌 48 Hours — <b>.... ETB</b>\n\n"
             "👉 ከላይ «📢 ማስታወቂያ ለማሰራት» የሚለውን ይጫኑ።",
             parse_mode="HTML"
         )
