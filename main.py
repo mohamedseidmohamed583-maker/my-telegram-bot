@@ -13,6 +13,23 @@ from telegram.ext import (
     CallbackQueryHandler,
     filters
 )
+import os
+from threading import Thread
+from flask import Flask
+
+app_web = Flask('')
+
+@app_web.route('/')
+def home():
+    return "Bot is Alive!"
+
+def run_web():
+    port = int(os.environ.get("PORT", 8080))
+    app_web.run(host='0.0.0.0', port=port)
+
+def keep_alive():
+    t = Thread(target=run_web)
+    t.start()
 
 
 # ==================================================
@@ -470,6 +487,8 @@ app.add_handler(
         filters.TEXT & ~filters.COMMAND,
 
         buttons
+        
+keep_alive()
 
     )
 
