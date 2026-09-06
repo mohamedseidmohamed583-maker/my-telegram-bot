@@ -192,8 +192,7 @@ async def button_callback(
             "💳 <b>Payment Method</b>\n\n"
             "🏦 <b>CBE</b>\n"
             "1000528274394\n\n"
-            "Mohammed Seid Mohammed"
-            
+            "Mohammed Seid "
             "📱 <b>TELE BIRR</b>\n"
             "+251963266849\n\n",
             parse_mode="HTML"
