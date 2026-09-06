@@ -39,7 +39,7 @@ def keep_alive():
 # CONFIGURATION
 # ==================================================
 
-TOKEN ="8795814797:AAF8zLJ_3x9pDgHODrsNOz9zxyqsCt3l0aE"
+TOKEN = "8795814797:AAEMKRWNgDMk5V6CeBjUO6kyovItpo-y1a0"
 ADMIN_ID = 6753546651
 
 # Force Join Channel
@@ -139,10 +139,10 @@ async def start(
 
 
 # ==================================================
-# BUTTON HANDLER & MESSAGES
+# BUTTON HANDLER & USER MESSAGES
 # ==================================================
 
-async def buttons(
+async def handle_user_messages(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE
 ):
@@ -153,7 +153,7 @@ async def buttons(
 
     text = update.message.text
 
-    # PRICE
+    # Menu Buttons (Text Menu Options)
     if text == "💰 Price":
         await update.message.reply_text(
             "💰 <b>የማስታወቂያ ዋጋዎች</b>\n\n"
@@ -164,16 +164,16 @@ async def buttons(
             "👉 📢 ማስታወቂያ ለማሰራት የሚለውን ይጫኑ።",
             parse_mode="HTML"
         )
+        return
 
-    # ORDER AD
     elif text == "📢 ማስታወቂያ ለማሰራት":
         await update.message.reply_text(
             "📢 <b>ማስታወቂያ ለማዘዝ</b>\n\n"
-            "📝 እባክዎ ማስታወቂያ ማሰራት የሚፈልጉትን Post እዚህ ይላኩ።\n\n",
+            "📝 እባክዎ ማስታወቂያ ማሰራት የሚፈልጉትን Post (ጽሁፍ፣ ፎቶ ወይም ቪዲዮ) እዚህ ይላኩ።\n\n",
             parse_mode="HTML"
         )
+        return
 
-    # STATISTICS
     elif text == "📊 የቻናሉ Statics":
         await update.message.reply_text(
             "📊 <b>Channel Statistics</b>\n\n"
@@ -182,16 +182,16 @@ async def buttons(
             "📢 ማስታወቂያዎ ለብዙ ሰዎች እንዲደርስ ያድርጉ!",
             parse_mode="HTML"
         )
+        return
 
-    # MY ORDERS
     elif text == "👤 My Orders":
         await update.message.reply_text(
             "👤 <b>My Orders</b>\n\n"
             "📋 እስካሁን ያዘዙት ማስታወቂያ የለም።",
             parse_mode="HTML"
         )
+        return
 
-    # PAYMENT
     elif text == "💳Payment method":
         await update.message.reply_text(
             "💳 <b>Payment Method</b>\n\n"
@@ -201,8 +201,8 @@ async def buttons(
             "0963266849\n\n",
             parse_mode="HTML"
         )
+        return
 
-    # SUPPORT
     elif text == "💬 Support":
         await update.message.reply_text(
             "💬 <b>Support</b>\n\n"
@@ -210,30 +210,32 @@ async def buttons(
             "👨‍💻 Admin በቅርቡ ይመልስልዎታል።",
             parse_mode="HTML"
         )
+        return
 
-    # OTHER MESSAGES → FORWARD TO ADMIN
-    else:
-        username = update.effective_user.username
-        username_text = f"@{username}" if username else "No Username"
+    # Forward ALL User Messages (Text, Photo, Video, Voice, Document) to Admin
+    username = update.effective_user.username
+    username_text = f"@{username}" if username else "No Username"
 
-        # Send info to admin and include User ID for reply identification
-        msg = await context.bot.send_message(
-            chat_id=ADMIN_ID,
-            text=(
-                "📩 <b>አዲስ መልዕክት!</b>\n\n"
-                f"👤 User: {update.effective_user.full_name}\n"
-                f"🔗 Username: {username_text}\n"
-                f"🆔 ID: <code>{update.effective_user.id}</code>\n\n"
-                f"💬 Message:\n"
-                f"{update.message.text}"
-            ),
-            parse_mode="HTML"
-        )
+    # 1. Send User Details Header to Admin
+    await context.bot.send_message(
+        chat_id=ADMIN_ID,
+        text=(
+            "📩 <b>አዲስ መልዕክት!</b>\n\n"
+            f"👤 User: {update.effective_user.full_name}\n"
+            f"🔗 Username: {username_text}\n"
+            f"🆔 ID: <code>{update.effective_user.id}</code>"
+        ),
+        parse_mode="HTML"
+    )
 
-        await update.message.reply_text(
-            "✅ መልዕክትዎን ተቀብለናል።\n\n"
-            "📩 በቅርቡ እንመልስልዎታለን። ❤️"
-        )
+    # 2. Forward the actual user message (Photo/Video/Text/etc) to Admin
+    await update.message.forward(chat_id=ADMIN_ID)
+
+    # 3. Confirm receipt to User
+    await update.message.reply_text(
+        "✅ መልዕክትዎን ተቀብለናል።\n\n"
+        "📩 በቅርቡ እንመልስልዎታለን። ❤️"
+    )
 
 
 # ==================================================
@@ -244,31 +246,36 @@ async def admin_reply(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE
 ):
-    # Only allow Admin to use this reply logic
+    # Only allow Admin
     if update.effective_user.id != ADMIN_ID:
         return
 
-    # Check if admin is replying to a message sent by the bot
-    if update.message.reply_to_message and update.message.reply_to_message.text:
-        original_text = update.message.reply_to_message.text
-        
-        # Extract User ID from the original message text
-        if "🆔 ID:" in original_text:
+    # Check if admin is replying to a message
+    if update.message.reply_to_message:
+        replied_msg = update.message.reply_to_message
+
+        # Try to get User ID from forwarded message or header text
+        target_user_id = None
+
+        if replied_msg.forward_from:
+            target_user_id = replied_msg.forward_from.id
+        elif replied_msg.text and "🆔 ID:" in replied_msg.text:
             try:
-                user_id_str = original_text.split("🆔 ID:")[1].split()[0]
+                user_id_str = replied_msg.text.split("🆔 ID:")[1].split()[0]
                 target_user_id = int(user_id_str)
+            except Exception:
+                pass
 
-                # Send reply to the target user
-                await context.bot.send_message(
-                    chat_id=target_user_id,
-                    text=f"👨‍💻 <b>ከአድሚን የተላከ መልስ፦</b>\n\n{update.message.text}",
-                    parse_mode="HTML"
-                )
-
+        if target_user_id:
+            try:
+                # Copy/Forward Admin's reply to the target user
+                await update.message.copy(chat_id=target_user_id)
                 await update.message.reply_text("✅ መልሱ ለተጠቃሚው ተልኳል!")
             except Exception as e:
                 print("Reply Error:", e)
-                await update.message.reply_text("❌ መልሱን መላክ አልተቻለም። User ID መለየት አልተቻለም።")
+                await update.message.reply_text("❌ መልሱን መላክ አልተቻለም። ተጠቃሚው ቦቱን ዘግቶት ሊሆን ይችላል።")
+        else:
+            await update.message.reply_text("⚠️ እባክዎ ከአድሚን መረጃው (Header) መልእክት ወይም Forward ከሆነው ፋይል ላይ Reply ያድርጉ።")
 
 
 # ==================================================
@@ -335,9 +342,16 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(check_join, pattern="^check_join$"))
     
-    # Message Handlers
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND & filters.User(user_id=ADMIN_ID) & filters.REPLY, admin_reply))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, buttons))
+    # Filter for Admin replies
+    app.add_handler(MessageHandler(filters.User(user_id=ADMIN_ID) & filters.REPLY, admin_reply))
+    
+    # Filter ALL types of user content (Text, Photo, Video, Document, Voice, Audio, Sticker)
+    user_media_filter = (
+        filters.TEXT | filters.PHOTO | filters.VIDEO | 
+        filters.Document.ALL | filters.VOICE | filters.AUDIO | filters.STICKER
+    ) & ~filters.COMMAND
+    
+    app.add_handler(MessageHandler(user_media_filter, handle_user_messages))
     
     app.add_error_handler(error_handler)
 
