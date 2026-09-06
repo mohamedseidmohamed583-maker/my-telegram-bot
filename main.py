@@ -3,7 +3,6 @@ from threading import Thread
 from flask import Flask
 from telegram import (
     Update,
-    ReplyKeyboardMarkup,
     InlineKeyboardButton,
     InlineKeyboardMarkup
 )
@@ -39,7 +38,7 @@ def keep_alive():
 # CONFIGURATION
 # ==================================================
 
-TOKEN = "8795814797:AAFr_5qd6Yhv0amY7KZCWS_TvjwY-942XZE"
+TOKEN = "8795814797:AAHT3J4Cdd4DSrq71S-GAyanDkQuJl-9L80"
 ADMIN_ID = 6753546651
 
 # Force Join Channel
@@ -93,17 +92,18 @@ async def show_force_join(
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    await update.message.reply_text(
-        "🔒 <b>ቦቱን ለመጠቀም ከታች ያለውን ቻናል መቀላቀል አለብዎት!</b>\n\n"
-        "1️⃣ 📢 Join Channel የሚለውን ይጫኑ።\n"
-        "2️⃣ ከዚያ ✅ I've Joined ይጫኑ።",
-        reply_markup=reply_markup,
-        parse_mode="HTML"
-    )
+    if update.message:
+        await update.message.reply_text(
+            "🔒 <b>ቦቱን ለመጠቀም ከታች ያለውን ቻናል መቀላቀል አለብዎት!</b>\n\n"
+            "1️⃣ 📢 Join Channel የሚለውን ይጫኑ።\n"
+            "2️⃣ ከዚያ ✅ I've Joined ይጫኑ።",
+            reply_markup=reply_markup,
+            parse_mode="HTML"
+        )
 
 
 # ==================================================
-# START COMMAND
+# START COMMAND (With Beautiful Inline Buttons)
 # ==================================================
 
 async def start(
@@ -114,19 +114,25 @@ async def start(
         await show_force_join(update, context)
         return
 
+    # ያሸበረቁ Inline Buttons
     keyboard = [
-        ["📢 ማስታወቂያ ለማሰራት"],
-        ["💰 Price"],
-        ["💳Payment method"],
-        ["📊 የቻናሉ Statics"],
-        ["👤 My Orders"], 
-        ["💬 Support"]
+        [
+            InlineKeyboardButton("📢 ማስታወቂያ ለማሰራት", callback_data="cmd_order")
+        ],
+        [
+            InlineKeyboardButton("💰 Price | ዋጋ", callback_data="cmd_price"),
+            InlineKeyboardButton("💳 Payment Method", callback_data="cmd_payment")
+        ],
+        [
+            InlineKeyboardButton("📊 የቻናሉ Statics", callback_data="cmd_statics"),
+            InlineKeyboardButton("👤 My Orders", callback_data="cmd_myorders")
+        ],
+        [
+            InlineKeyboardButton("💬 Support | ድጋፍ", callback_data="cmd_support")
+        ]
     ]
 
-    reply_markup = ReplyKeyboardMarkup(
-        keyboard,
-        resize_keyboard=True
-    )
+    reply_markup = InlineKeyboardMarkup(keyboard)
 
     await update.message.reply_text(
         "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
@@ -138,7 +144,73 @@ async def start(
 
 
 # ==================================================
-# BUTTON HANDLER & USER MESSAGES
+# BUTTON CLICK HANDLER (Inline Callback Buttons)
+# ==================================================
+
+async def button_callback(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE
+):
+    query = update.callback_query
+    await query.answer()
+
+    data = query.data
+
+    if data == "cmd_price":
+        await query.message.reply_text(
+            "💰 <b>የማስታወቂያ ዋጋዎች</b>\n\n"
+            "📌 12 Hours — <b>300 ETB</b>\n"
+            "📌 24 Hours — <b>500 ETB</b>\n"
+            "📌 48 Hours — <b>700 ETB</b>\n\n"
+            "📢 ማስታወቂያ ለማዘዝ👇\n"
+            "👉 ከላይ «📢 ማስታወቂያ ለማሰራት» የሚለውን ይጫኑ።",
+            parse_mode="HTML"
+        )
+
+    elif data == "cmd_order":
+        await query.message.reply_text(
+            "📢 <b>ማስታወቂያ ለማዘዝ</b>\n\n"
+            "📝 እባክዎ ማስታወቂያ ማሰራት የሚፈልጉትን Post (ጽሁፍ፣ ፎቶ ወይም ቪዲዮ) እዚህ ይላኩ።\n\n",
+            parse_mode="HTML"
+        )
+
+    elif data == "cmd_statics":
+        await query.message.reply_text(
+            "📊 <b>Channel Statistics</b>\n\n"
+            "👥 Subscribers: <b>10,000+</b>\n"
+            "🔥 Engagement: <b>Active</b>\n\n"
+            "📢 ማስታወቂያዎ ለብዙ ሰዎች እንዲደርስ ያድርጉ!",
+            parse_mode="HTML"
+        )
+
+    elif data == "cmd_myorders":
+        await query.message.reply_text(
+            "👤 <b>My Orders</b>\n\n"
+            "📋 እስካሁን ያዘዙት ማስታወቂያ የለም።",
+            parse_mode="HTML"
+        )
+
+    elif data == "cmd_payment":
+        await query.message.reply_text(
+            "💳 <b>Payment Method</b>\n\n"
+            "🏦 <b>CBE</b>\n"
+            "1000528274394\n\n"
+            "📱 <b>TELE BIRR</b>\n"
+            "0963266849\n\n",
+            parse_mode="HTML"
+        )
+
+    elif data == "cmd_support":
+        await query.message.reply_text(
+            "💬 <b>Support</b>\n\n"
+            "መልዕክትዎን እዚህ ይላኩ።\n\n"
+            "👨‍💻 Admin በቅርቡ ይመልስልዎታል።",
+            parse_mode="HTML"
+        )
+
+
+# ==================================================
+# USER MESSAGES HANDLER (Forwarding to Admin)
 # ==================================================
 
 async def handle_user_messages(
@@ -152,71 +224,11 @@ async def handle_user_messages(
         await show_force_join(update, context)
         return
 
-    text = update.message.text
-
-    if text == "💰 Price":
-        await update.message.reply_text(
-            "💰 <b>የማስታወቂያ ዋጋዎች</b>\n\n"
-            "📌 12 Hours — <b>300 ETB</b>\n"
-            "📌 24 Hours — <b>500 ETB</b>\n"
-            "📌 48 Hours — <b>700 ETB</b>\n\n"
-            "📢 ማስታወቂያ ለማዘዝ\n"
-            "👉 📢 ማስታወቂያ ለማሰራት የሚለውን ይጫኑ።",
-            parse_mode="HTML"
-        )
-        return
-
-    elif text == "📢 ማስታወቂያ ለማሰራት":
-        await update.message.reply_text(
-            "📢 <b>ማስታወቂያ ለማዘዝ</b>\n\n"
-            "📝 እባክዎ ማስታወቂያ ማሰራት የሚፈልጉትን Post (ጽሁፍ፣ ፎቶ ወይም ቪዲዮ) እዚህ ይላኩ።\n\n",
-            parse_mode="HTML"
-        )
-        return
-
-    elif text == "📊 የቻናሉ Statics":
-        await update.message.reply_text(
-            "📊 <b>Channel Statistics</b>\n\n"
-            "👥 Subscribers: <b>10,000+</b>\n"
-            "🔥 Engagement: <b>Active</b>\n\n"
-            "📢 ማስታወቂያዎ ለብዙ ሰዎች እንዲደርስ ያድርጉ!",
-            parse_mode="HTML"
-        )
-        return
-
-    elif text == "👤 My Orders":
-        await update.message.reply_text(
-            "👤 <b>My Orders</b>\n\n"
-            "📋 እስካሁን ያዘዙት ማስታወቂያ የለም።",
-            parse_mode="HTML"
-        )
-        return
-
-    elif text == "💳Payment method":
-        await update.message.reply_text(
-            "💳 <b>Payment Method</b>\n\n"
-            "🏦 <b>CBE</b>\n"
-            "1000528274394\n\n"
-            "📱 <b>TELE BIRR</b>\n"
-            "0963266849\n\n",
-            parse_mode="HTML"
-        )
-        return
-
-    elif text == "💬 Support":
-        await update.message.reply_text(
-            "💬 <b>Support</b>\n\n"
-            "መልዕክትዎን እዚህ ይላኩ።\n\n"
-            "👨‍💻 Admin በቅርቡ ይመልስልዎታል።",
-            parse_mode="HTML"
-        )
-        return
-
     username = update.effective_user.username
     username_text = f"@{username}" if username else "No Username"
     user_id = update.effective_user.id
 
-    # 1. Send User Info Header to Admin containing the hidden or visible ID tag
+    # 1. Send User Info Header to Admin
     header_msg = await context.bot.send_message(
         chat_id=ADMIN_ID,
         text=(
@@ -228,14 +240,13 @@ async def handle_user_messages(
         parse_mode="HTML"
     )
 
-    # 2. Forward the user message to Admin
+    # 2. Forward the user message/media to Admin
     forwarded_msg = await update.message.forward(chat_id=ADMIN_ID)
 
-    # Context save mapping so admin can reply directly to the media/forwarded message seamlessly
+    # Context save mapping so admin can reply directly
     if not context.bot_data.get("user_mapping"):
         context.bot_data["user_mapping"] = {}
     
-    # Map both the header message ID and forwarded message ID to the user_id
     context.bot_data["user_mapping"][str(header_msg.message_id)] = user_id
     context.bot_data["user_mapping"][str(forwarded_msg.message_id)] = user_id
 
@@ -247,7 +258,7 @@ async def handle_user_messages(
 
 
 # ==================================================
-# ADMIN REPLY HANDLER (Improved Mapping & Copy Support)
+# ADMIN REPLY HANDLER
 # ==================================================
 
 async def admin_reply(
@@ -262,16 +273,16 @@ async def admin_reply(
         target_user_id = None
         user_mapping = context.bot_data.get("user_mapping", {})
 
-        # Method A: Check via internal mapping dictionary using message ID
+        # Method A: Mapping check
         replied_id_str = str(replied_msg.message_id)
         if replied_id_str in user_mapping:
             target_user_id = user_mapping[replied_id_str]
 
-        # Method B: Check via Telegram Forward information
+        # Method B: Telegram Forward check
         if not target_user_id and replied_msg.forward_from:
             target_user_id = replied_msg.forward_from.id
 
-        # Method C: Check via text parsing (ID:)
+        # Method C: Text check
         if not target_user_id and replied_msg.text and "🆔 ID:" in replied_msg.text:
             try:
                 user_id_str = replied_msg.text.split("🆔 ID:")[1].split()[0]
@@ -279,7 +290,7 @@ async def admin_reply(
             except Exception:
                 pass
 
-        # Method D: Check via caption parsing (ID:)
+        # Method D: Caption check
         if not target_user_id and replied_msg.caption and "🆔 ID:" in replied_msg.caption:
             try:
                 user_id_str = replied_msg.caption.split("🆔 ID:")[1].split()[0]
@@ -289,9 +300,8 @@ async def admin_reply(
 
         if target_user_id:
             try:
-                # Copy any type of message (Photo, Video, Text, Voice, Audio, Document) to user
                 await update.message.copy(chat_id=target_user_id)
-                await update.message.reply_text("✅ መልሱ (ፎቶ/ቪዲዮ/ጽሁፍ) ለተጠቃሚው ተልኳል!")
+                await update.message.reply_text("✅ መልሱ (ፎቶ/ቪዲዮ/ቮይስ/ጽሁፍ) ለተጠቃሚው ተልኳል!")
             except Exception as e:
                 print("Reply Error:", e)
                 await update.message.reply_text("❌ መልሱን መላክ አልተቻለም። ተጠቃሚው ቦቱን ዘግቶት ሊሆን ይችላል።")
@@ -364,6 +374,9 @@ def main():
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(check_join, pattern="^check_join$"))
+    
+    # Callback handler for menu inline buttons
+    app.add_handler(CallbackQueryHandler(button_callback, pattern="^cmd_"))
     
     # Handler for Admin replies
     admin_filter = filters.User(user_id=ADMIN_ID) & filters.REPLY & ~filters.COMMAND
