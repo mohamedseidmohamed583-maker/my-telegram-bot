@@ -39,7 +39,7 @@ def keep_alive():
 # CONFIGURATION
 # ==================================================
 
-TOKEN = "8795814797:AAEw9OrSMInxeOE7k2Q3bLvdyqBMYFhsFdc"
+TOKEN = "8795814797:AAEMKRWNgDMk5V6CeBjUO6kyovItpo-y1a0"
 ADMIN_ID = 6753546651
 
 # Force Join Channel
@@ -214,21 +214,30 @@ async def handle_user_messages(
 
     username = update.effective_user.username
     username_text = f"@{username}" if username else "No Username"
+    user_id = update.effective_user.id
 
-    # Send User Info Header to Admin
-    await context.bot.send_message(
+    # 1. Send User Info Header to Admin containing the hidden or visible ID tag
+    header_msg = await context.bot.send_message(
         chat_id=ADMIN_ID,
         text=(
             "📩 <b>አዲስ መልዕክት!</b>\n\n"
             f"👤 User: {update.effective_user.full_name}\n"
             f"🔗 Username: {username_text}\n"
-            f"🆔 ID: <code>{update.effective_user.id}</code>"
+            f"🆔 ID: <code>{user_id}</code>"
         ),
         parse_mode="HTML"
     )
 
-    # Forward the user message (Photo/Video/Text/etc)
-    await update.message.forward(chat_id=ADMIN_ID)
+    # 2. Forward the user message to Admin
+    forwarded_msg = await update.message.forward(chat_id=ADMIN_ID)
+
+    # Context save mapping so admin can reply directly to the media/forwarded message seamlessly
+    if not context.bot_data.get("user_mapping"):
+        context.bot_data["user_mapping"] = {}
+    
+    # Map both the header message ID and forwarded message ID to the user_id
+    context.bot_data["user_mapping"][str(header_msg.message_id)] = user_id
+    context.bot_data["user_mapping"][str(forwarded_msg.message_id)] = user_id
 
     # Confirm to User
     await update.message.reply_text(
@@ -238,7 +247,7 @@ async def handle_user_messages(
 
 
 # ==================================================
-# ADMIN REPLY HANDLER (Allows Replying with Text, Photo, Video, Voice, etc.)
+# ADMIN REPLY HANDLER (Improved Mapping & Copy Support)
 # ==================================================
 
 async def admin_reply(
@@ -251,33 +260,43 @@ async def admin_reply(
     if update.message and update.message.reply_to_message:
         replied_msg = update.message.reply_to_message
         target_user_id = None
+        user_mapping = context.bot_data.get("user_mapping", {})
 
-        # Extract User ID from forwarded message or header text
-        if replied_msg.forward_from:
+        # Method A: Check via internal mapping dictionary using message ID
+        replied_id_str = str(replied_msg.message_id)
+        if replied_id_str in user_mapping:
+            target_user_id = user_mapping[replied_id_str]
+
+        # Method B: Check via Telegram Forward information
+        if not target_user_id and replied_msg.forward_from:
             target_user_id = replied_msg.forward_from.id
-        elif replied_msg.text and "🆔 ID:" in replied_msg.text:
+
+        # Method C: Check via text parsing (ID:)
+        if not target_user_id and replied_msg.text and "🆔 ID:" in replied_msg.text:
             try:
                 user_id_str = replied_msg.text.split("🆔 ID:")[1].split()[0]
-                target_user_id = int(user_id_str)
+                target_user_id = int(user_id_str.replace("<code>", "").replace("</code>", ""))
             except Exception:
                 pass
-        elif replied_msg.caption and "🆔 ID:" in replied_msg.caption:
+
+        # Method D: Check via caption parsing (ID:)
+        if not target_user_id and replied_msg.caption and "🆔 ID:" in replied_msg.caption:
             try:
                 user_id_str = replied_msg.caption.split("🆔 ID:")[1].split()[0]
-                target_user_id = int(user_id_str)
+                target_user_id = int(user_id_str.replace("<code>", "").replace("</code>", ""))
             except Exception:
                 pass
 
         if target_user_id:
             try:
-                # Copy any type of message (Photo, Video, Text, Voice) to user
+                # Copy any type of message (Photo, Video, Text, Voice, Audio, Document) to user
                 await update.message.copy(chat_id=target_user_id)
                 await update.message.reply_text("✅ መልሱ (ፎቶ/ቪዲዮ/ጽሁፍ) ለተጠቃሚው ተልኳል!")
             except Exception as e:
                 print("Reply Error:", e)
                 await update.message.reply_text("❌ መልሱን መላክ አልተቻለም። ተጠቃሚው ቦቱን ዘግቶት ሊሆን ይችላል።")
         else:
-            await update.message.reply_text("⚠️ እባክዎ ከአድሚን መረጃው (Header) መልእክት ወይም Forward ከሆነው ፋይል ላይ Reply ያድርጉ።")
+            await update.message.reply_text("⚠️ እባክዎ ከቀረቡት መልእክቶች (ወይ ከጽሁፍ መረጃው ወይንም ከፎርዋርድ የተደረገው ፋይል ላይ) Reply ያድርጉ።")
 
 
 # ==================================================
@@ -346,7 +365,7 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(check_join, pattern="^check_join$"))
     
-    # Handler for ALL Admin replies (Text, Photo, Video, Document, Voice, Audio, Sticker)
+    # Handler for Admin replies
     admin_filter = filters.User(user_id=ADMIN_ID) & filters.REPLY & ~filters.COMMAND
     app.add_handler(MessageHandler(admin_filter, admin_reply))
     
