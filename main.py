@@ -1,10 +1,12 @@
+import os
+from threading import Thread
+from flask import Flask
 from telegram import (
     Update,
     ReplyKeyboardMarkup,
     InlineKeyboardButton,
     InlineKeyboardMarkup
 )
-
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -13,12 +15,9 @@ from telegram.ext import (
     CallbackQueryHandler,
     filters
 )
-import os
-from threading import Thread
-from flask import Flask
 
 # ==================================================
-# FLASK WEB SERVER (For Render Health Check)
+# FLASK WEB SERVER (Fixed Port Binding for Render)
 # ==================================================
 app_web = Flask('')
 
@@ -27,11 +26,13 @@ def home():
     return "Bot is Alive!"
 
 def run_web():
-    port = int(os.environ.get("PORT", 8080))
+    # Render assigns PORT dynamically; default to 10000 if not set
+    port = int(os.environ.get("PORT", 10000))
     app_web.run(host='0.0.0.0', port=port)
 
 def keep_alive():
     t = Thread(target=run_web)
+    t.daemon = True
     t.start()
 
 
@@ -146,6 +147,9 @@ async def handle_user_messages(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE
 ):
+    if not update.message:
+        return
+
     # Check Force Join
     if not await is_joined(update, context):
         await show_force_join(update, context)
@@ -153,7 +157,7 @@ async def handle_user_messages(
 
     text = update.message.text
 
-    # Menu Buttons (Text Menu Options)
+    # Menu Buttons
     if text == "💰 Price":
         await update.message.reply_text(
             "💰 <b>የማስታወቂያ ዋጋዎች</b>\n\n"
@@ -216,7 +220,7 @@ async def handle_user_messages(
     username = update.effective_user.username
     username_text = f"@{username}" if username else "No Username"
 
-    # 1. Send User Details Header to Admin
+    # 1. Send User Info Header
     await context.bot.send_message(
         chat_id=ADMIN_ID,
         text=(
@@ -228,10 +232,10 @@ async def handle_user_messages(
         parse_mode="HTML"
     )
 
-    # 2. Forward the actual user message (Photo/Video/Text/etc) to Admin
+    # 2. Forward the actual user content
     await update.message.forward(chat_id=ADMIN_ID)
 
-    # 3. Confirm receipt to User
+    # 3. Confirm to user
     await update.message.reply_text(
         "✅ መልዕክትዎን ተቀብለናል።\n\n"
         "📩 በቅርቡ እንመልስልዎታለን። ❤️"
@@ -239,22 +243,18 @@ async def handle_user_messages(
 
 
 # ==================================================
-# ADMIN REPLY TO USER HANDLER
+# ADMIN REPLY HANDLER
 # ==================================================
 
 async def admin_reply(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE
 ):
-    # Only allow Admin
     if update.effective_user.id != ADMIN_ID:
         return
 
-    # Check if admin is replying to a message
-    if update.message.reply_to_message:
+    if update.message and update.message.reply_to_message:
         replied_msg = update.message.reply_to_message
-
-        # Try to get User ID from forwarded message or header text
         target_user_id = None
 
         if replied_msg.forward_from:
@@ -268,7 +268,6 @@ async def admin_reply(
 
         if target_user_id:
             try:
-                # Copy/Forward Admin's reply to the target user
                 await update.message.copy(chat_id=target_user_id)
                 await update.message.reply_text("✅ መልሱ ለተጠቃሚው ተልኳል!")
             except Exception as e:
@@ -333,19 +332,23 @@ async def error_handler(
 
 
 # ==================================================
-# START BOT
+# MAIN EXECUTION
 # ==================================================
 
 def main():
+    # Start Flask Web Server
+    keep_alive()
+
+    # Build Telegram Bot
     app = Application.builder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(check_join, pattern="^check_join$"))
     
-    # Filter for Admin replies
+    # Filter Admin replies
     app.add_handler(MessageHandler(filters.User(user_id=ADMIN_ID) & filters.REPLY, admin_reply))
     
-    # Filter ALL types of user content (Text, Photo, Video, Document, Voice, Audio, Sticker)
+    # Filter User messages (All formats: Text, Photo, Video, Voice, Document, etc.)
     user_media_filter = (
         filters.TEXT | filters.PHOTO | filters.VIDEO | 
         filters.Document.ALL | filters.VOICE | filters.AUDIO | filters.STICKER
@@ -356,11 +359,6 @@ def main():
     app.add_error_handler(error_handler)
 
     print("🤖 Mame Posts Bot is running...")
-
-    # Start Web Server
-    keep_alive()
-
-    # Start Bot Polling
     app.run_polling()
 
 if __name__ == '__main__':
