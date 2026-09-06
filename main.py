@@ -158,10 +158,10 @@ async def button_callback(
     if data == "cmd_price":
         await query.message.reply_text(
             "💰 <b>የማስታወቂያ ዋጋዎች</b>\n\n"
-            "📌 12 Hours — <b>... ETB</b>\n"
-            "📌 24 Hours — <b>... ETB</b>\n"
-            "📌 48 Hours — <b>.... ETB</b>\n\n"
-            "👉 ከላይ «📢 ማስታወቂያ ለማሰራት» የሚለውን ይጫኑ።",
+            "📌 12 Hours — <b> በስምምነት ETB</b>\n"
+            "📌 24 Hours — <b> 500 ETB</b>\n"
+            "📌 48 Hours — <b> 700 ETB</b>\n\n"
+            " የ ማስታወቂያውን አይነት አይተን አስተያየት እናደርጋለን!🤝።",
             parse_mode="HTML"
         )
 
@@ -176,8 +176,7 @@ async def button_callback(
         await query.message.reply_text(
             "📊 <b>Channel Statistics</b>\n\n"
             "👥 Subscribers: <b>10,000+</b>\n"
-            "🔥 Engagement: <b>Active</b>\n\n"
-            "📢 ማስታወቂያዎ ለብዙ ሰዎች እንዲደርስ ያድርጉ!",
+            "🔥 Engagement: <b>Active</b>\n\n",
             parse_mode="HTML"
         )
 
