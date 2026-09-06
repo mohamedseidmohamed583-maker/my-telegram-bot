@@ -136,7 +136,7 @@ async def start(
 
     await update.message.reply_text(
         "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-        " 👇Choose an option below | ከታች ካሉት አማራጮች ይምረጡ ⚡።\n\n",
+        " 👇Choose an option below | ከታች ካሉት አማራጮች ይምረጡ⚡።\n\n",
         reply_markup=reply_markup,
         parse_mode="HTML"
     )
@@ -167,8 +167,8 @@ async def button_callback(
 
     elif data == "cmd_order":
         await query.message.reply_text(
-            "📢 <b>ማስታወቂያ ለማዘዝ</b>\n\n"
-            "📝 እባክዎ ማስታወቂያ ማሰራት የሚፈልጉትን Post (ጽሁፍ፣ ፎቶ ወይም ቪዲዮ) እዚህ ይላኩ።\n\n",
+            "📢 <b>ማስታወቂያ ለማሰራት </b>\n\n"
+            " 👇 እባክዎ ማስታወቂያ ማሰራት የሚፈልጉትን Post እዚህ ይላኩ👐 ።\n\n",
             parse_mode="HTML"
         )
 
@@ -176,7 +176,7 @@ async def button_callback(
         await query.message.reply_text(
             "📊 <b>Channel Statistics</b>\n\n"
             "👥 Subscribers: <b>10,000+</b>\n"
-            "🔥 Engagement: <b>Active</b>\n\n",
+            "📊 Engagement: <b> Very Active🔥 </b>\n\n",
             parse_mode="HTML"
         )
 
@@ -192,8 +192,10 @@ async def button_callback(
             "💳 <b>Payment Method</b>\n\n"
             "🏦 <b>CBE</b>\n"
             "1000528274394\n\n"
+            "Mohammed Seid Mohammed"
+            
             "📱 <b>TELE BIRR</b>\n"
-            "0963266849\n\n",
+            "+251963266849\n\n",
             parse_mode="HTML"
         )
 
