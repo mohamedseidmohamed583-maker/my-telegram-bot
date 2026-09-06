@@ -26,7 +26,6 @@ def home():
     return "Bot is Alive!"
 
 def run_web():
-    # Render assigns PORT dynamically; default to 10000 if not set
     port = int(os.environ.get("PORT", 10000))
     app_web.run(host='0.0.0.0', port=port)
 
@@ -111,7 +110,6 @@ async def start(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE
 ):
-    # Check Force Join
     if not await is_joined(update, context):
         await show_force_join(update, context)
         return
@@ -150,14 +148,12 @@ async def handle_user_messages(
     if not update.message:
         return
 
-    # Check Force Join
     if not await is_joined(update, context):
         await show_force_join(update, context)
         return
 
     text = update.message.text
 
-    # Menu Buttons
     if text == "💰 Price":
         await update.message.reply_text(
             "💰 <b>የማስታወቂያ ዋጋዎች</b>\n\n"
@@ -216,11 +212,10 @@ async def handle_user_messages(
         )
         return
 
-    # Forward ALL User Messages (Text, Photo, Video, Voice, Document) to Admin
     username = update.effective_user.username
     username_text = f"@{username}" if username else "No Username"
 
-    # 1. Send User Info Header
+    # Send User Info to Admin
     await context.bot.send_message(
         chat_id=ADMIN_ID,
         text=(
@@ -232,10 +227,10 @@ async def handle_user_messages(
         parse_mode="HTML"
     )
 
-    # 2. Forward the actual user content
+    # Forward user content
     await update.message.forward(chat_id=ADMIN_ID)
 
-    # 3. Confirm to user
+    # Confirm to user
     await update.message.reply_text(
         "✅ መልዕክትዎን ተቀብለናል።\n\n"
         "📩 በቅርቡ እንመልስልዎታለን። ❤️"
@@ -336,22 +331,19 @@ async def error_handler(
 # ==================================================
 
 def main():
-    # Start Flask Web Server
     keep_alive()
 
-    # Build Telegram Bot
     app = Application.builder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(check_join, pattern="^check_join$"))
     
-    # Filter Admin replies
     app.add_handler(MessageHandler(filters.User(user_id=ADMIN_ID) & filters.REPLY, admin_reply))
     
-    # Filter User messages (All formats: Text, Photo, Video, Voice, Document, etc.)
+    # Corrected filter: ALL Media & Text
     user_media_filter = (
         filters.TEXT | filters.PHOTO | filters.VIDEO | 
-        filters.Document.ALL | filters.VOICE | filters.AUDIO | filters.STICKER
+        filters.Document.ALL | filters.VOICE | filters.AUDIO | filters.Sticker.ALL
     ) & ~filters.COMMAND
     
     app.add_handler(MessageHandler(user_media_filter, handle_user_messages))
