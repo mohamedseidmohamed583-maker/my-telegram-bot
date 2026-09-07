@@ -74,7 +74,6 @@ def record_user_activity(user_id):
     if uid_str not in data:
         data[uid_str] = {"msg_count": 0}
     
-    # የላከውን መልዕክት ቁጥር መጨመር
     data[uid_str]["msg_count"] = data[uid_str].get("msg_count", 0) + 1
     save_data(data)
 
@@ -192,7 +191,7 @@ async def start(
 
     await update.message.reply_text(
         "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-        "👇 <b>ከታች ካሉት አማራጮች ይምረጡ ወይም የቪዲዮ ሊንክ ይላኩልኝ (Instagram Reel)</b> ⚡\n\n",
+        "📥 <b>የ TikTok፣ YouTube ወይም Instagram ቪዲዮ ሊንክ ይላኩልኝ (ያለ Watermark አወርድልዎታለሁ)</b> ⚡\n\n",
         reply_markup=reply_markup,
         parse_mode="HTML"
     )
@@ -268,14 +267,14 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     await update.message.reply_text(
         "💬 <b>Support & Downloader Help</b>\n\n"
-        "📥 <b>ቪዲዮ ለማውረድ:</b> የኢንስታግራም ሪልስ ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n"
+        "📥 <b>ቪዲዮ ለማውረድ:</b> የ TikTok፣ YouTube ወይም Instagram ቪዲዮ ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n"
         "👨‍💻 ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።",
         parse_mode="HTML"
     )
 
 
 # ==================================================
-# YT-DLP DIRECT DOWNLOADER ENGINE
+# ALL-IN-ONE VIDEO DOWNLOADER ENGINE (TikTok, YouTube, IG)
 # ==================================================
 
 def download_video_ytdlp(url: str, output_path: str):
@@ -284,14 +283,21 @@ def download_video_ytdlp(url: str, output_path: str):
         'outtmpl': output_path,
         'quiet': True,
         'no_warnings': True,
-        'max_filesize': 50 * 1024 * 1024,
+        'max_filesize': 50 * 1024 * 1024, # Maximum 50MB
+        # TikTok Watermark ለማስወገድ የሚረዱ አማራጮች፦
+        'extractor_args': {
+            'tiktok': {
+                'app_version': '1.0.0',
+                'manifest_app_version': '1.0.0',
+            }
+        }
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
 
 
 async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE, url: str):
-    status_msg = await update.message.reply_text("🚀 <b>Downloading & sending Video...</b> 📥", parse_mode="HTML")
+    status_msg = await update.message.reply_text("🚀 <b>Downloading & processing Video...</b> 📥", parse_mode="HTML")
 
     bot_username = context.bot.username or "mame_posts_bot"
     share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Video%20Downloader%20Bot!🔥"
@@ -306,6 +312,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     file_name = f"video_{update.effective_user.id}_{update.message.message_id}.mp4"
 
     try:
+        # ቪዲዮውን ማውረድ
         await asyncio.to_thread(download_video_ytdlp, url, file_name)
 
         if os.path.exists(file_name):
@@ -320,15 +327,18 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
             await status_msg.delete()
             os.remove(file_name)
         else:
-            await status_msg.edit_text("❌ <b>ቪዲዮውን ማግኘት አልቻልኩም😭።</b>", parse_mode="HTML")
+            await status_msg.edit_text("❌ <b>ቪዲዮውን ማግኘት አልተቻለም።</b>", parse_mode="HTML")
 
     except Exception as e:
         print("Download Error:", e)
         if os.path.exists(file_name):
             os.remove(file_name)
         await status_msg.edit_text(
-            "❌ <b>ቪዲዮውን ማውረድ አልቻልኩም😭።</b>\n\n"
-            "📌 እባክዎ ሊንኩ ትክክለኛ የ Instagram Reels መሆኑን ያረጋግጡ🙂።",
+            "❌ <b>ቪዲዮውን ማውረድ አልተቻለም!</b>\n\n"
+            "📌 <b>ምክንያቶች፦</b>\n"
+            "1. ሊንኩ የግል (Private) አካውንት ሊሆን ይችላል።\n"
+            "2. የቪዲዮው መጠን ከ 50MB በላይ ሊሆን ይችላል።\n"
+            "3. ሊንኩ ትክክለኛ የ TikTok, YouTube ወይም Instagram ሊንክ መሆኑን ያረጋግጡ።",
             parse_mode="HTML"
         )
 
@@ -375,6 +385,7 @@ async def button_callback(
             f"• <b>Username:</b> {username_text}\n"
             f"• <b>Telegram ID:</b> <code>{user.id}</code>\n"
             f"• <b>የላኳቸው አጠቃላይ መልዕክቶች:</b> <code>{user_msg_count}</code>\n\n"
+            "🤖 <b>የቦቱ አጠቃላይ መረጃ፦</b>\n"
             f"• <b>አጠቃላይ የቦቱ ተጠቃሚዎች:</b> <code>{total_users} Users</code>\n"
             "• <b>ሁኔታ:</b> Active ✅"
         )
@@ -420,7 +431,8 @@ async def handle_user_messages(
 
     text = update.message.text or ""
 
-    downloadable_platforms = ["instagram.com"]
+    # TikTok, YouTube, Instagram መለያ ቃል (Supported Platforms)
+    downloadable_platforms = ["instagram.com", "tiktok.com", "youtube.com", "youtu.be", "vt.tiktok.com"]
     
     is_media_link = any(platform in text.lower() for platform in downloadable_platforms)
 
@@ -430,6 +442,7 @@ async def handle_user_messages(
         await handle_url_download(update, context, target_url)
         return
 
+    # ቪዲዮ ሊንክ ካልሆነ ለአድሚን መልዕክት ያስተላልፋል
     username = update.effective_user.username
     username_text = f"@{username}" if username else "No Username"
 
@@ -572,7 +585,7 @@ def main():
     # Commands Handlers
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("menu", start))
-    app.add_handler(CommandHandler("status", status_command)) # አዲሱ /status Command
+    app.add_handler(CommandHandler("status", status_command))
     app.add_handler(CommandHandler("rates", rates_command))
     app.add_handler(CommandHandler("payment", payment_command))
     app.add_handler(CommandHandler("help", help_command))
