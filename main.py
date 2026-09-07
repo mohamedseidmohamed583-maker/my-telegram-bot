@@ -42,7 +42,7 @@ def keep_alive():
 # CONFIGURATION
 # ==================================================
 
-TOKEN = "8795814797:AAHT3J4Cdd4DSrq71S-GAyanDkQuJl-9L80"
+TOKEN = "8795814797:AAGaycHsxXs83jk47wDL8ciNjOEN6dDpbw4"
 ADMIN_ID = 6753546651
 
 FORCE_CHANNEL = "@mame_posts"
