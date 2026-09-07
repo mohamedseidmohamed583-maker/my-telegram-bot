@@ -192,7 +192,7 @@ async def start(
 
     await update.message.reply_text(
         "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-        "👇 <b>ከታች ካሉት አማራጮች ይምረጡ ወይም የቪዲዮ ሊንክ ይላኩልኝ (Instagram Reel)</b> ⚡\n\n",
+        "👇 <b>ከታች ካሉት አማራጮች ይጠቀሙ። እናም ከ Instagram Video ማውረድ ከፈለጉ ሊንኩን ይላኩልኝ አውርጄ እሰጠዎታለሁ❤ </b> ⚡\n\n",
         reply_markup=reply_markup,
         parse_mode="HTML"
     )
