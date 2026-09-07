@@ -1,5 +1,6 @@
 import os
 import requests
+import asyncio
 from threading import Thread
 from flask import Flask
 from telegram import (
@@ -16,6 +17,7 @@ from telegram.ext import (
     CallbackQueryHandler,
     filters
 )
+import yt_dlp
 
 # ==================================================
 # FLASK WEB SERVER (Fixed Port Binding for Render)
@@ -207,61 +209,19 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==================================================
-# CLEAN URL & MULTI-ENGINE MEDIA DOWNLOADER
+# YT-DLP DIRECT DOWNLOADER ENGINE
 # ==================================================
 
-def clean_url(url: str) -> str:
-    # URL መጨረሻ ላይ ያሉ አላስፈላጊ trackingパラメータዎችን (?si=, ?igsh=) ያጸዳል
-    if "?" in url:
-        return url.split("?")[0]
-    return url
-
-def fetch_media_url(raw_url: str):
-    clean_media_url = clean_url(raw_url)
-    
-    # Engine 1: Cobalt API (Primary cleaned)
-    try:
-        api_url = "https://co.wuk.sh/api/json"
-        headers = {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-        }
-        payload = {"url": clean_media_url, "vQuality": "720"}
-        res = requests.post(api_url, json=payload, headers=headers, timeout=12)
-        data = res.json()
-        if data.get("status") in ["stream", "redirect"] and data.get("url"):
-            return data.get("url")
-        elif data.get("picker"):
-            return data.get("picker")[0].get("url")
-    except Exception as e:
-        print("Engine 1 Error:", e)
-
-    # Engine 2: Public Media Worker API
-    try:
-        fallback_api = f"https://api.vidsave.workers.dev/?url={clean_media_url}"
-        res = requests.get(fallback_api, timeout=10)
-        data = res.json()
-        if data.get("url"):
-            return data.get("url")
-    except Exception as e:
-        print("Engine 2 Error:", e)
-
-    # Engine 3: Auto-Fallback using raw URL with Cobalt API
-    try:
-        api_url = "https://api.cobalt.tools/api/json"
-        headers = {"Accept": "application/json", "Content-Type": "application/json"}
-        payload = {"url": raw_url, "videoQuality": "720"}
-        res = requests.post(api_url, json=payload, headers=headers, timeout=12)
-        data = res.json()
-        if data.get("url"):
-            return data.get("url")
-        elif data.get("picker"):
-            return data.get("picker")[0].get("url")
-    except Exception as e:
-        print("Engine 3 Error:", e)
-
-    return None
+def download_video_ytdlp(url: str, output_path: str):
+    ydl_opts = {
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        'outtmpl': output_path,
+        'quiet': True,
+        'no_warnings': True,
+        'max_filesize': 50 * 1024 * 1024, # 50MB limit for Telegram
+    }
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        ydl.download([url])
 
 
 async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE, url: str):
@@ -277,25 +237,33 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    video_link = fetch_media_url(url)
+    file_name = f"video_{update.effective_user.id}_{update.message.message_id}.mp4"
 
-    if video_link:
-        try:
+    try:
+        # Run yt-dlp in a thread so it doesn't block the bot
+        await asyncio.to_thread(download_video_ytdlp, url, file_name)
+
+        if os.path.exists(file_name):
             await status_msg.edit_text("📤 <b>Sending Video...</b>", parse_mode="HTML")
-            await update.message.reply_video(
-                video=video_link,
-                caption=f"🚀 <b>Downloaded with</b> @{bot_username}\n\n🥰 <b>Enjoy! Don't forget to share it with your friends.</b>",
-                reply_markup=reply_markup,
-                parse_mode="HTML"
-            )
+            with open(file_name, 'rb') as video_file:
+                await update.message.reply_video(
+                    video=video_file,
+                    caption=f"🚀 <b>Downloaded with</b> @{bot_username}\n\n🥰 <b>Enjoy! Don't forget to share it with your friends.</b>",
+                    reply_markup=reply_markup,
+                    parse_mode="HTML"
+                )
             await status_msg.delete()
-        except Exception as e:
-            print("Telegram Send Error:", e)
-            await status_msg.edit_text("❌ <b>ቪዲዮውን መላክ አልተቻለም። እባክዎ እንደገና ይሞክሩ!</b>", parse_mode="HTML")
-    else:
+            os.remove(file_name)
+        else:
+            await status_msg.edit_text("❌ <b>ቪዲዮውን ማግኘት አልተቻለም።</b>", parse_mode="HTML")
+
+    except Exception as e:
+        print("Download Error:", e)
+        if os.path.exists(file_name):
+            os.remove(file_name)
         await status_msg.edit_text(
-            "❌ <b>ቪዲዮውን ማውረድ አልተቻለም።</b>\n\n"
-            "📌 እባክዎ ሊንኩ የ **TikTok**, **YouTube Shorts/Video** ወይም **Instagram Reels** መሆኑን ያረጋግጡ።",
+            "❌ <b>ቪዲዮውን ማውረድ አልቻልኩም😭።</b>\n\n"
+            "📌 እባክዎ ሊንኩ ትክክለኛ የ TikTok,YouTube Shorts ወይም Instagram Reels መሆኑን ያረጋግጡ🙂።",
             parse_mode="HTML"
         )
 
