@@ -1,10 +1,10 @@
-import os
+Import os
 import json
 import io
 import re
 from threading import Thread
 from flask import Flask
-from telegram import Update, ReplyKeyboardMarkup, KeyboardButton
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
 from telegram.ext import (
     ApplicationBuilder,
     CommandHandler,
@@ -89,17 +89,22 @@ async def check_force_join(user_id, context: ContextTypes.DEFAULT_TYPE) -> bool:
         return True
 
 async def send_force_join_msg(update: Update):
-    msg = f"⚠️ **ቦቱን ለመጠቀም አስቀድመው ቻናላችንን ይቀላቀሉ!**\n\n👉 {FORCE_CHANNEL_LINK}"
+    keyboard = [
+        [InlineKeyboardButton("📢 ቻናላችንን ይቀላቀሉ", url=FORCE_CHANNEL_LINK)],
+        [InlineKeyboardButton("✅ ተቀላቅያለሁ / Check", callback_data="check_join")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    msg = f"⚠️ **ቦቱን ለመጠቀም አስቀድመው ቻናላችንን ይቀላቀሉ!**\n\nከተቀላቀሉ በኋላ 'Check' የሚለውን ይጫኑ።"
     if update.message:
-        await update.message.reply_text(msg, parse_mode="Markdown")
+        await update.message.reply_text(msg, reply_markup=reply_markup, parse_mode="Markdown")
 
 # ----------------------------------------------------
 # MAIN MENU KEYBOARD
 # ----------------------------------------------------
 def get_main_menu_keyboard():
     keyboard = [
-        [KeyboardButton("🏠 Menu"), KeyboardButton("📊 Status")],
-        [KeyboardButton("💳 Payment"), KeyboardButton("🏷️ Rates")]
+        [KeyboardButton("📱 QR Code መፍጠሪያ"), KeyboardButton("💬 ድጋፍ / Support")],
+        [KeyboardButton("📊 My Status & Stats")]
     ]
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
@@ -121,7 +126,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "📸 Instagram Downloader:👌\n"
         "└ የ Instagram Reel ወይም Post ሊንክ ሲልኩ በከፍተኛ ጥራት ያወርድልዎታል።\n\n"
         "📱 QR Code Generator:\n"
-        "└ `qr text` ብለው በመጻፍ መጠቀም ይችላሉ።\n\n"
+        "└ ከታች '📱 QR Code መፍጠሪያ' የሚለውን በመጫን መጠቀም ይችላሉ።\n\n"
         "💬 የአድሚን ድጋፍ:\n"
         "└ ማንኛውንም ጥያቄ ወይም አስተያየት ቀጥታ እዚህ ይጻፉ፤ ለአስተዳዳሪው ይደርሳል።\n"
         "━━━━━━━"
@@ -239,24 +244,20 @@ async def handle_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     record_user_activity(user.id)
 
-    # Menu Button Clicks
-    if text == "🏠 Menu":
-        await start_command(update, context)
+    # Keyboard Button Clicks
+    if text == "📱 QR Code መፍጠሪያ":
+        await update.message.reply_text("መፍጠር የሚፈልጉትን ጽሁፍ ወይም ሊንክ ከ 'qr' በኋላ አያይዘው ይላኩ።\n\nምሳሌ፦ `qr https://t.me/mame_posts`", parse_mode="Markdown")
         return
 
-    if text == "📊 Status":
+    if text == "💬 ድጋፍ / Support":
+        await update.message.reply_text("ለአስተዳዳሪው መላክ የሚፈልጉትን ማንኛውንም መልእክት እዚህ ይጻፉ፤ በቀጥታ ይደርሳቸዋል።")
+        return
+
+    if text == "📊 My Status & Stats":
         data = load_data()
         user_info = data.get(str(user.id), {})
         msg_cnt = user_info.get("msg_count", 0)
         await update.message.reply_text(f"👤 **የእርስዎ ስታቲስቲክስ:**\n\n💬 የተጠቀሙበት ብዛት: `{msg_cnt}` ጊዜ", parse_mode="Markdown")
-        return
-
-    if text == "💳 Payment":
-        await update.message.reply_text("💳 **የክፍያ መረጃ (Payment Methods):**\n\nየምትፈልገውን የክፍያ መረጃ እዚህ ማስገባት ትችላለህ።", parse_mode="Markdown")
-        return
-
-    if text == "🏷️ Rates":
-        await update.message.reply_text("🏷️ **የአገልግሎት ዋጋዎች (Rates):**\n\nየዋጋ ዝርዝሩን እዚህ ማስገባት ትችላለህ።", parse_mode="Markdown")
         return
 
     # QR Request via text
@@ -310,3 +311,7 @@ if __name__ == "__main__":
 
     print("🤖 Bot is running smoothly with Menu Keyboard...")
     app.run_polling()
+
+
+
+ይሄንን ነው የምትቀይረው
