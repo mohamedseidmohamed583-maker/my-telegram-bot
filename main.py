@@ -43,7 +43,7 @@ def keep_alive():
 # ==================================================
 # CONFIGURATION
 # ==================================================
-TOKEN = "8795814797:AAGaycHsxXs83jk47wDL8ciNjOEN6dDpbw4"
+TOKEN = "8795814797:AAFZIEMav95Vcm74IigPgwpR5IWH-CCkOdk"
 ADMIN_ID = 6753546651
 
 # የወሰድከውን የ Gemini API Key እዚህ ቦታ ላይ ተካው
