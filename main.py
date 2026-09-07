@@ -47,7 +47,8 @@ TOKEN = "8795814797:AAFZIEMav95Vcm74IigPgwpR5IWH-CCkOdk"
 ADMIN_ID = 6753546651
 
 # የወሰድከውን የ Gemini API Key እዚህ ቦታ ላይ ተካው
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY_HERE")
+GEMINI_API_KEY = "AQ.Ab8RN6kKcCUcwPA9V5A1K_KhTMIAnne6gXfYw1DLc2f3GtakZTQ"
+
 
 FORCE_CHANNEL = "@mame_posts"
 FORCE_CHANNEL_LINK = "https://t.me/mame_posts"
