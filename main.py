@@ -1,4 +1,5 @@
 import os
+import asyncio
 from threading import Thread
 from flask import Flask
 from telegram import (
@@ -15,6 +16,7 @@ from telegram.ext import (
     CallbackQueryHandler,
     filters
 )
+import yt_dlp
 
 # ==================================================
 # FLASK WEB SERVER (Fixed Port Binding for Render)
@@ -152,7 +154,7 @@ async def start(
 
     await update.message.reply_text(
         "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-        " 👇Choose an option below | ከታች ካሉት አማራጮች ይምረጡ⚡።\n\n",
+        "👇 <b>ከታች ካሉት አማራጮች ይምረጡ ወይም የቪዲዮ/ሊንክ ይላኩልኝ (TikTok, YouTube, Instagram ወዘተ...)</b> ⚡\n\n",
         reply_markup=reply_markup,
         parse_mode="HTML"
     )
@@ -198,11 +200,56 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await show_force_join(update, context)
         return
     await update.message.reply_text(
-        "💬 <b>Support</b>\n\n"
-        "መልዕክትዎን እዚህ ይላኩ።\n\n"
-        "👨‍💻 Admin በቅርቡ ይመልስልዎታል።",
+        "💬 <b>Support & Downloader Help</b>\n\n"
+        "📥 <b>ቪዲዮ ለማውረድ:</b> የቲከተክ፣ ዩቲዩብ፣ ወይም ኢንስታግራም ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n"
+        "👨‍💻 ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።",
         parse_mode="HTML"
     )
+
+
+# ==================================================
+# MEDIA DOWNLOADER FUNCTION (yt-dlp)
+# ==================================================
+
+def download_media_sync(url: str, output_path: str):
+    ydl_opts = {
+        'format': 'best[filesize<50M]/best',
+        'outtmpl': output_path,
+        'quiet': True,
+        'no_warnings': True,
+    }
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        ydl.download([url])
+
+async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE, url: str):
+    status_msg = await update.message.reply_text("⏳ <b>ቪዲዮው በመውረድ ላይ ነው... እባክዎ ትንሽ ይታገሱ!</b> 📥", parse_mode="HTML")
+    file_path = f"download_{update.effective_user.id}.mp4"
+
+    try:
+        # Run yt-dlp in background thread to not block bot
+        await asyncio.to_thread(download_media_sync, url, file_path)
+
+        if os.path.exists(file_path):
+            file_size = os.path.getsize(file_path) / (1024 * 1024)  # Size in MB
+            if file_size > 50:
+                await status_msg.edit_text("❌ <b>ይቅርታ! የቪዲዮው መጠን ከ 50 MB በላይ ስለሆነ በቴሌግራም መላክ አልተቻለም።</b>", parse_mode="HTML")
+                os.remove(file_path)
+                return
+
+            await status_msg.edit_text("📤 <b>ቪዲዮውን በመላክ ላይ...</b>", parse_mode="HTML")
+            with open(file_path, 'rb') as video_file:
+                await update.message.reply_video(video=video_file, caption="✅ <b>በተሳካ ሁኔታ ወርዷል!</b>\n\n🤖 Powered by @mame_posts", parse_mode="HTML")
+            
+            await status_msg.delete()
+            os.remove(file_path)
+        else:
+            await status_msg.edit_text("❌ <b>ቪዲዮውን ማውረድ አልተቻለም። እባክዎ ሊንኩ ትክክል መሆኑን ያረጋግጡ።</b>", parse_mode="HTML")
+
+    except Exception as e:
+        print("Download Error:", e)
+        await status_msg.edit_text("❌ <b>ቪዲዮውን በማውረድ ላይ ስህተት አጋጥሟል። ሊንኩ ባይነበብ ወይም የቪዲዮው መጠን በጣም ትልቅ ሊሆን ይችላል።</b>", parse_mode="HTML")
+        if os.path.exists(file_path):
+            os.remove(file_path)
 
 
 # ==================================================
@@ -271,7 +318,7 @@ async def button_callback(
 
 
 # ==================================================
-# USER MESSAGES HANDLER (Forwarding to Admin)
+# USER MESSAGES HANDLER (Forwarding to Admin or Download)
 # ==================================================
 
 async def handle_user_messages(
@@ -285,6 +332,14 @@ async def handle_user_messages(
         await show_force_join(update, context)
         return
 
+    text = update.message.text or ""
+
+    # Link መሆኑን ማረጋገጥ (ለ Downloader)
+    if text.startswith("http://") or text.startswith("https://"):
+        await handle_url_download(update, context, text)
+        return
+
+    # Link ካልሆነ ለ Admin Forward ያደርጋል
     username = update.effective_user.username
     username_text = f"@{username}" if username else "No Username"
     user_id = update.effective_user.id
