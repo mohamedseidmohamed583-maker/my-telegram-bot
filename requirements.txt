@@ -4,4 +4,3 @@ Flask
 yt-dlp
 requests
 qrcode
-google-genai
