@@ -4,7 +4,8 @@ from flask import Flask
 from telegram import (
     Update,
     InlineKeyboardButton,
-    InlineKeyboardMarkup
+    InlineKeyboardMarkup,
+    BotCommand
 )
 from telegram.ext import (
     Application,
@@ -44,6 +45,23 @@ ADMIN_ID = 6753546651
 # Force Join Channel
 FORCE_CHANNEL = "@mame_posts"
 FORCE_CHANNEL_LINK = "https://t.me/mame_posts"
+
+
+# ==================================================
+# AUTO SET BOT COMMANDS (MENU LIST)
+# ==================================================
+
+async def post_init(application: Application):
+    commands = [
+        BotCommand("start", "Start the bot"),
+        BotCommand("menu", "Show main menu"),
+        BotCommand("rates", "View rates"),
+        BotCommand("balance", "Check balance"),
+        BotCommand("myid", "Show your Telegram ID"),
+        BotCommand("help", "Help and support"),
+        BotCommand("cancel", "Cancel current action"),
+    ]
+    await application.bot.set_my_commands(commands)
 
 
 # ==================================================
@@ -192,7 +210,7 @@ async def button_callback(
             "💳 <b>Payment Method</b>\n\n"
             "🏦 <b>CBE</b>\n"
             "1000528274394\n\n"
-            "Mohammed Seid "
+            "Mohammed Seid\n"
             "📱 <b>TELE BIRR</b>\n"
             "+251963266849\n\n",
             parse_mode="HTML"
@@ -368,9 +386,11 @@ async def error_handler(
 def main():
     keep_alive()
 
-    app = Application.builder().token(TOKEN).build()
+    # post_init በመጠቀም ቦቱ ሲጀምር Menu Commands በራሱ እንዲመዘግብ ተደርጓል
+    app = Application.builder().token(TOKEN).post_init(post_init).build()
 
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("menu", start))
     app.add_handler(CallbackQueryHandler(check_join, pattern="^check_join$"))
     
     # Callback handler for menu inline buttons
