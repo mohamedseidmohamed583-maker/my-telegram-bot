@@ -1,5 +1,5 @@
 import os
-import asyncio
+import requests
 from threading import Thread
 from flask import Flask
 from telegram import (
@@ -16,7 +16,6 @@ from telegram.ext import (
     CallbackQueryHandler,
     filters
 )
-import yt_dlp
 
 # ==================================================
 # FLASK WEB SERVER (Fixed Port Binding for Render)
@@ -154,7 +153,7 @@ async def start(
 
     await update.message.reply_text(
         "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-        "👇 <b>ከታች ካሉት አማራጮች ይምረጡ ወይም የቪዲዮ/ሊንክ ይላኩልኝ (TikTok, YouTube Shorts, Instagram Reels ወዘተ...)</b> ⚡\n\n",
+        "👇 <b>ከታች ካሉት አማራጮች ይምረጡ ወይም የቪዲዮ ሊንክ ይላኩልኝ (TikTok, YouTube Shorts, Instagram Reels)</b> ⚡\n\n",
         reply_markup=reply_markup,
         parse_mode="HTML"
     )
@@ -208,59 +207,66 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==================================================
-# MEDIA DOWNLOADER FUNCTION (FIXED FOR TIKTOK & YOUTUBE)
+# FAST MEDIA DOWNLOADER API (Cobalt Engine)
 # ==================================================
 
-def download_media_sync(url: str, output_path: str):
-    ydl_opts = {
-        # TikTok & YouTube Shorts በደህና ሁኔታ እንዲወርዱ ፎርማቱን ፈታ አድርገነዋል
-        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-        'outtmpl': output_path,
-        'quiet': True,
-        'no_warnings': True,
-        'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
-    }
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])
-
 async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE, url: str):
-    status_msg = await update.message.reply_text("⏳ <b>ቪዲዮው በመወረድ ላይ ነው... እባክዎ ትንሽ ይታገሱ!</b> 📥", parse_mode="HTML")
-    file_path = f"download_{update.effective_user.id}.mp4"
+    status_msg = await update.message.reply_text("🚀 <b>Downloading & sending Video...</b> 📥", parse_mode="HTML")
+
+    bot_username = context.bot.username
+    share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text= Try%20this%20awesome%20Video%20Downloader%20Bot!🔥"
+
+    keyboard = [
+        [
+            InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)
+        ]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
 
     try:
-        await asyncio.to_thread(download_media_sync, url, file_path)
+        # Fast Public API for Social Media Downloads
+        api_url = "https://co.wuk.sh/api/json"
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "url": url,
+            "vQuality": "720"
+        }
 
-        if os.path.exists(file_path):
-            file_size = os.path.getsize(file_path) / (1024 * 1024)  # MB
+        response = requests.post(api_url, json=payload, headers=headers, timeout=15)
+        res_data = response.json()
 
-            # የቴሌግራም የ 50MB ገደብ መከላከያ
-            if file_size > 50:
-                await status_msg.edit_text(
-                    "⚠️ <b>የቪዲዮው መጠን ከ 50 MB በላይ ስለሆነ ቴሌግራም አያስተላልፈውም።</b>\n"
-                    "💡 እባክዎ አጠር ያሉ ቪዲዮዎችን ወይም YouTube Shorts/TikTok ሊንኮችን ይጠቀሙ።",
-                    parse_mode="HTML"
-                )
-                os.remove(file_path)
-                return
+        if res_data.get("status") in ["stream", "redirect"]:
+            video_link = res_data.get("url")
 
-            await status_msg.edit_text("📤 <b>ቪዲዮውን በመላክ ላይ...</b>", parse_mode="HTML")
-            with open(file_path, 'rb') as video_file:
-                await update.message.reply_video(
-                    video=video_file, 
-                    caption="✅ <b>በተሳካ ሁኔታ ወርዷል!</b>\n\n🤖 Powered by @mame_posts", 
-                    parse_mode="HTML"
-                )
-            
+            await status_msg.edit_text("📤 <b>Sending Video...</b>", parse_mode="HTML")
+            await update.message.reply_video(
+                video=video_link,
+                caption=f"🚀 <b>Downloaded with</b> @{bot_username}\n\n🥰 <b>Enjoy! Don't forget to share it with your friends.</b>",
+                reply_markup=reply_markup,
+                parse_mode="HTML"
+            )
             await status_msg.delete()
-            os.remove(file_path)
+
+        elif res_data.get("status") == "picker":
+            # For slideshows/multiple photos or videos
+            picker_items = res_data.get("picker", [])
+            for item in picker_items[:3]: # Send up to 3 items
+                await update.message.reply_video(
+                    video=item.get("url"),
+                    caption=f"🚀 <b>Downloaded with</b> @{bot_username}",
+                    reply_markup=reply_markup,
+                    parse_mode="HTML"
+                )
+            await status_msg.delete()
         else:
-            await status_msg.edit_text("❌ <b>ቪዲዮውን ማውረድ አልተቻለም። እባክዎ ሊንኩ ትክክል መሆኑን ያረጋግጡ።</b>", parse_mode="HTML")
+            await status_msg.edit_text("❌ <b>ቪዲዮውን ማውረድ አልተቻለም። ሊንኩ ትክክል መሆኑን ወይም የግል (Private) አለመሆኑን ያረጋግጡ።</b>", parse_mode="HTML")
 
     except Exception as e:
-        print("Download Error:", e)
-        await status_msg.edit_text("❌ <b>ቪዲዮውን በማውረድ ላይ ስህተት አጋጥሟል። ሊንኩ የግል (Private) ሊሆን ወይም የቪዲዮው መጠን በጣም ትልቅ ሊሆን ይችላል።</b>", parse_mode="HTML")
-        if os.path.exists(file_path):
-            os.remove(file_path)
+        print("API Download Error:", e)
+        await status_msg.edit_text("❌ <b>ቪዲዮውን በማውረድ ላይ ስህተት አጋጥሟል። እባክዎ እንደገና ይሞክሩ!</b>", parse_mode="HTML")
 
 
 # ==================================================
