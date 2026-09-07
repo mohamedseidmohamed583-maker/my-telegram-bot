@@ -598,6 +598,7 @@ async def error_handler(
 def main():
     keep_alive()
 
+    # post_init እዚህ ጋር መግባቱን ያረጋግጡ
     app = Application.builder().token(TOKEN).post_init(post_init).build()
 
     # Commands Handlers
@@ -625,6 +626,3 @@ def main():
 
     print("🤖 Mame Posts Bot is running...")
     app.run_polling()
-
-if __name__ == '__main__':
-    main()
