@@ -1,5 +1,5 @@
 import os
-import requests
+import json
 import asyncio
 from threading import Thread
 from flask import Flask
@@ -49,6 +49,41 @@ ADMIN_ID = 6753546651
 FORCE_CHANNEL = "@mame_posts"
 FORCE_CHANNEL_LINK = "https://t.me/mame_posts"
 
+# ==================================================
+# DATABASE MANAGEMENT (ተጠቃሚዎችን እና መልዕክቶችን መመዝገቢያ)
+# ==================================================
+
+DATA_FILE = "user_data.json"
+
+def load_data():
+    if os.path.exists(DATA_FILE):
+        try:
+            with open(DATA_FILE, "r") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    return {}
+
+def save_data(data):
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f)
+
+def record_user_activity(user_id):
+    data = load_data()
+    uid_str = str(user_id)
+    if uid_str not in data:
+        data[uid_str] = {"msg_count": 0}
+    
+    # የላከውን መልዕክት ቁጥር መጨመር
+    data[uid_str]["msg_count"] = data[uid_str].get("msg_count", 0) + 1
+    save_data(data)
+
+def get_user_stats(user_id):
+    data = load_data()
+    uid_str = str(user_id)
+    total_users = len(data)
+    user_msg_count = data.get(uid_str, {}).get("msg_count", 0)
+    return total_users, user_msg_count
 
 # ==================================================
 # AUTO SET BOT COMMANDS (MENU LIST)
@@ -58,9 +93,9 @@ async def post_init(application: Application):
     commands = [
         BotCommand("start", "ቦቱን ለመጀመር"),
         BotCommand("menu", "ዋና ማውጫ"),
+        BotCommand("status", "የእርስዎን እና የቦቱን Status ለማየት"),
         BotCommand("rates", "የማስታወቂያ ዋጋዎች"),
         BotCommand("payment", "የከፈያ መንገድ"),
-        BotCommand("myid", "የእርስዎን ID ለማወቅ"),
         BotCommand("help", "እርዳታና ድጋፍ"),
     ]
     await application.bot.set_my_commands(commands)
@@ -130,21 +165,23 @@ async def start(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE
 ):
+    user_id = update.effective_user.id
+    record_user_activity(user_id)
+
     if not await is_joined(update, context):
         await show_force_join(update, context)
         return
 
     keyboard = [
         [
-            InlineKeyboardButton("📢ማስታወቂያ ለማሰራት🪪 ", callback_data="cmd_order")
+            InlineKeyboardButton("📢 ማስታወቂያ ለማሰራት 🪪", callback_data="cmd_order")
         ],
         [
-            InlineKeyboardButton("💰Price | ዋጋ ", callback_data="cmd_price"),
+            InlineKeyboardButton("💰 Price | ዋጋ", callback_data="cmd_price"),
             InlineKeyboardButton("💳 Payment Method", callback_data="cmd_payment")
         ],
         [
-            InlineKeyboardButton("📊 የቻናሉ Statics 📊 ", callback_data="cmd_statics"),
-            InlineKeyboardButton("👤My Order ", callback_data="cmd_myorders")
+            InlineKeyboardButton("👤 My Status & Stats 📊", callback_data="cmd_status")
         ],
         [
             InlineKeyboardButton("💬 Support | ድጋፍ", callback_data="cmd_support")
@@ -155,10 +192,40 @@ async def start(
 
     await update.message.reply_text(
         "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-        "👇 <b>ከታች ካሉት አማራጮች ይምረጡ ወይም የቪዲዮ ሊንክ ይላኩልኝ (TikTok, YouTube Shorts, Instagram)</b> ⚡\n\n",
+        "👇 <b>ከታች ካሉት አማራጮች ይምረጡ ወይም የቪዲዮ ሊንክ ይላኩልኝ (Instagram Reel)</b> ⚡\n\n",
         reply_markup=reply_markup,
         parse_mode="HTML"
     )
+
+
+# ==================================================
+# STATUS COMMAND (/status)
+# ==================================================
+
+async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    record_user_activity(user.id)
+
+    if not await is_joined(update, context):
+        await show_force_join(update, context)
+        return
+
+    total_users, user_msg_count = get_user_stats(user.id)
+    username_text = f"@{user.username}" if user.username else "የለውም"
+
+    msg = (
+        "📊 <b>የእርስዎ እና የቦቱ Status</b>\n\n"
+        "👤 <b>የግል መረጃዎት፦</b>\n"
+        f"• <b>ስም:</b> {user.full_name}\n"
+        f"• <b>Username:</b> {username_text}\n"
+        f"• <b>Telegram ID:</b> <code>{user.id}</code>\n"
+        f"• <b>የላኳቸው አጠቃላይ መልዕክቶች:</b> <code>{user_msg_count}</code>\n\n"
+        "🤖 <b>የቦቱ አጠቃላይ መረጃ፦</b>\n"
+        f"• <b>አጠቃላይ የቦቱ ተጠቃሚዎች:</b> <code>{total_users} Users</code>\n"
+        "• <b>ሁኔታ:</b> Active ✅"
+    )
+
+    await update.message.reply_text(msg, parse_mode="HTML")
 
 
 # ==================================================
@@ -166,6 +233,7 @@ async def start(
 # ==================================================
 
 async def rates_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    record_user_activity(update.effective_user.id)
     if not await is_joined(update, context):
         await show_force_join(update, context)
         return
@@ -179,6 +247,7 @@ async def rates_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 async def payment_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    record_user_activity(update.effective_user.id)
     if not await is_joined(update, context):
         await show_force_join(update, context)
         return
@@ -192,17 +261,14 @@ async def payment_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="HTML"
     )
 
-async def myid_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    await update.message.reply_text(f"🆔 የእርስዎ Telegram ID: <code>{user_id}</code>", parse_mode="HTML")
-
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    record_user_activity(update.effective_user.id)
     if not await is_joined(update, context):
         await show_force_join(update, context)
         return
     await update.message.reply_text(
         "💬 <b>Support & Downloader Help</b>\n\n"
-        "📥 <b>ቪዲዮ ለማውረድ:</b> የቲከተክ፣ ዩቲዩብ Shorts፣ ወይም ኢንስታግራም ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n"
+        "📥 <b>ቪዲዮ ለማውረድ:</b> የኢንስታግራም ሪልስ ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n"
         "👨‍💻 ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።",
         parse_mode="HTML"
     )
@@ -218,7 +284,7 @@ def download_video_ytdlp(url: str, output_path: str):
         'outtmpl': output_path,
         'quiet': True,
         'no_warnings': True,
-        'max_filesize': 50 * 1024 * 1024, # 50MB limit for Telegram
+        'max_filesize': 50 * 1024 * 1024,
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
@@ -240,7 +306,6 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     file_name = f"video_{update.effective_user.id}_{update.message.message_id}.mp4"
 
     try:
-        # Run yt-dlp in a thread so it doesn't block the bot
         await asyncio.to_thread(download_video_ytdlp, url, file_name)
 
         if os.path.exists(file_name):
@@ -255,7 +320,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
             await status_msg.delete()
             os.remove(file_name)
         else:
-            await status_msg.edit_text("❌ <b>ቪዲዮውን ማግኘት አልተቻለም።</b>", parse_mode="HTML")
+            await status_msg.edit_text("❌ <b>ቪዲዮውን ማግኘት አልቻልኩም😭።</b>", parse_mode="HTML")
 
     except Exception as e:
         print("Download Error:", e)
@@ -263,7 +328,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
             os.remove(file_name)
         await status_msg.edit_text(
             "❌ <b>ቪዲዮውን ማውረድ አልቻልኩም😭።</b>\n\n"
-            "📌 እባክዎ ሊንኩ ትክክለኛ የ TikTok,YouTube Shorts ወይም Instagram Reels መሆኑን ያረጋግጡ🙂።",
+            "📌 እባክዎ ሊንኩ ትክክለኛ የ Instagram Reels መሆኑን ያረጋግጡ🙂።",
             parse_mode="HTML"
         )
 
@@ -280,6 +345,7 @@ async def button_callback(
     await query.answer()
 
     data = query.data
+    user = query.from_user
 
     if data == "cmd_price":
         await query.message.reply_text(
@@ -298,20 +364,21 @@ async def button_callback(
             parse_mode="HTML"
         )
 
-    elif data == "cmd_statics":
-        await query.message.reply_text(
-            "📊 <b>Channel Statistics</b>\n\n"
-            "👥 Subscribers: <b>10,000+</b>\n"
-            "📊 Engagement: <b> Very Active🔥 </b>\n\n",
-            parse_mode="HTML"
-        )
+    elif data == "cmd_status":
+        total_users, user_msg_count = get_user_stats(user.id)
+        username_text = f"@{user.username}" if user.username else "የለውም"
 
-    elif data == "cmd_myorders":
-        await query.message.reply_text(
-            "👤 <b>My Orders</b>\n\n"
-            "📋 እስካሁን ያዘዙት ማስታወቂያ የለም።",
-            parse_mode="HTML"
+        msg = (
+            "📊 <b>የእርስዎ እና የቦቱ Status</b>\n\n"
+            "👤 <b>የግል መረጃዎት፦</b>\n"
+            f"• <b>ስም:</b> {user.full_name}\n"
+            f"• <b>Username:</b> {username_text}\n"
+            f"• <b>Telegram ID:</b> <code>{user.id}</code>\n"
+            f"• <b>የላኳቸው አጠቃላይ መልዕክቶች:</b> <code>{user_msg_count}</code>\n\n"
+            f"• <b>አጠቃላይ የቦቱ ተጠቃሚዎች:</b> <code>{total_users} Users</code>\n"
+            "• <b>ሁኔታ:</b> Active ✅"
         )
+        await query.message.reply_text(msg, parse_mode="HTML")
 
     elif data == "cmd_payment":
         await query.message.reply_text(
@@ -334,7 +401,7 @@ async def button_callback(
 
 
 # ==================================================
-# USER MESSAGES HANDLER (Forwarding to Admin or Download)
+# USER MESSAGES HANDLER
 # ==================================================
 
 async def handle_user_messages(
@@ -344,13 +411,16 @@ async def handle_user_messages(
     if not update.message:
         return
 
+    user_id = update.effective_user.id
+    record_user_activity(user_id)
+
     if not await is_joined(update, context):
         await show_force_join(update, context)
         return
 
     text = update.message.text or ""
 
-    downloadable_platforms = ["tiktok.com", "instagram.com", "youtube.com", "youtu.be", "vt.tiktok.com"]
+    downloadable_platforms = ["instagram.com"]
     
     is_media_link = any(platform in text.lower() for platform in downloadable_platforms)
 
@@ -360,10 +430,8 @@ async def handle_user_messages(
         await handle_url_download(update, context, target_url)
         return
 
-    # Telegram Link ወይም ሌላ መልዕክት ከሆነ ለአድሚን ይልካል
     username = update.effective_user.username
     username_text = f"@{username}" if username else "No Username"
-    user_id = update.effective_user.id
 
     header_msg = await context.bot.send_message(
         chat_id=ADMIN_ID,
@@ -504,9 +572,9 @@ def main():
     # Commands Handlers
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("menu", start))
+    app.add_handler(CommandHandler("status", status_command)) # አዲሱ /status Command
     app.add_handler(CommandHandler("rates", rates_command))
     app.add_handler(CommandHandler("payment", payment_command))
-    app.add_handler(CommandHandler("myid", myid_command))
     app.add_handler(CommandHandler("help", help_command))
 
     app.add_handler(CallbackQueryHandler(check_join, pattern="^check_join$"))
