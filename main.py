@@ -50,7 +50,7 @@ FORCE_CHANNEL = "@mame_posts"
 FORCE_CHANNEL_LINK = "https://t.me/mame_posts"
 
 # ==================================================
-# DATABASE MANAGEMENT (ተጠቃሚዎችን እና መልዕክቶችን መመዝገቢያ)
+# DATABASE MANAGEMENT
 # ==================================================
 
 DATA_FILE = "user_data.json"
@@ -74,7 +74,6 @@ def record_user_activity(user_id):
     if uid_str not in data:
         data[uid_str] = {"msg_count": 0}
     
-    # የላከውን መልዕክት ቁጥር መጨመር
     data[uid_str]["msg_count"] = data[uid_str].get("msg_count", 0) + 1
     save_data(data)
 
@@ -86,7 +85,37 @@ def get_user_stats(user_id):
     return total_users, user_msg_count
 
 # ==================================================
-# AUTO SET BOT COMMANDS (MENU LIST)
+# MAIN MENU KEYBOARD (ዋና ማውጫ አዝራሮች)
+# ==================================================
+
+def get_main_menu_keyboard():
+    keyboard = [
+        [
+            InlineKeyboardButton("📢 ማስታወቂያ ለማሰራት 🪪", callback_data="cmd_order")
+        ],
+        [
+            InlineKeyboardButton("💰 Price | ዋጋ", callback_data="cmd_price"),
+            InlineKeyboardButton("💳 Payment Method", callback_data="cmd_payment")
+        ],
+        [
+            InlineKeyboardButton("👤 My Status & Stats 📊", callback_data="cmd_status")
+        ],
+        [
+            InlineKeyboardButton("💬 Support | ድጋፍ", callback_data="cmd_support")
+        ]
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+def get_back_keyboard():
+    keyboard = [
+        [
+            InlineKeyboardButton("🔙 Back to Menu", callback_data="cmd_back")
+        ]
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+# ==================================================
+# AUTO SET BOT COMMANDS
 # ==================================================
 
 async def post_init(application: Application):
@@ -95,7 +124,7 @@ async def post_init(application: Application):
         BotCommand("menu", "ዋና ማውጫ"),
         BotCommand("status", "የእርስዎን እና የቦቱን Status ለማየት"),
         BotCommand("rates", "የማስታወቂያ ዋጋዎች"),
-        BotCommand("payment", "የከፈያ መንገድ"),
+        BotCommand("payment", "የክፈያ መንገድ"),
         BotCommand("help", "እርዳታና ድጋፍ"),
     ]
     await application.bot.set_my_commands(commands)
@@ -172,28 +201,10 @@ async def start(
         await show_force_join(update, context)
         return
 
-    keyboard = [
-        [
-            InlineKeyboardButton("📢 ማስታወቂያ ለማሰራት 🪪", callback_data="cmd_order")
-        ],
-        [
-            InlineKeyboardButton("💰 Price | ዋጋ", callback_data="cmd_price"),
-            InlineKeyboardButton("💳 Payment Method", callback_data="cmd_payment")
-        ],
-        [
-            InlineKeyboardButton("👤 My Status & Stats 📊", callback_data="cmd_status")
-        ],
-        [
-            InlineKeyboardButton("💬 Support | ድጋፍ", callback_data="cmd_support")
-        ]
-    ]
-
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
     await update.message.reply_text(
         "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-        "👇 <b>ከታች ካሉት አማራጮች ይጠቀሙ። እናም ከ Instagram Video ማውረድ ከፈለጉ ሊንኩን ይላኩልኝ አውርጄ እሰጠዎታለሁ❤ </b> ⚡\n\n",
-        reply_markup=reply_markup,
+        "📥 <b>የኢንስታግራም (Instagram) ቪዲዮ ሊንክ ይላኩልኝ (ያለ Watermark አወርድልዎታለሁ)</b> ⚡\n\n",
+        reply_markup=get_main_menu_keyboard(),
         parse_mode="HTML"
     )
 
@@ -268,33 +279,33 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     await update.message.reply_text(
         "💬 <b>Support & Downloader Help</b>\n\n"
-        "📥 <b>ቪዲዮ ለማውረድ:</b> የኢንስታግራም ሪልስ ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n"
+        "📥 <b>ቪዲዮ ለማውረድ:</b> የኢንስታግራም (Instagram) ቪዲዮ ወይም ሪልስ ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n"
         "👨‍💻 ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።",
         parse_mode="HTML"
     )
 
 
 # ==================================================
-# YT-DLP DIRECT DOWNLOADER ENGINE
+# INSTAGRAM VIDEO DOWNLOADER ENGINE
 # ==================================================
 
-def download_video_ytdlp(url: str, output_path: str):
+def download_instagram_video(url: str, output_path: str):
     ydl_opts = {
-        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        'format': 'best',
         'outtmpl': output_path,
         'quiet': True,
         'no_warnings': True,
-        'max_filesize': 50 * 1024 * 1024,
+        'max_filesize': 50 * 1024 * 1024, # Maximum 50MB
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
 
 
 async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE, url: str):
-    status_msg = await update.message.reply_text("🚀 <b>Downloading & sending Video...</b> 📥", parse_mode="HTML")
+    status_msg = await update.message.reply_text("🚀 <b>Downloading Instagram Video...</b> 📥", parse_mode="HTML")
 
     bot_username = context.bot.username or "mame_posts_bot"
-    share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Video%20Downloader%20Bot!🔥"
+    share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Instagram%20Downloader%20Bot!🔥"
 
     keyboard = [
         [
@@ -306,7 +317,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     file_name = f"video_{update.effective_user.id}_{update.message.message_id}.mp4"
 
     try:
-        await asyncio.to_thread(download_video_ytdlp, url, file_name)
+        await asyncio.to_thread(download_instagram_video, url, file_name)
 
         if os.path.exists(file_name):
             await status_msg.edit_text("📤 <b>Sending Video...</b>", parse_mode="HTML")
@@ -327,14 +338,17 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
         if os.path.exists(file_name):
             os.remove(file_name)
         await status_msg.edit_text(
-            "❌ <b>ቪዲዮውን ማውረድ አልተቻለም።</b>\n\n"
-            "📌 እባክዎ ሊንኩ ትክክለኛ የ **Instagram Reels** መሆኑን ያረጋግጡ።",
+            "❌ <b>ቪዲዮውን ማውረድ አልተቻለም!</b>\n\n"
+            "📌 <b>ምክንያቶች፦</b>\n"
+            "1. ሊንኩ የግል (Private) አካውንት ሊሆን ይችላል።\n"
+            "2. የቪዲዮው መጠን ከ 50MB በላይ ሊሆን ይችላል።\n"
+            "3. ሊንኩ ትክክለኛ የኢንስታግራም ሊንክ መሆኑን ያረጋግጡ።",
             parse_mode="HTML"
         )
 
 
 # ==================================================
-# BUTTON CLICK HANDLER (Inline Callback Buttons)
+# BUTTON CLICK HANDLER (EDIT MESSAGE IN-PLACE)
 # ==================================================
 
 async def button_callback(
@@ -347,20 +361,30 @@ async def button_callback(
     data = query.data
     user = query.from_user
 
-    if data == "cmd_price":
-        await query.message.reply_text(
+    if data == "cmd_back":
+        await query.edit_message_text(
+            "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
+            "📥 <b>የኢንስታግራም (Instagram) ቪዲዮ ሊንክ ይላኩልኝ (ያለ Watermark አወርድልዎታለሁ)</b> ⚡\n\n",
+            reply_markup=get_main_menu_keyboard(),
+            parse_mode="HTML"
+        )
+
+    elif data == "cmd_price":
+        await query.edit_message_text(
             "💰 <b>የማስታወቂያ ዋጋዎች</b>\n\n"
             "📌 12 Hours — <b> በስምምነት ETB</b>\n"
             "📌 24 Hours — <b> 500 ETB</b>\n"
             "📌 48 Hours — <b> 700 ETB</b>\n\n"
             " የ ማስታወቂያውን አይነት አይተን አስተያየት እናደርጋለን!🤝።",
+            reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
 
     elif data == "cmd_order":
-        await query.message.reply_text(
+        await query.edit_message_text(
             "📢 <b>ማስታወቂያ ለማሰራት </b>\n\n"
             " 👇 እባክዎ ማስታወቂያ ማሰራት የሚፈልጉትን Post እዚህ ይላኩ👐 ።\n\n",
+            reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
 
@@ -379,24 +403,30 @@ async def button_callback(
             f"• <b>አጠቃላይ የቦቱ ተጠቃሚዎች:</b> <code>{total_users} Users</code>\n"
             "• <b>ሁኔታ:</b> Active ✅"
         )
-        await query.message.reply_text(msg, parse_mode="HTML")
+        await query.edit_message_text(
+            msg, 
+            reply_markup=get_back_keyboard(),
+            parse_mode="HTML"
+        )
 
     elif data == "cmd_payment":
-        await query.message.reply_text(
+        await query.edit_message_text(
             "💳 <b>Payment Method</b>\n\n"
             "🏦 <b>CBE</b>\n"
             "1000528274394\n\n"
             "Mohammed Seid\n"
             "📱 <b>TELE BIRR</b>\n"
             "+251963266849\n\n",
+            reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
 
     elif data == "cmd_support":
-        await query.message.reply_text(
+        await query.edit_message_text(
             "💬 <b>Support</b>\n\n"
             "መልዕክትዎን እዚህ ይላኩ።\n\n"
             "👨‍💻 Admin በቅርቡ ይመልስልዎታል።",
+            reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
 
@@ -421,16 +451,16 @@ async def handle_user_messages(
 
     text = update.message.text or ""
 
-    downloadable_platforms = ["instagram.com"]
-    
-    is_media_link = any(platform in text.lower() for platform in downloadable_platforms)
+    # የኢንስታግራም ሊንክ ብቻ እንዲቀበል ተደረገ
+    is_instagram_link = "instagram.com" in text.lower()
 
-    if is_media_link:
+    if is_instagram_link:
         urls = [word for word in text.split() if word.startswith("http://") or word.startswith("https://")]
         target_url = urls[0] if urls else text
         await handle_url_download(update, context, target_url)
         return
 
+    # ሊንክ ካልሆነ ለአድሚን መልዕክት ያስተላልፋል
     username = update.effective_user.username
     username_text = f"@{username}" if username else "No Username"
 
@@ -573,7 +603,7 @@ def main():
     # Commands Handlers
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("menu", start))
-    app.add_handler(CommandHandler("status", status_command)) # አዲሱ /status Command
+    app.add_handler(CommandHandler("status", status_command))
     app.add_handler(CommandHandler("rates", rates_command))
     app.add_handler(CommandHandler("payment", payment_command))
     app.add_handler(CommandHandler("help", help_command))
