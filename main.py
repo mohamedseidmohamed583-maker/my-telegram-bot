@@ -20,9 +20,9 @@ from telegram.ext import (
 import yt_dlp
 
 # ==================================================
-# FLASK WEB SERVER (Fixed Port Binding for Render)
+# FLASK WEB SERVER FOR RENDER (PORT BINDING FIX)
 # ==================================================
-app_web = Flask('')
+app_web = Flask(__name__)
 
 @app_web.route('/')
 def home():
@@ -45,15 +45,14 @@ def keep_alive():
 TOKEN = "8795814797:AAHT3J4Cdd4DSrq71S-GAyanDkQuJl-9L80"
 ADMIN_ID = 6753546651
 
-# Force Join Channel
 FORCE_CHANNEL = "@mame_posts"
 FORCE_CHANNEL_LINK = "https://t.me/mame_posts"
+
+DATA_FILE = "user_data.json"
 
 # ==================================================
 # DATABASE MANAGEMENT
 # ==================================================
-
-DATA_FILE = "user_data.json"
 
 def load_data():
     if os.path.exists(DATA_FILE):
@@ -65,8 +64,11 @@ def load_data():
     return {}
 
 def save_data(data):
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f)
+    try:
+        with open(DATA_FILE, "w") as f:
+            json.dump(data, f)
+    except Exception as e:
+        print("Save Error:", e)
 
 def record_user_activity(user_id):
     data = load_data()
@@ -85,95 +87,62 @@ def get_user_stats(user_id):
     return total_users, user_msg_count
 
 # ==================================================
-# MAIN MENU KEYBOARD (ዋና ማውጫ አዝራሮች)
+# KEYBOARDS
 # ==================================================
 
 def get_main_menu_keyboard():
     keyboard = [
-        [
-            InlineKeyboardButton("📢 ማስታወቂያ ለማሰራት 🪪", callback_data="cmd_order")
-        ],
+        [InlineKeyboardButton("📢 ማስታወቂያ ለማሰራት 🪪", callback_data="cmd_order")],
         [
             InlineKeyboardButton("💰 Price | ዋጋ", callback_data="cmd_price"),
             InlineKeyboardButton("💳 Payment Method", callback_data="cmd_payment")
         ],
-        [
-            InlineKeyboardButton("👤 My Status & Stats 📊", callback_data="cmd_status")
-        ],
-        [
-            InlineKeyboardButton("💬 Support | ድጋፍ", callback_data="cmd_support")
-        ]
+        [InlineKeyboardButton("👤 My Status & Stats 📊", callback_data="cmd_status")],
+        [InlineKeyboardButton("💬 Support | ድጋፍ", callback_data="cmd_support")]
     ]
     return InlineKeyboardMarkup(keyboard)
 
 def get_back_keyboard():
-    keyboard = [
-        [
-            InlineKeyboardButton("🔙 Back to Menu", callback_data="cmd_back")
-        ]
-    ]
+    keyboard = [[InlineKeyboardButton("🔙 Back to Menu", callback_data="cmd_back")]]
     return InlineKeyboardMarkup(keyboard)
 
 # ==================================================
-# AUTO SET BOT COMMANDS
+# BOT COMMANDS REGISTRATION
 # ==================================================
 
 async def post_init(application: Application):
-    commands = [
-        BotCommand("start", "ቦቱን ለመጀመር"),
-        BotCommand("menu", "ዋና ማውጫ"),
-        BotCommand("status", "የእርስዎን እና የቦቱን Status ለማየት"),
-        BotCommand("rates", "የማስታወቂያ ዋጋዎች"),
-        BotCommand("payment", "የክፈያ መንገድ"),
-        BotCommand("help", "እርዳታና ድጋፍ"),
-    ]
-    await application.bot.set_my_commands(commands)
-
+    try:
+        commands = [
+            BotCommand("start", "ቦቱን ለመጀመር"),
+            BotCommand("menu", "ዋና ማውጫ"),
+            BotCommand("status", "የእርስዎን እና የቦቱን Status ለማየት"),
+            BotCommand("rates", "የማስታወቂያ ዋጋዎች"),
+            BotCommand("payment", "የከፈያ መንገድ"),
+            BotCommand("help", "እርዳታና ድጋፍ"),
+        ]
+        await application.bot.set_my_commands(commands)
+        print("✅ Commands Set Successfully!")
+    except Exception as e:
+        print("Command Set Error:", e)
 
 # ==================================================
-# CHECK IF USER JOINED CHANNEL
+# FORCE JOIN CHECK
 # ==================================================
 
 async def is_joined(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     try:
-        member = await context.bot.get_chat_member(
-            chat_id=FORCE_CHANNEL,
-            user_id=user_id
-        )
-        return member.status in [
-            "member",
-            "administrator",
-            "creator"
-        ]
+        member = await context.bot.get_chat_member(chat_id=FORCE_CHANNEL, user_id=user_id)
+        return member.status in ["member", "administrator", "creator"]
     except Exception as e:
         print("Force Join Error:", e)
         return False
 
-
-# ==================================================
-# FORCE JOIN MESSAGE
-# ==================================================
-
-async def show_force_join(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
+async def show_force_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
-        [
-            InlineKeyboardButton(
-                "📢 Join Channel",
-                url=FORCE_CHANNEL_LINK
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                "✅ I've Joined",
-                callback_data="check_join"
-            )
-        ]
+        [InlineKeyboardButton("📢 Join Channel", url=FORCE_CHANNEL_LINK)],
+        [InlineKeyboardButton("✅ I've Joined", callback_data="check_join")]
     ]
-
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     if update.message:
@@ -185,15 +154,11 @@ async def show_force_join(
             parse_mode="HTML"
         )
 
-
 # ==================================================
-# START & MENU COMMAND
+# COMMAND HANDLERS
 # ==================================================
 
-async def start(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     record_user_activity(user_id)
 
@@ -207,11 +172,6 @@ async def start(
         reply_markup=get_main_menu_keyboard(),
         parse_mode="HTML"
     )
-
-
-# ==================================================
-# STATUS COMMAND (/status)
-# ==================================================
 
 async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
@@ -235,13 +195,7 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"• <b>አጠቃላይ የቦቱ ተጠቃሚዎች:</b> <code>{total_users} Users</code>\n"
         "• <b>ሁኔታ:</b> Active ✅"
     )
-
     await update.message.reply_text(msg, parse_mode="HTML")
-
-
-# ==================================================
-# EXTRA COMMAND HANDLERS
-# ==================================================
 
 async def rates_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     record_user_activity(update.effective_user.id)
@@ -253,7 +207,7 @@ async def rates_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "📌 12 Hours — <b> በስምምነት ETB</b>\n"
         "📌 24 Hours — <b> 500 ETB</b>\n"
         "📌 48 Hours — <b> 700 ETB</b>\n\n"
-        " የ ማስታወቂያውን አይነት አይተን አስተያየት እናደርጋለን!🤝።",
+        "የማስታወቂያውን አይነት አይተን አስተያየት እናደርጋለን!🤝።",
         parse_mode="HTML"
     )
 
@@ -264,11 +218,8 @@ async def payment_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     await update.message.reply_text(
         "💳 <b>Payment Method</b>\n\n"
-        "🏦 <b>CBE</b>\n"
-        "1000528274394\n\n"
-        "Mohammed Seid\n"
-        "📱 <b>TELE BIRR</b>\n"
-        "+251963266849\n\n",
+        "🏦 <b>CBE</b>\n1000528274394\nMohammed Seid\n\n"
+        "📱 <b>TELE BIRR</b>\n+251963266849\n\n",
         parse_mode="HTML"
     )
 
@@ -284,9 +235,8 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="HTML"
     )
 
-
 # ==================================================
-# INSTAGRAM VIDEO DOWNLOADER ENGINE
+# INSTAGRAM DOWNLOAD ENGINE
 # ==================================================
 
 def download_instagram_video(url: str, output_path: str):
@@ -295,23 +245,17 @@ def download_instagram_video(url: str, output_path: str):
         'outtmpl': output_path,
         'quiet': True,
         'no_warnings': True,
-        'max_filesize': 50 * 1024 * 1024, # Maximum 50MB
+        'max_filesize': 50 * 1024 * 1024,
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
 
-
 async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE, url: str):
     status_msg = await update.message.reply_text("🚀 <b>Downloading Instagram Video...</b> 📥", parse_mode="HTML")
-
     bot_username = context.bot.username or "mame_posts_bot"
     share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Instagram%20Downloader%20Bot!🔥"
 
-    keyboard = [
-        [
-            InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)
-        ]
-    ]
+    keyboard = [[InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)]]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     file_name = f"video_{update.effective_user.id}_{update.message.message_id}.mp4"
@@ -346,15 +290,11 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
             parse_mode="HTML"
         )
 
-
 # ==================================================
-# BUTTON CLICK HANDLER (EDIT MESSAGE IN-PLACE)
+# CALLBACK QUERY & MESSAGE HANDLERS
 # ==================================================
 
-async def button_callback(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
+async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
@@ -368,30 +308,21 @@ async def button_callback(
             reply_markup=get_main_menu_keyboard(),
             parse_mode="HTML"
         )
-
     elif data == "cmd_price":
         await query.edit_message_text(
-            "💰 <b>የማስታወቂያ ዋጋዎች</b>\n\n"
-            "📌 12 Hours — <b> በስምምነት ETB</b>\n"
-            "📌 24 Hours — <b> 500 ETB</b>\n"
-            "📌 48 Hours — <b> 700 ETB</b>\n\n"
-            " የ ማስታወቂያውን አይነት አይተን አስተያየት እናደርጋለን!🤝።",
+            "💰 <b>የማስታወቂያ ዋጋዎች</b>\n\n📌 12 Hours — <b> በስምምነት ETB</b>\n📌 24 Hours — <b> 500 ETB</b>\n📌 48 Hours — <b> 700 ETB</b>\n\nየማስታወቂያውን አይነት አይተን አስተያየት እናደርጋለን!🤝።",
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
-
     elif data == "cmd_order":
         await query.edit_message_text(
-            "📢 <b>ማስታወቂያ ለማሰራት </b>\n\n"
-            " 👇 እባክዎ ማስታወቂያ ማሰራት የሚፈልጉትን Post እዚህ ይላኩ👐 ።\n\n",
+            "📢 <b>ማስታወቂያ ለማሰራት </b>\n\n👇 እባክዎ ማስታወቂያ ማሰራት የሚፈልጉትን Post እዚህ ይላኩ👐 ።\n\n",
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
-
     elif data == "cmd_status":
         total_users, user_msg_count = get_user_stats(user.id)
         username_text = f"@{user.username}" if user.username else "የለውም"
-
         msg = (
             "📊 <b>የእርስዎ እና የቦቱ Status</b>\n\n"
             "👤 <b>የግል መረጃዎት፦</b>\n"
@@ -403,42 +334,22 @@ async def button_callback(
             f"• <b>አጠቃላይ የቦቱ ተጠቃሚዎች:</b> <code>{total_users} Users</code>\n"
             "• <b>ሁኔታ:</b> Active ✅"
         )
-        await query.edit_message_text(
-            msg, 
-            reply_markup=get_back_keyboard(),
-            parse_mode="HTML"
-        )
+        await query.edit_message_text(msg, reply_markup=get_back_keyboard(), parse_mode="HTML")
 
     elif data == "cmd_payment":
         await query.edit_message_text(
-            "💳 <b>Payment Method</b>\n\n"
-            "🏦 <b>CBE</b>\n"
-            "1000528274394\n\n"
-            "Mohammed Seid\n"
-            "📱 <b>TELE BIRR</b>\n"
-            "+251963266849\n\n",
+            "💳 <b>Payment Method</b>\n\n🏦 <b>CBE</b>\n1000528274394\nMohammed Seid\n\n📱 <b>TELE BIRR</b>\n+251963266849\n\n",
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
-
     elif data == "cmd_support":
         await query.edit_message_text(
-            "💬 <b>Support</b>\n\n"
-            "መልዕክትዎን እዚህ ይላኩ።\n\n"
-            "👨‍💻 Admin በቅርቡ ይመልስልዎታል።",
+            "💬 <b>Support</b>\n\nመልዕክትዎን እዚህ ይላኩ።\n\n👨‍💻 Admin በቅርቡ ይመልስልዎታል።",
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
 
-
-# ==================================================
-# USER MESSAGES HANDLER
-# ==================================================
-
-async def handle_user_messages(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
+async def handle_user_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message:
         return
 
@@ -451,16 +362,12 @@ async def handle_user_messages(
 
     text = update.message.text or ""
 
-    # የኢንስታግራም ሊንክ ብቻ እንዲቀበል ተደረገ
-    is_instagram_link = "instagram.com" in text.lower()
-
-    if is_instagram_link:
+    if "instagram.com" in text.lower():
         urls = [word for word in text.split() if word.startswith("http://") or word.startswith("https://")]
         target_url = urls[0] if urls else text
         await handle_url_download(update, context, target_url)
         return
 
-    # ሊንክ ካልሆነ ለአድሚን መልዕክት ያስተላልፋል
     username = update.effective_user.username
     username_text = f"@{username}" if username else "No Username"
 
@@ -483,20 +390,9 @@ async def handle_user_messages(
     context.bot_data["user_mapping"][str(header_msg.message_id)] = user_id
     context.bot_data["user_mapping"][str(forwarded_msg.message_id)] = user_id
 
-    await update.message.reply_text(
-        "✅ መልዕክትዎን ተቀብለናል።\n\n"
-        "📩 በቅርቡ እንመልስልዎታለን። ❤️"
-    )
+    await update.message.reply_text("✅ መልዕክትዎን ተቀብለናል።\n\n📩 በቅርቡ እንመልስልዎታለን። ❤️")
 
-
-# ==================================================
-# ADMIN REPLY HANDLER
-# ==================================================
-
-async def admin_reply(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
+async def admin_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID:
         return
 
@@ -519,77 +415,34 @@ async def admin_reply(
             except Exception:
                 pass
 
-        if not target_user_id and replied_msg.caption and "🆔 ID:" in replied_msg.caption:
-            try:
-                user_id_str = replied_msg.caption.split("🆔 ID:")[1].split()[0]
-                target_user_id = int(user_id_str.replace("<code>", "").replace("</code>", ""))
-            except Exception:
-                pass
-
         if target_user_id:
             try:
                 await update.message.copy(chat_id=target_user_id)
-                await update.message.reply_text("✅ መልሱ (ፎቶ/ቪዲዮ/ቮይስ/ጽሁፍ) ለተጠቃሚው ተልኳል!")
+                await update.message.reply_text("✅ መልሱ ተልኳል!")
             except Exception as e:
                 print("Reply Error:", e)
                 await update.message.reply_text("❌ መልሱን መላክ አልተቻለም። ተጠቃሚው ቦቱን ዘግቶት ሊሆን ይችላል።")
-        else:
-            await update.message.reply_text("⚠️ እባክዎ ከቀረቡት መልእክቶች (ወይ ከጽሁፍ መረጃው ወይንም ከፎርዋርድ የተደረገው ፋይል ላይ) Reply ያድርጉ።")
 
-
-# ==================================================
-# CHECK JOIN BUTTON
-# ==================================================
-
-async def check_join(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
+async def check_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-
     user_id = query.from_user.id
 
     try:
-        member = await context.bot.get_chat_member(
-            chat_id=FORCE_CHANNEL,
-            user_id=user_id
-        )
-
-        if member.status in [
-            "member",
-            "administrator",
-            "creator"
-        ]:
+        member = await context.bot.get_chat_member(chat_id=FORCE_CHANNEL, user_id=user_id)
+        if member.status in ["member", "administrator", "creator"]:
             await query.edit_message_text(
-                "✅ <b>ቻናሉን ተቀላቅለዋል!</b>\n\n"
-                "🤖 አሁን /start የሚለውን ተጭነው ቦቱን ይጠቀሙ።",
+                "✅ <b>ቻናሉን ተቀላቅለዋል!</b>\n\n🤖 አሁን /start የሚለውን ተጭነው ቦቱን ይጠቀሙ።",
                 parse_mode="HTML"
             )
         else:
-            await query.answer(
-                " እባክዎ መጀመሪያ Channel ይቀላቀሉ!🙂",
-                show_alert=True
-            )
-
+            await query.answer("እባክዎ መጀመሪያ Channel ይቀላቀሉ!🙂", show_alert=True)
     except Exception as e:
         print("Check Join Error:", e)
-        await query.answer(
-            "⚠️ አባልነትዎን ማረጋገጥ አልተቻለም🙂።",
-            show_alert=True
-        )
+        await query.answer("⚠️ አባልነትዎን ማረጋገጥ አልተቻለም🙂።", show_alert=True)
 
-
-# ==================================================
-# ERROR HANDLER
-# ==================================================
-
-async def error_handler(
-    update: object,
-    context: ContextTypes.DEFAULT_TYPE
-):
+async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
     print("❌ ERROR:", context.error)
-
 
 # ==================================================
 # MAIN EXECUTION
@@ -598,10 +451,8 @@ async def error_handler(
 def main():
     keep_alive()
 
-    # post_init እዚህ ጋር መግባቱን ያረጋግጡ
     app = Application.builder().token(TOKEN).post_init(post_init).build()
 
-    # Commands Handlers
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("menu", start))
     app.add_handler(CommandHandler("status", status_command))
@@ -626,3 +477,6 @@ def main():
 
     print("🤖 Mame Posts Bot is running...")
     app.run_polling()
+
+if __name__ == '__main__':
+    main()
