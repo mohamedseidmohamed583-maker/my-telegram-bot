@@ -55,13 +55,13 @@ FORCE_CHANNEL_LINK = "https://t.me/mame_posts"
 DATA_FILE = "user_data.json"
 
 # Gemini AI Client Initialization
-ai_client = None
-if GEMINI_API_KEY and GEMINI_API_KEY != "YOUR_GEMINI_API_KEY_HERE":
-    try:
-        ai_client = genai.Client(api_key=GEMINI_API_KEY)
-        print("✅ Gemini AI Client initialized!")
-    except Exception as e:
-        print("AI Init Error:", e)
+try:
+    ai_client = genai.Client(api_key=GEMINI_API_KEY)
+    print("✅ Gemini AI Client initialized!")
+except Exception as e:
+    ai_client = None
+    print("AI Init Error:", e)
+
 
 # ==================================================
 # DATABASE MANAGEMENT
