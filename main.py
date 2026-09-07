@@ -120,10 +120,16 @@ async def post_init(application: Application):
             BotCommand("payment", "የከፈያ መንገድ"),
             BotCommand("help", "እርዳታና ድጋፍ"),
         ]
+        # 1. ኮማንዶቹን በቴሌግራም ኤፒአይ መመዝገብ
         await application.bot.set_my_commands(commands)
-        print("✅ Commands Set Successfully!")
+        
+        # 2. የ Menu Button ቁልፍን በግድ እንዲታይ ማድረግ
+        await application.bot.set_chat_menu_button(menu_button=MenuButtonCommands())
+        
+        print("✅ Commands & Menu Button Set Successfully!")
     except Exception as e:
         print("Command Set Error:", e)
+
 
 # ==================================================
 # FORCE JOIN CHECK
