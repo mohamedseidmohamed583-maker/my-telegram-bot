@@ -153,7 +153,7 @@ async def start(
 
     await update.message.reply_text(
         "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-        "👇 <b>ከታች ካሉት አማራጮች ይምረጡ ወይም የቪዲዮ ሊንክ ይላኩልኝ (TikTok, YouTube, Instagram)</b> ⚡\n\n",
+        "👇 <b>ከታች ካሉት አማራጮች ይምረጡ ወይም የቪዲዮ ሊንክ ይላኩልኝ (TikTok, YouTube Shorts, Instagram)</b> ⚡\n\n",
         reply_markup=reply_markup,
         parse_mode="HTML"
     )
@@ -207,35 +207,59 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==================================================
-# MULTI-ENGINE DOWNLOADER FUNCTION
+# CLEAN URL & MULTI-ENGINE MEDIA DOWNLOADER
 # ==================================================
 
-def fetch_media_url(url: str):
-    # Method 1: Cobalt API (Primary)
+def clean_url(url: str) -> str:
+    # URL መጨረሻ ላይ ያሉ አላስፈላጊ trackingパラメータዎችን (?si=, ?igsh=) ያጸዳል
+    if "?" in url:
+        return url.split("?")[0]
+    return url
+
+def fetch_media_url(raw_url: str):
+    clean_media_url = clean_url(raw_url)
+    
+    # Engine 1: Cobalt API (Primary cleaned)
     try:
         api_url = "https://co.wuk.sh/api/json"
-        headers = {"Accept": "application/json", "Content-Type": "application/json"}
-        payload = {"url": url, "vQuality": "720"}
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+        }
+        payload = {"url": clean_media_url, "vQuality": "720"}
         res = requests.post(api_url, json=payload, headers=headers, timeout=12)
         data = res.json()
-        if data.get("status") in ["stream", "redirect"]:
-            return data.get("url")
-        elif data.get("url"):
+        if data.get("status") in ["stream", "redirect"] and data.get("url"):
             return data.get("url")
         elif data.get("picker"):
             return data.get("picker")[0].get("url")
     except Exception as e:
-        print("Cobalt Primary Error:", e)
+        print("Engine 1 Error:", e)
 
-    # Method 2: Rapid/Public Downloader API (Secondary Fallback)
+    # Engine 2: Public Media Worker API
     try:
-        fallback_api = f"https://api.vidsave.workers.dev/?url={url}"
-        res = requests.get(fallback_api, timeout=12)
+        fallback_api = f"https://api.vidsave.workers.dev/?url={clean_media_url}"
+        res = requests.get(fallback_api, timeout=10)
         data = res.json()
         if data.get("url"):
             return data.get("url")
     except Exception as e:
-        print("Secondary API Error:", e)
+        print("Engine 2 Error:", e)
+
+    # Engine 3: Auto-Fallback using raw URL with Cobalt API
+    try:
+        api_url = "https://api.cobalt.tools/api/json"
+        headers = {"Accept": "application/json", "Content-Type": "application/json"}
+        payload = {"url": raw_url, "videoQuality": "720"}
+        res = requests.post(api_url, json=payload, headers=headers, timeout=12)
+        data = res.json()
+        if data.get("url"):
+            return data.get("url")
+        elif data.get("picker"):
+            return data.get("picker")[0].get("url")
+    except Exception as e:
+        print("Engine 3 Error:", e)
 
     return None
 
@@ -271,7 +295,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     else:
         await status_msg.edit_text(
             "❌ <b>ቪዲዮውን ማውረድ አልተቻለም።</b>\n\n"
-            "📌 እባክዎ ሊንኩ የ **TikTok**, **YouTube Shorts/Video** ወይም **Instagram Reels** መሆኑን ያረጋገጡ።",
+            "📌 እባክዎ ሊንኩ የ **TikTok**, **YouTube Shorts/Video** ወይም **Instagram Reels** መሆኑን ያረጋግጡ።",
             parse_mode="HTML"
         )
 
@@ -358,7 +382,6 @@ async def handle_user_messages(
 
     text = update.message.text or ""
 
-    # የቲከተክ፣ ዩቲዩብ እና ኢንስታግራም ሊንኮች ብቻ ለ Downloader እንዲሄዱ ማድረግ
     downloadable_platforms = ["tiktok.com", "instagram.com", "youtube.com", "youtu.be", "vt.tiktok.com"]
     
     is_media_link = any(platform in text.lower() for platform in downloadable_platforms)
@@ -369,7 +392,7 @@ async def handle_user_messages(
         await handle_url_download(update, context, target_url)
         return
 
-    # Telegram Link ከሆነ ወይም ሌላ ሜሴጅ ከሆነ ለ Admin Forward ያደርጋል
+    # Telegram Link ወይም ሌላ መልዕክት ከሆነ ለአድሚን ይልካል
     username = update.effective_user.username
     username_text = f"@{username}" if username else "No Username"
     user_id = update.effective_user.id
