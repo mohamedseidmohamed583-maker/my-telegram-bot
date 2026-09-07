@@ -153,7 +153,7 @@ async def start(
 
     await update.message.reply_text(
         "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-        "👇 <b>ከታች ካሉት አማራጮች ይምረጡ ወይም የቪዲዮ ሊንክ ይላኩልኝ (TikTok, YouTube Shorts, Instagram Reels)</b> ⚡\n\n",
+        "👇 <b>ከታች ካሉት አማራጮች ይምረጡ ወይም የቪዲዮ ሊንክ ይላኩልኝ (TikTok, YouTube, Instagram)</b> ⚡\n\n",
         reply_markup=reply_markup,
         parse_mode="HTML"
     )
@@ -207,14 +207,44 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==================================================
-# FAST MEDIA DOWNLOADER API (Cobalt Engine)
+# MULTI-ENGINE DOWNLOADER FUNCTION
 # ==================================================
+
+def fetch_media_url(url: str):
+    # Method 1: Cobalt API (Primary)
+    try:
+        api_url = "https://co.wuk.sh/api/json"
+        headers = {"Accept": "application/json", "Content-Type": "application/json"}
+        payload = {"url": url, "vQuality": "720"}
+        res = requests.post(api_url, json=payload, headers=headers, timeout=12)
+        data = res.json()
+        if data.get("status") in ["stream", "redirect"]:
+            return data.get("url")
+        elif data.get("url"):
+            return data.get("url")
+        elif data.get("picker"):
+            return data.get("picker")[0].get("url")
+    except Exception as e:
+        print("Cobalt Primary Error:", e)
+
+    # Method 2: Rapid/Public Downloader API (Secondary Fallback)
+    try:
+        fallback_api = f"https://api.vidsave.workers.dev/?url={url}"
+        res = requests.get(fallback_api, timeout=12)
+        data = res.json()
+        if data.get("url"):
+            return data.get("url")
+    except Exception as e:
+        print("Secondary API Error:", e)
+
+    return None
+
 
 async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE, url: str):
     status_msg = await update.message.reply_text("🚀 <b>Downloading & sending Video...</b> 📥", parse_mode="HTML")
 
-    bot_username = context.bot.username
-    share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text= Try%20this%20awesome%20Video%20Downloader%20Bot!🔥"
+    bot_username = context.bot.username or "mame_posts_bot"
+    share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Video%20Downloader%20Bot!🔥"
 
     keyboard = [
         [
@@ -223,24 +253,10 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    try:
-        # Fast Public API for Social Media Downloads
-        api_url = "https://co.wuk.sh/api/json"
-        headers = {
-            "Accept": "application/json",
-            "Content-Type": "application/json"
-        }
-        payload = {
-            "url": url,
-            "vQuality": "720"
-        }
+    video_link = fetch_media_url(url)
 
-        response = requests.post(api_url, json=payload, headers=headers, timeout=15)
-        res_data = response.json()
-
-        if res_data.get("status") in ["stream", "redirect"]:
-            video_link = res_data.get("url")
-
+    if video_link:
+        try:
             await status_msg.edit_text("📤 <b>Sending Video...</b>", parse_mode="HTML")
             await update.message.reply_video(
                 video=video_link,
@@ -249,24 +265,15 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
                 parse_mode="HTML"
             )
             await status_msg.delete()
-
-        elif res_data.get("status") == "picker":
-            # For slideshows/multiple photos or videos
-            picker_items = res_data.get("picker", [])
-            for item in picker_items[:3]: # Send up to 3 items
-                await update.message.reply_video(
-                    video=item.get("url"),
-                    caption=f"🚀 <b>Downloaded with</b> @{bot_username}",
-                    reply_markup=reply_markup,
-                    parse_mode="HTML"
-                )
-            await status_msg.delete()
-        else:
-            await status_msg.edit_text("❌ <b>ቪዲዮውን ማውረድ አልተቻለም። ሊንኩ ትክክል መሆኑን ወይም የግል (Private) አለመሆኑን ያረጋግጡ።</b>", parse_mode="HTML")
-
-    except Exception as e:
-        print("API Download Error:", e)
-        await status_msg.edit_text("❌ <b>ቪዲዮውን በማውረድ ላይ ስህተት አጋጥሟል። እባክዎ እንደገና ይሞክሩ!</b>", parse_mode="HTML")
+        except Exception as e:
+            print("Telegram Send Error:", e)
+            await status_msg.edit_text("❌ <b>ቪዲዮውን መላክ አልተቻለም። እባክዎ እንደገና ይሞክሩ!</b>", parse_mode="HTML")
+    else:
+        await status_msg.edit_text(
+            "❌ <b>ቪዲዮውን ማውረድ አልተቻለም።</b>\n\n"
+            "📌 እባክዎ ሊንኩ የ **TikTok**, **YouTube Shorts/Video** ወይም **Instagram Reels** መሆኑን ያረጋገጡ።",
+            parse_mode="HTML"
+        )
 
 
 # ==================================================
@@ -351,12 +358,18 @@ async def handle_user_messages(
 
     text = update.message.text or ""
 
-    # Link መሆኑን ማረጋገጥ (ለ Downloader)
-    if text.startswith("http://") or text.startswith("https://"):
-        await handle_url_download(update, context, text)
+    # የቲከተክ፣ ዩቲዩብ እና ኢንስታግራም ሊንኮች ብቻ ለ Downloader እንዲሄዱ ማድረግ
+    downloadable_platforms = ["tiktok.com", "instagram.com", "youtube.com", "youtu.be", "vt.tiktok.com"]
+    
+    is_media_link = any(platform in text.lower() for platform in downloadable_platforms)
+
+    if is_media_link:
+        urls = [word for word in text.split() if word.startswith("http://") or word.startswith("https://")]
+        target_url = urls[0] if urls else text
+        await handle_url_download(update, context, target_url)
         return
 
-    # Link ካልሆነ ለ Admin Forward ያደርጋል
+    # Telegram Link ከሆነ ወይም ሌላ ሜሴጅ ከሆነ ለ Admin Forward ያደርጋል
     username = update.effective_user.username
     username_text = f"@{username}" if username else "No Username"
     user_id = update.effective_user.id
