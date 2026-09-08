@@ -206,7 +206,7 @@ async def start(
 
     await update.message.reply_text(
         "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-        "📥 <b>የኢንስታግራም (Instagram) ቪዲዮ ሊንክ ይላኩልኝ (ያለ Watermark አወርድልዎታለሁ)</b> ⚡\n\n",
+        "📥 <b>የ Instagram፣ TikTok ወይም YouTube ቪዲዮ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
         reply_markup=get_main_menu_keyboard(),
         parse_mode="HTML"
     )
@@ -282,33 +282,34 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     await update.message.reply_text(
         "💬 <b>Support & Downloader Help</b>\n\n"
-        "📥 <b>ቪዲዮ ለማውረድ:</b> የኢንስታግራም (Instagram) ቪዲዮ ወይም ሪልስ ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n"
+        "📥 <b>ቪዲዮ ለማውረድ:</b> የ Instagram፣ TikTok ወይም YouTube ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n"
         "👨‍💻 ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።",
         parse_mode="HTML"
     )
 
 
 # ==================================================
-# INSTAGRAM VIDEO DOWNLOADER ENGINE
+# ALL-IN-ONE VIDEO DOWNLOADER ENGINE (NO LIMITS)
 # ==================================================
 
-def download_instagram_video(url: str, output_path: str):
+def download_video(url: str, output_path: str):
     ydl_opts = {
-        'format': 'best',
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'outtmpl': output_path,
         'quiet': True,
         'no_warnings': True,
-        'max_filesize': 50 * 1024 * 1024, # Maximum 50MB
+        'nocheckcertificate': True,
+        'ignoreerrors': False,
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
 
 
 async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE, url: str):
-    status_msg = await update.message.reply_text("🚀 <b>Downloading Instagram Video...</b> 📥", parse_mode="HTML")
+    status_msg = await update.message.reply_text("🚀 <b>Downloading Video...</b> 📥", parse_mode="HTML")
 
     bot_username = context.bot.username or "mame_posts_bot"
-    share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Instagram%20Downloader%20Bot!🔥"
+    share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Video%20Downloader%20Bot!🔥"
 
     keyboard = [
         [
@@ -320,7 +321,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     file_name = f"video_{update.effective_user.id}_{update.message.message_id}.mp4"
 
     try:
-        await asyncio.to_thread(download_instagram_video, url, file_name)
+        await asyncio.to_thread(download_video, url, file_name)
 
         if os.path.exists(file_name):
             await status_msg.edit_text("📤 <b>Sending Video...</b>", parse_mode="HTML")
@@ -342,10 +343,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
             os.remove(file_name)
         await status_msg.edit_text(
             "❌ <b>ቪዲዮውን ማውረድ አልተቻለም!</b>\n\n"
-            "📌 <b>ምክንያቶች፦</b>\n"
-            "1. ሊንኩ የግል (Private) አካውንት ሊሆን ይችላል።\n"
-            "2. የቪዲዮው መጠን ከ 50MB በላይ ሊሆን ይችላል።\n"
-            "3. ሊንኩ ትክክለኛ የኢንስታግራም ሊንክ መሆኑን ያረጋግጡ።",
+            "እባክዎ ሊንኩ ትክክለኛ መሆኑን አረጋግጠው እንደገና ይሞክሩ።",
             parse_mode="HTML"
         )
 
@@ -367,7 +365,7 @@ async def button_callback(
     if data == "cmd_back":
         await query.edit_message_text(
             "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-            "📥 <b>የኢንስታግራም (Instagram) ቪዲዮ ሊንክ ይላኩልኝ (ያለ Watermark አወርድልዎታለሁ)</b> ⚡\n\n",
+            "📥 <b>የ Instagram፣ TikTok ወይም YouTube ቪዲዮ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
             reply_markup=get_main_menu_keyboard(),
             parse_mode="HTML"
         )
@@ -454,10 +452,11 @@ async def handle_user_messages(
 
     text = update.message.text or ""
 
-    # የኢንስታግራም ሊንክ ብቻ እንዲቀበል ተደረገ
-    is_instagram_link = "instagram.com" in text.lower()
+    # Instagram, TikTok እና YouTube ሊንኮችን መለየት
+    valid_domains = ["instagram.com", "tiktok.com", "youtube.com", "youtu.be"]
+    is_supported_link = any(domain in text.lower() for domain in valid_domains)
 
-    if is_instagram_link:
+    if is_supported_link:
         urls = [word for word in text.split() if word.startswith("http://") or word.startswith("https://")]
         target_url = urls[0] if urls else text
         await handle_url_download(update, context, target_url)
@@ -631,4 +630,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
