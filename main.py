@@ -1,4 +1,3 @@
-
 import os
 import json
 import asyncio
@@ -7,8 +6,7 @@ from flask import Flask
 from telegram import (
     Update,
     InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    BotCommand
+    InlineKeyboardMarkup
 )
 from telegram.ext import (
     ApplicationBuilder,
@@ -43,7 +41,7 @@ def keep_alive():
 # CONFIGURATION
 # ==================================================
 
-TOKEN = "8878517592:AAHSrjzG-9i9V6KVps7MaOUfDlDSM2dZe90"
+TOKEN = "8795814797:AAFfQ2pKeQwCEtNj-y-4FLuUtkRuR1eOrMc"
 ADMIN_ID = 6753546651
 
 # Force Join Channel
@@ -119,19 +117,12 @@ def get_back_keyboard():
     return InlineKeyboardMarkup(keyboard)
 
 # ==================================================
-# AUTO SET BOT COMMANDS
+# CLEAR ALL BOT COMMANDS ON STARTUP
 # ==================================================
 
 async def post_init(application):
-    commands = [
-        BotCommand("start", "ቦቱን ለመጀመር"),
-        BotCommand("menu", "ዋና ማውጫ"),
-        BotCommand("status", "የእርስዎን እና የቦቱን Status ለማየት"),
-        BotCommand("rates", "የማስታወቂያ ዋጋዎች"),
-        BotCommand("payment", "የከፈያ መንገድ"),
-        BotCommand("help", "እርዳታና ድጋፍ"),
-    ]
-    await application.bot.set_my_commands(commands)
+    # ሁሉንም የቆዩ ወይም የተመዘገቡ Commandዎች ሙሉ በሙሉ ያጸዳል
+    await application.bot.delete_my_commands()
 
 
 # ==================================================
@@ -191,7 +182,7 @@ async def show_force_join(
 
 
 # ==================================================
-# START & MENU COMMAND
+# START COMMAND
 # ==================================================
 
 async def start(
@@ -209,82 +200,6 @@ async def start(
         "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
         "📥 <b>የኢንስታግራም (Instagram) ቪዲዮ ሊንክ ይላኩልኝ (ያለ Watermark አወርድልዎታለሁ)</b> ⚡\n\n",
         reply_markup=get_main_menu_keyboard(),
-        parse_mode="HTML"
-    )
-
-
-# ==================================================
-# STATUS COMMAND (/status)
-# ==================================================
-
-async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = update.effective_user
-    record_user_activity(user.id)
-
-    if not await is_joined(update, context):
-        await show_force_join(update, context)
-        return
-
-    total_users, user_msg_count = get_user_stats(user.id)
-    username_text = f"@{user.username}" if user.username else "የለውም"
-
-    msg = (
-        "📊 <b>የእርስዎ እና የቦቱ Status</b>\n\n"
-        "👤 <b>የግል መረጃዎት፦</b>\n"
-        f"• <b>ስም:</b> {user.full_name}\n"
-        f"• <b>Username:</b> {username_text}\n"
-        f"• <b>Telegram ID:</b> <code>{user.id}</code>\n"
-        f"• <b>የላኳቸው አጠቃላይ መልዕክቶች:</b> <code>{user_msg_count}</code>\n\n"
-        "🤖 <b>የቦቱ አጠቃላይ መረጃ፦</b>\n"
-        f"• <b>አጠቃላይ የቦቱ ተጠቃሚዎች:</b> <code>{total_users} Users</code>\n"
-        "• <b>ሁኔታ:</b> Active ✅"
-    )
-
-    await update.message.reply_text(msg, parse_mode="HTML")
-
-
-# ==================================================
-# EXTRA COMMAND HANDLERS
-# ==================================================
-
-async def rates_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    record_user_activity(update.effective_user.id)
-    if not await is_joined(update, context):
-        await show_force_join(update, context)
-        return
-    await update.message.reply_text(
-        "💰 <b>የማስታወቂያ ዋጋዎች</b>\n\n"
-        "📌 12 Hours — <b> በስምምነት ETB</b>\n"
-        "📌 24 Hours — <b> 500 ETB</b>\n"
-        "📌 48 Hours — <b> 700 ETB</b>\n\n"
-        " የ ማስታወቂያውን አይነት አይተን አስተያየት እናደርጋለን!🤝።",
-        parse_mode="HTML"
-    )
-
-async def payment_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    record_user_activity(update.effective_user.id)
-    if not await is_joined(update, context):
-        await show_force_join(update, context)
-        return
-    await update.message.reply_text(
-        "💳 <b>Payment Method</b>\n\n"
-        "🏦 <b>CBE</b>\n"
-        "1000528274394\n\n"
-        "Mohammed Seid\n"
-        "📱 <b>TELE BIRR</b>\n"
-        "+251963266849\n\n",
-        parse_mode="HTML"
-    )
-
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    record_user_activity(update.effective_user.id)
-    if not await is_joined(update, context):
-        await show_force_join(update, context)
-        return
-    await update.message.reply_text(
-        "💬 <b>Support & Downloader Help</b>\n\n"
-        "📥 <b>ቪዲዮ ለማውረድ:</b> የኢንስታግራም (Instagram) ቪዲዮ ወይም ሪልስ ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n"
-        "👨‍💻 ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።",
         parse_mode="HTML"
     )
 
@@ -604,13 +519,8 @@ def main():
 
     app = ApplicationBuilder().token(TOKEN).post_init(post_init).build()
 
-    # Commands Handlers
+    # /start ብቻ እንዲሰራ ተደርጓል
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("menu", start))
-    app.add_handler(CommandHandler("status", status_command))
-    app.add_handler(CommandHandler("rates", rates_command))
-    app.add_handler(CommandHandler("payment", payment_command))
-    app.add_handler(CommandHandler("help", help_command))
 
     app.add_handler(CallbackQueryHandler(check_join, pattern="^check_join$"))
     app.add_handler(CallbackQueryHandler(button_callback, pattern="^cmd_"))
