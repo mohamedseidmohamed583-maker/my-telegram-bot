@@ -355,7 +355,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
             await status_msg.delete()
             os.remove(actual_file)
         else:
-            await status_msg.edit_text("❌ <b>ቪዲዮውን ማግኘት አልተቻለም።</b>", parse_mode="HTML")
+            await status_msg.edit_text("😭 <b>ቪዲዮውን ማግኘት አልተቻለም።</b>", parse_mode="HTML")
 
     except Exception as e:
         print("Download Error:", e)
@@ -366,8 +366,8 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
                 except:
                     pass
         await status_msg.edit_text(
-            "❌ <b>ቪዲዮውን ማውረድ አልተቻለም!</b>\n\n"
-            "እባክዎ የላኩት ሊንክ ትክክለኛ መሆኑን አረጋግጠው እንደገና ይሞክሩ።",
+            "😭 <b>ቪዲዮውን ማውረድ አልተቻለም!</b>\n\n"
+            "እባክዎ የላኩት ሊንክ ትክክለኛ መሆኑን አረጋግጠው እንደገና ይሞክሩ። በጣም ይቅርታ😭",
             parse_mode="HTML"
         )
 
@@ -389,7 +389,7 @@ async def button_callback(
     if data == "cmd_back":
         await query.edit_message_text(
             "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-            "📥 <b>የ Instagram፣ TikTok ወይም YouTube ቪዲዮ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
+            "📥 <b>የ Instagram፣ TikTok ወይም YouTube ቪዲዮ ማውረድ ከፈለጉ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
             reply_markup=get_main_menu_keyboard(),
             parse_mode="HTML"
         )
@@ -556,7 +556,7 @@ async def admin_reply(
                 await update.message.reply_text("✅ መልሱ (ፎቶ/ቪዲዮ/ቮይስ/ጽሁፍ) ለተጠቃሚው ተልኳል!")
             except Exception as e:
                 print("Reply Error:", e)
-                await update.message.reply_text("❌ መልሱን መላክ አልተቻለም። ተጠቃሚው ቦቱን ዘግቶት ሊሆን ይችላል።")
+                await update.message.reply_text("😭 መልሱን መላክ አልተቻለም። ተጠቃሚው ቦቱን ዘግቶት ሊሆን ይችላል።")
         else:
             await update.message.reply_text("⚠️ እባክዎ ከቀረቡት መልእክቶች (ወይ ከጽሁፍ መረጃው ወይንም ከፎርዋርድ የተደረገው ፋይል ላይ) Reply ያድርጉ።")
 
