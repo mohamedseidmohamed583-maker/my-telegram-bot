@@ -206,7 +206,7 @@ async def start(
 
     await update.message.reply_text(
         "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-        "📥 <b>የ Instagram፣ TikTok ወይም YouTube ቪዲዮ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
+        "📥 <b>የ Instagram እና የ TikTok ቪዲዮዎችን ማውረድ ከፈለጉ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
         reply_markup=get_main_menu_keyboard(),
         parse_mode="HTML"
     )
@@ -282,32 +282,34 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     await update.message.reply_text(
         "💬 <b>Support & Downloader Help</b>\n\n"
-        "📥 <b>ቪዲዮ ለማውረድ:</b> የ Instagram፣ TikTok ወይም YouTube ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n"
+        "📥 <b>ቪዲዮ ለማውረድ:</b> የ Instagram እና TikTok ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n"
         "👨‍💻 ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።",
         parse_mode="HTML"
     )
 
 
 # ==================================================
-# PRO-LEVEL DOWNLOADER ENGINE (የተስተካከለ የዩቲዩብ እና ቲክቶክ ማውረጃ)
+# PRO-LEVEL DOWNLOADER ENGINE (እንደ ትልልቅ ቦቶች የተስተካከለ)
 # ==================================================
 
 def download_video(url: str, output_template: str):
     ydl_opts = {
-        'format': 'best[ext=mp4]/best',
+        'format': 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4] / bv+ba/b',
+        'merge_output_format': 'mp4',
         'outtmpl': output_template,
         'quiet': True,
         'no_warnings': True,
         'nocheckcertificate': True,
         'ignoreerrors': False,
         'geo_bypass': True,
+        # ለትላልቅ ፕላትፎርሞች (እንደ ዩቲዩብ እና ቲክቶክ) የማገጃ (Bot Detection) ችግር እንዳያጋጥም የሚረዱ ማዋቀሪያዎች
         'extractor_args': {
             'youtube': {
-                'player_client': ['mweb', 'ios', 'android'],
+                'player_client': ['android', 'web'],
             }
         },
         'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         }
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -353,7 +355,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
             await status_msg.delete()
             os.remove(actual_file)
         else:
-            await status_msg.edit_text("😭 <b>ቪዲዮውን ማግኘት አልተቻለም።</b>", parse_mode="HTML")
+            await status_msg.edit_text("💔 <b>ቪዲዮውን ማግኘት አልተቻለም።</b>", parse_mode="HTML")
 
     except Exception as e:
         print("Download Error:", e)
@@ -365,7 +367,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
                     pass
         await status_msg.edit_text(
             "😭 <b>ቪዲዮውን ማውረድ አልተቻለም!</b>\n\n"
-            "እባክዎ የላኩት ሊንክ ትክክለኛ መሆኑን አረጋግጠው እንደገና ይሞክሩ። በጣም ይቅርታ😭",
+            "እባክዎ የላኩት ሊንክ ትክክለኛ መሆኑን አረጋግጠው እንደገና ይሞክሩ። በጣም ይቅርታ👐",
             parse_mode="HTML"
         )
 
@@ -387,7 +389,7 @@ async def button_callback(
     if data == "cmd_back":
         await query.edit_message_text(
             "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-            "📥 <b>የ Instagram፣ TikTok ወይም YouTube ቪዲዮ ማውረድ ከፈለጉ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
+            "📥 <b>የ Instagram እና የTikTok ቪዲዮዎችን ማውረድ ከፈለጉ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
             reply_markup=get_main_menu_keyboard(),
             parse_mode="HTML"
         )
