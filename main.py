@@ -43,7 +43,7 @@ def keep_alive():
 # CONFIGURATION
 # ==================================================
 
-TOKEN = "8795814797:AAHLJFsKMy4zNubkwPyAc94ATyiHdFp5_ec"
+TOKEN = "8795814797:AAGOhxvrutnEK8dozP-UzkqCh0xBt3c3XpI"
 ADMIN_ID = 6753546651
 
 # Force Join Channel
