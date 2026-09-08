@@ -10,7 +10,7 @@ from telegram import (
     BotCommand
 )
 from telegram.ext import (
-    Application,
+    ApplicationBuilder,
     CommandHandler,
     ContextTypes,
     MessageHandler,
@@ -65,8 +65,11 @@ def load_data():
     return {}
 
 def save_data(data):
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f)
+    try:
+        with open(DATA_FILE, "w") as f:
+            json.dump(data, f)
+    except Exception as e:
+        print("Save Error:", e)
 
 def record_user_activity(user_id):
     data = load_data()
@@ -118,7 +121,7 @@ def get_back_keyboard():
 # AUTO SET BOT COMMANDS
 # ==================================================
 
-async def post_init(application: Application):
+async def post_init(application):
     commands = [
         BotCommand("start", "ቦቱን ለመጀመር"),
         BotCommand("menu", "ዋና ማውጫ"),
@@ -148,7 +151,7 @@ async def is_joined(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
     except Exception as e:
         print("Force Join Error:", e)
-        return False
+        return True
 
 
 # ==================================================
@@ -477,7 +480,7 @@ async def handle_user_messages(
 
     forwarded_msg = await update.message.forward(chat_id=ADMIN_ID)
 
-    if not context.bot_data.get("user_mapping"):
+    if "user_mapping" not in context.bot_data:
         context.bot_data["user_mapping"] = {}
     
     context.bot_data["user_mapping"][str(header_msg.message_id)] = user_id
@@ -598,7 +601,7 @@ async def error_handler(
 def main():
     keep_alive()
 
-    app = Application.builder().token(TOKEN).post_init(post_init).build()
+    app = ApplicationBuilder().token(TOKEN).post_init(post_init).build()
 
     # Commands Handlers
     app.add_handler(CommandHandler("start", start))
