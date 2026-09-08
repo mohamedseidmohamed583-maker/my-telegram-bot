@@ -289,27 +289,25 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==================================================
-# PRO-LEVEL DOWNLOADER ENGINE (እንደ ትልልቅ ቦቶች የተስተካከለ)
+# PRO-LEVEL DOWNLOADER ENGINE (የተስተካከለ የዩቲዩብ እና ቲክቶክ ማውረጃ)
 # ==================================================
 
 def download_video(url: str, output_template: str):
     ydl_opts = {
-        'format': 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4] / bv+ba/b',
-        'merge_output_format': 'mp4',
+        'format': 'best[ext=mp4]/best',
         'outtmpl': output_template,
         'quiet': True,
         'no_warnings': True,
         'nocheckcertificate': True,
         'ignoreerrors': False,
         'geo_bypass': True,
-        # ለትላልቅ ፕላትፎርሞች (እንደ ዩቲዩብ እና ቲክቶክ) የማገጃ (Bot Detection) ችግር እንዳያጋጥም የሚረዱ ማዋቀሪያዎች
         'extractor_args': {
             'youtube': {
                 'player_client': ['android', 'web'],
             }
         },
         'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
         }
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
