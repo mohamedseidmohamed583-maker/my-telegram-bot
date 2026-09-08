@@ -206,7 +206,7 @@ async def start(
 
     await update.message.reply_text(
         "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-        "📥 <b>የ YouTube፣ TikTok ወይም Instagram ቪዲዮ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
+        "📥 <b>የ Instagram፣ TikTok ወይም YouTube ቪዲዮ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
         reply_markup=get_main_menu_keyboard(),
         parse_mode="HTML"
     )
@@ -282,20 +282,19 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     await update.message.reply_text(
         "💬 <b>Support & Downloader Help</b>\n\n"
-        "📥 <b>ቪዲዮ ለማውረድ:</b> የ YouTube፣ TikTok ወይም Instagram ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n"
+        "📥 <b>ቪዲዮ ለማውረድ:</b> የ Instagram፣ TikTok ወይም YouTube ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n"
         "👨‍💻 ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።",
         parse_mode="HTML"
     )
 
 
 # ==================================================
-# PROFESSIONAL PRO DOWNLOADER ENGINE (yt-dlp)
+# PRO-LEVEL DOWNLOADER ENGINE (እንደ ትልልቅ ቦቶች የተስተካከለ)
 # ==================================================
 
 def download_video(url: str, output_template: str):
-    # ይህ ማዋቀሪያ ልክ እንደ ትልልቅ ቦቶች የትኛውንም ሊንክ (YouTube, TikTok, Instagram) ያለገደብ በምርጥ ጥራት እንዲያወርድ ይደረጋል።
     ydl_opts = {
-        'format': 'bestvideo+bestaudio/best',
+        'format': 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4] / bv+ba/b',
         'merge_output_format': 'mp4',
         'outtmpl': output_template,
         'quiet': True,
@@ -303,7 +302,15 @@ def download_video(url: str, output_template: str):
         'nocheckcertificate': True,
         'ignoreerrors': False,
         'geo_bypass': True,
-        'socket_timeout': 30,
+        # ለትላልቅ ፕላትፎርሞች (እንደ ዩቲዩብ እና ቲክቶክ) የማገጃ (Bot Detection) ችግር እንዳያጋጥም የሚረዱ ማዋቀሪያዎች
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['android', 'web'],
+            }
+        },
+        'http_headers': {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
@@ -322,7 +329,6 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    # የፋይል ስም (በ yt-dlp ራሱ extension እንዲጨምርበት %(ext)s ይደረጋል)
     file_base = f"video_{update.effective_user.id}_{update.message.message_id}"
     output_template = f"{file_base}.%(ext)s"
     expected_file = f"{file_base}.mp4"
@@ -330,10 +336,8 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     try:
         await asyncio.to_thread(download_video, url, output_template)
 
-        # ፋይሉ መፈጠሩን ማረጋገጥ
         actual_file = expected_file
         if not os.path.exists(actual_file):
-            # የተለየ extension ካለው ፍለጋ ማድረግ
             for f in os.listdir('.'):
                 if f.startswith(file_base):
                     actual_file = f
@@ -355,7 +359,6 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     except Exception as e:
         print("Download Error:", e)
-        # የተረፈ ፋይል ካለ ማጽዳት
         for f in os.listdir('.'):
             if f.startswith(file_base):
                 try:
@@ -386,7 +389,7 @@ async def button_callback(
     if data == "cmd_back":
         await query.edit_message_text(
             "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-            "📥 <b>የ YouTube፣ TikTok ወይም Instagram ቪዲዮ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
+            "📥 <b>የ Instagram፣ TikTok ወይም YouTube ቪዲዮ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
             reply_markup=get_main_menu_keyboard(),
             parse_mode="HTML"
         )
@@ -473,7 +476,6 @@ async def handle_user_messages(
 
     text = update.message.text or ""
 
-    # ማንኛውንም የ YouTube፣ TikTok ወይም Instagram ሊንክ በትክክል ለመለየት
     valid_domains = ["instagram.com", "tiktok.com", "youtube.com", "youtu.be"]
     is_supported_link = any(domain in text.lower() for domain in valid_domains)
 
@@ -483,7 +485,6 @@ async def handle_user_messages(
         await handle_url_download(update, context, target_url)
         return
 
-    # ሊንክ ካልሆነ ለአድሚን መልዕክት ያስተላልፋል
     username = update.effective_user.username
     username_text = f"@{username}" if username else "No Username"
 
