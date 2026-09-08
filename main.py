@@ -206,7 +206,7 @@ async def start(
 
     await update.message.reply_text(
         "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-        "📥 <b>የ Instagram፣ TikTok ወይም YouTube ቪዲዮ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
+        "📥 <b>የ YouTube፣ TikTok ወይም Instagram ቪዲዮ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
         reply_markup=get_main_menu_keyboard(),
         parse_mode="HTML"
     )
@@ -282,31 +282,35 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     await update.message.reply_text(
         "💬 <b>Support & Downloader Help</b>\n\n"
-        "📥 <b>ቪዲዮ ለማውረድ:</b> የ Instagram፣ TikTok ወይም YouTube ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n"
+        "📥 <b>ቪዲዮ ለማውረድ:</b> የ YouTube፣ TikTok ወይም Instagram ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n"
         "👨‍💻 ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።",
         parse_mode="HTML"
     )
 
 
 # ==================================================
-# ALL-IN-ONE VIDEO DOWNLOADER ENGINE (NO LIMITS)
+# PROFESSIONAL PRO DOWNLOADER ENGINE (yt-dlp)
 # ==================================================
 
-def download_video(url: str, output_path: str):
+def download_video(url: str, output_template: str):
+    # ይህ ማዋቀሪያ ልክ እንደ ትልልቅ ቦቶች የትኛውንም ሊንክ (YouTube, TikTok, Instagram) ያለገደብ በምርጥ ጥራት እንዲያወርድ ይደረጋል።
     ydl_opts = {
-        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-        'outtmpl': output_path,
+        'format': 'bestvideo+bestaudio/best',
+        'merge_output_format': 'mp4',
+        'outtmpl': output_template,
         'quiet': True,
         'no_warnings': True,
         'nocheckcertificate': True,
         'ignoreerrors': False,
+        'geo_bypass': True,
+        'socket_timeout': 30,
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
 
 
 async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE, url: str):
-    status_msg = await update.message.reply_text("🚀 <b>Downloading Video...</b> 📥", parse_mode="HTML")
+    status_msg = await update.message.reply_text("🚀 <b>ቪዲዮውን በማውረድ ላይ ይገኛል፣ እባክዎ ይጠብቁ...</b> 📥", parse_mode="HTML")
 
     bot_username = context.bot.username or "mame_posts_bot"
     share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Video%20Downloader%20Bot!🔥"
@@ -318,14 +322,26 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    file_name = f"video_{update.effective_user.id}_{update.message.message_id}.mp4"
+    # የፋይል ስም (በ yt-dlp ራሱ extension እንዲጨምርበት %(ext)s ይደረጋል)
+    file_base = f"video_{update.effective_user.id}_{update.message.message_id}"
+    output_template = f"{file_base}.%(ext)s"
+    expected_file = f"{file_base}.mp4"
 
     try:
-        await asyncio.to_thread(download_video, url, file_name)
+        await asyncio.to_thread(download_video, url, output_template)
 
-        if os.path.exists(file_name):
-            await status_msg.edit_text("📤 <b>Sending Video...</b>", parse_mode="HTML")
-            with open(file_name, 'rb') as video_file:
+        # ፋይሉ መፈጠሩን ማረጋገጥ
+        actual_file = expected_file
+        if not os.path.exists(actual_file):
+            # የተለየ extension ካለው ፍለጋ ማድረግ
+            for f in os.listdir('.'):
+                if f.startswith(file_base):
+                    actual_file = f
+                    break
+
+        if os.path.exists(actual_file):
+            await status_msg.edit_text("📤 <b>ቪዲዮውን በመላክ ላይ ይገኛል...</b>", parse_mode="HTML")
+            with open(actual_file, 'rb') as video_file:
                 await update.message.reply_video(
                     video=video_file,
                     caption=f"🚀 <b>Downloaded with</b> @{bot_username}\n\n🥰 <b>Enjoy! Don't forget to share it with your friends.</b>",
@@ -333,17 +349,22 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
                     parse_mode="HTML"
                 )
             await status_msg.delete()
-            os.remove(file_name)
+            os.remove(actual_file)
         else:
             await status_msg.edit_text("❌ <b>ቪዲዮውን ማግኘት አልተቻለም።</b>", parse_mode="HTML")
 
     except Exception as e:
         print("Download Error:", e)
-        if os.path.exists(file_name):
-            os.remove(file_name)
+        # የተረፈ ፋይል ካለ ማጽዳት
+        for f in os.listdir('.'):
+            if f.startswith(file_base):
+                try:
+                    os.remove(f)
+                except:
+                    pass
         await status_msg.edit_text(
             "❌ <b>ቪዲዮውን ማውረድ አልተቻለም!</b>\n\n"
-            "እባክዎ ሊንኩ ትክክለኛ መሆኑን አረጋግጠው እንደገና ይሞክሩ።",
+            "እባክዎ የላኩት ሊንክ ትክክለኛ መሆኑን አረጋግጠው እንደገና ይሞክሩ።",
             parse_mode="HTML"
         )
 
@@ -365,7 +386,7 @@ async def button_callback(
     if data == "cmd_back":
         await query.edit_message_text(
             "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-            "📥 <b>የ Instagram፣ TikTok ወይም YouTube ቪዲዮ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
+            "📥 <b>የ YouTube፣ TikTok ወይም Instagram ቪዲዮ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
             reply_markup=get_main_menu_keyboard(),
             parse_mode="HTML"
         )
@@ -452,7 +473,7 @@ async def handle_user_messages(
 
     text = update.message.text or ""
 
-    # Instagram, TikTok እና YouTube ሊንኮችን መለየት
+    # ማንኛውንም የ YouTube፣ TikTok ወይም Instagram ሊንክ በትክክል ለመለየት
     valid_domains = ["instagram.com", "tiktok.com", "youtube.com", "youtu.be"]
     is_supported_link = any(domain in text.lower() for domain in valid_domains)
 
