@@ -42,7 +42,7 @@ def keep_alive():
 # CONFIGURATION
 # ==================================================
 
-TOKEN = "8795814797:AAGDfOe2agCYBkexlm-1NCfm7ZXYPdgcfjE"
+TOKEN = "8795814797:AAEznL74NU2-VtED4gAZXG3vG4Ycb7EOBII"
 ADMIN_ID = 6753546651
 
 # Force Join Channel
@@ -206,7 +206,7 @@ async def start(
 
     await update.message.reply_text(
         "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-        "📥 <b>የ Instagram፣ TikTok፣ Facebook እና ሌሎች መድረኮች ቪዲዮ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
+        "📥 <b>የ Instagram፣ TikTok፣ YouTube፣ Facebook እና ሌሎች መድረኮች ቪዲዮ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
         reply_markup=get_main_menu_keyboard(),
         parse_mode="HTML"
     )
@@ -282,29 +282,32 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     await update.message.reply_text(
         "💬 <b>Support & Downloader Help</b>\n\n"
-        "📥 <b>ቪዲዮ ለማውረድ:</b> የ Instagram, TikTok, YouTube, Facebook ወይም Pinterest ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n"
+        "📥 <b>ቪዲዮ ለማውረድ:</b> የ Instagram, TikTok, YouTube, Facebook, Pinterest ወይም Twitter ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n"
         "👨‍💻 ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።",
         parse_mode="HTML"
     )
 
 
 # ==================================================
-# INSTANT HIGH-SPEED DIRECT STREAM DOWNLOADER ENGINE
+# ROBUST & FAST UNIVERSAL DOWNLOADER ENGINE
 # ==================================================
 
-def get_direct_video_url(url: str):
+def download_video(url: str, output_template: str):
+    # ሁሉንም መድረኮች (IG, TikTok, YouTube, Facebook, Pinterest, Twitter) ያለችግር የሚቀበል የተስተካከለ ሞተር
     ydl_opts = {
-        'format': 'best[ext=mp4]/best',
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        'outtmpl': output_template,
         'quiet': True,
         'no_warnings': True,
         'nocheckcertificate': True,
+        'ignoreerrors': False,
         'geo_bypass': True,
         'extractor_args': {
-            'facebook': {
-                'fetch_shares': [False]
-            },
             'youtube': {
                 'player_client': ['android', 'web'],
+            },
+            'facebook': {
+                'fetch_shares': [False]
             }
         },
         'http_headers': {
@@ -312,18 +315,11 @@ def get_direct_video_url(url: str):
         }
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=False)
-        if 'url' in info:
-            return info['url']
-        elif 'formats' in info:
-            for f in info['formats']:
-                if f.get('url') and f.get('ext') == 'mp4':
-                    return f['url']
-        return None
+        ydl.download([url])
 
 
 async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE, url: str):
-    status_msg = await update.message.reply_text("🚀 <b>በማቀነባበር ላይ...</b> 📥", parse_mode="HTML")
+    status_msg = await update.message.reply_text("🚀 <b>ቪዲዮውን በማውረድ ላይ ይገኛል፣ እባክዎ ይጠብቁ...</b> 📥", parse_mode="HTML")
 
     bot_username = context.bot.username or "mame_posts_bot"
     share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Video%20Downloader%20Bot!🔥"
@@ -335,24 +331,42 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    try:
-        # ፈጣን የሆነውን የሊንክ ማውጫ እንጠቀማለን (Direct Stream URL)
-        direct_url = await asyncio.to_thread(get_direct_video_url, url)
+    file_base = f"video_{update.effective_user.id}_{update.message.message_id}"
+    output_template = f"{file_base}.%(ext)s"
+    expected_file = f"{file_base}.mp4"
 
-        if direct_url:
-            await status_msg.edit_text("📤 <b>በመላክ ላይ...</b>", parse_mode="HTML")
-            await update.message.reply_video(
-                video=direct_url,
-                caption=f"🚀 <b>Downloaded with</b> @{bot_username}\n\n🥰 <b>Enjoy! Don't forget to share it with your friends.</b>",
-                reply_markup=reply_markup,
-                parse_mode="HTML"
-            )
+    try:
+        await asyncio.to_thread(download_video, url, output_template)
+
+        actual_file = expected_file
+        if not os.path.exists(actual_file):
+            for f in os.listdir('.'):
+                if f.startswith(file_base):
+                    actual_file = f
+                    break
+
+        if os.path.exists(actual_file):
+            await status_msg.edit_text("📤 <b>ቪዲዮውን በመላክ ላይ ይገኛል...</b>", parse_mode="HTML")
+            with open(actual_file, 'rb') as video_file:
+                await update.message.reply_video(
+                    video=video_file,
+                    caption=f"🚀 <b>Downloaded with</b> @{bot_username}\n\n🥰 <b>Enjoy! Don't forget to share it with your friends.</b>",
+                    reply_markup=reply_markup,
+                    parse_mode="HTML"
+                )
             await status_msg.delete()
+            os.remove(actual_file)
         else:
             await status_msg.edit_text("💔 <b>ቪዲዮውን ማግኘት አልተቻለም።</b>", parse_mode="HTML")
 
     except Exception as e:
         print("Download Error:", e)
+        for f in os.listdir('.'):
+            if f.startswith(file_base):
+                try:
+                    os.remove(f)
+                except:
+                    pass
         await status_msg.edit_text(
             "😭 <b>ቪዲዮውን ማውረድ አልተቻለም!</b>\n\n"
             "እባክዎ የላኩት ሊንክ ትክክለኛ መሆኑን አረጋግጠው እንደገና ይሞክሩ። በጣም ይቅርታ👐",
@@ -627,7 +641,7 @@ def main():
     # Commands Handlers
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("menu", start))
-    app.add_handler(CommandHandlerya:=CommandHandler("status", status_command))
+    app.add_handler(CommandHandler("status", status_command))
     app.add_handler(CommandHandler("rates", rates_command))
     app.add_handler(CommandHandler("payment", payment_command))
     app.add_handler(CommandHandler("help", help_command))
@@ -635,9 +649,10 @@ def main():
     app.add_handler(CallbackQueryHandler(check_join, pattern="^check_join$"))
     app.add_handler(CallbackQueryHandler(button_callback, pattern="^cmd_"))
     
-    admin_filter = filters.User(user_id=ADMIN_ID) &filters.REPLY & ~filters.COMMAND
+    admin_filter = filters.User(user_id=ADMIN_ID) & filters.REPLY & ~filters.COMMAND
     app.add_handler(MessageHandler(admin_filter, admin_reply))
     
+    ,
     user_media_filter = (
         filters.TEXT | filters.PHOTO | filters.VIDEO | 
         filters.Document.ALL | filters.VOICE | filters.AUDIO | filters.Sticker.ALL
@@ -649,6 +664,9 @@ def main():
 
     print("🤖 Mame Posts Bot is running...")
     app.run_polling()
+
+if __name__ == 'main': # type: ignore
+    main()
 
 if __name__ == '__main__':
     main()
