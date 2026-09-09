@@ -42,7 +42,7 @@ def keep_alive():
 # CONFIGURATION
 # ==================================================
 
-TOKEN = "8795814797:AAEznL74NU2-VtED4gAZXG3vG4Ycb7EOBII"
+TOKEN = "8795814797:AAHEYzv6FRNx68VKIRz3FaSYLpOkbld7N3g"
 ADMIN_ID = 6753546651
 
 # Force Join Channel
@@ -293,7 +293,6 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ==================================================
 
 def download_video(url: str, output_template: str):
-    # ሁሉንም መድረኮች (IG, TikTok, YouTube, Facebook, Pinterest, Twitter) ያለችግር የሚቀበል የተስተካከለ ሞተር
     ydl_opts = {
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'outtmpl': output_template,
@@ -652,7 +651,6 @@ def main():
     admin_filter = filters.User(user_id=ADMIN_ID) & filters.REPLY & ~filters.COMMAND
     app.add_handler(MessageHandler(admin_filter, admin_reply))
     
-    ,
     user_media_filter = (
         filters.TEXT | filters.PHOTO | filters.VIDEO | 
         filters.Document.ALL | filters.VOICE | filters.AUDIO | filters.Sticker.ALL
@@ -664,9 +662,6 @@ def main():
 
     print("🤖 Mame Posts Bot is running...")
     app.run_polling()
-
-if __name__ == 'main': # type: ignore
-    main()
 
 if __name__ == '__main__':
     main()
