@@ -42,7 +42,7 @@ def keep_alive():
 # CONFIGURATION
 # ==================================================
 
-TOKEN = "8795814797:AAEoXwnixUszOrk_L6bVq7WFFOL-elDJHk8"
+TOKEN = "8795814797:AAGDfOe2agCYBkexlm-1NCfm7ZXYPdgcfjE"
 ADMIN_ID = 6753546651
 
 # Force Join Channel
@@ -206,7 +206,7 @@ async def start(
 
     await update.message.reply_text(
         "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-        "📥 <b>የ Instagram፣ TikTok፣ YouTube እና ሌሎች መድረኮች ቪዲዮ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
+        "📥 <b>የ Instagram፣ TikTok፣ Facebook እና ሌሎች መድረኮች ቪዲዮ ሊንክ ይላኩልኝ! አወርድላችኋለሁ👐</b> ⚡\n\n",
         reply_markup=get_main_menu_keyboard(),
         parse_mode="HTML"
     )
@@ -289,25 +289,29 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==================================================
-# PRO-LEVEL DOWNLOADER ENGINE (ለተለያዩ መድረኮች የተስተካከለ)
+# ULTRA-FAST PROFESSIONAL DOWNLOADER ENGINE (እንደ ታዋቂዎቹ ቦቶች የተስተካከለ)
 # ==================================================
 
 def download_video(url: str, output_template: str):
     ydl_opts = {
-        'format': 'best[ext=mp4]/best',
+        'format': 'best',
         'outtmpl': output_template,
         'quiet': True,
         'no_warnings': True,
         'nocheckcertificate': True,
         'ignoreerrors': False,
         'geo_bypass': True,
+        # ለፌስቡክ እና ኢንስታግራም የሚከሰተውን መጓተት እና ኤረር የሚከላከሉ ፕለጊኖች እና ማስተካከያዎች
         'extractor_args': {
+            'facebook': {
+                'fetch_shares': [False]
+            },
             'youtube': {
-                'player_client': ['default', '-android_sdkless'],
+                'player_client': ['android', 'web'],
             }
         },
         'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36'
         }
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -315,7 +319,7 @@ def download_video(url: str, output_template: str):
 
 
 async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE, url: str):
-    status_msg = await update.message.reply_text("🚀 <b>ቪዲዮውን በማውረድ ላይ ይገኛል፣ እባክዎ ይጠብቁ...</b> 📥", parse_mode="HTML")
+    status_msg = await update.message.reply_text("ዘ <b>ቪዲዮውን በማውረድ ላይ ይገኛል፣ እባክዎ ይጠብቁ...</b> 📥", parse_mode="HTML")
 
     bot_username = context.bot.username or "mame_posts_bot"
     share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Video%20Downloader%20Bot!🔥"
@@ -461,7 +465,7 @@ async def button_callback(
 
 
 # ==================================================
-# USER MESSAGES HANDLER (ሁሉም መድረኮች እንዲደገፉ የተደረገበት)
+# USER MESSAGES HANDLER
 # ==================================================
 
 async def handle_user_messages(
@@ -480,7 +484,6 @@ async def handle_user_messages(
 
     text = update.message.text or ""
 
-    # የሁሉም ታዋቂ መድረኮች ሊንኮች እዚህ ተካተዋል
     valid_domains = [
         "instagram.com", "tiktok.com", "youtube.com", "youtu.be",
         "pinterest.com", "pin.it", "twitter.com", "x.com",
