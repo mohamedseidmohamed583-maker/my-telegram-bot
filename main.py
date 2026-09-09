@@ -104,7 +104,7 @@ def get_main_menu_keyboard():
             InlineKeyboardButton("👤 My Status & Stats 📊", callback_data="cmd_status")
         ],
         [
-            InlineKeyboardButton("💬 Support | ድጋፍ", callback_data="cmd_support")
+            InlineKeyboardButton("💬 Support & Platforms 🛠️", callback_data="cmd_support")
         ]
     ]
     return InlineKeyboardMarkup(keyboard)
@@ -206,7 +206,7 @@ async def start(
 
     await update.message.reply_text(
         "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-        "📥 <b>የ Instagram እና የ TikTok ቪዲዮዎችን ማውረድ ከፈለጉ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
+        "📥 <b>የ Instagram፣ TikTok፣ YouTube እና ሌሎች መድረኮች ቪዲዮ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
         reply_markup=get_main_menu_keyboard(),
         parse_mode="HTML"
     )
@@ -282,34 +282,32 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     await update.message.reply_text(
         "💬 <b>Support & Downloader Help</b>\n\n"
-        "📥 <b>ቪዲዮ ለማውረድ:</b> የ Instagram እና TikTok ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n"
+        "📥 <b>ቪዲዮ ለማውረድ:</b> የ Instagram, TikTok, YouTube, Facebook ወይም Pinterest ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n"
         "👨‍💻 ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።",
         parse_mode="HTML"
     )
 
 
 # ==================================================
-# PRO-LEVEL DOWNLOADER ENGINE (እንደ ትልልቅ ቦቶች የተስተካከለ)
+# PRO-LEVEL DOWNLOADER ENGINE (ለተለያዩ መድረኮች የተስተካከለ)
 # ==================================================
 
 def download_video(url: str, output_template: str):
     ydl_opts = {
-        'format': 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4] / bv+ba/b',
-        'merge_output_format': 'mp4',
+        'format': 'best[ext=mp4]/best',
         'outtmpl': output_template,
         'quiet': True,
         'no_warnings': True,
         'nocheckcertificate': True,
         'ignoreerrors': False,
         'geo_bypass': True,
-        # ለትላልቅ ፕላትፎርሞች (እንደ ዩቲዩብ እና ቲክቶክ) የማገጃ (Bot Detection) ችግር እንዳያጋጥም የሚረዱ ማዋቀሪያዎች
         'extractor_args': {
             'youtube': {
-                'player_client': ['android', 'web'],
+                'player_client': ['default', '-android_sdkless'],
             }
         },
         'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
         }
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -389,7 +387,7 @@ async def button_callback(
     if data == "cmd_back":
         await query.edit_message_text(
             "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-            "📥 <b>የ Instagram እና የTikTok ቪዲዮዎችን ማውረድ ከፈለጉ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
+            "📥 <b>የ Instagram፣ TikTok፣ YouTube እና ሌሎች መድረኮች ቪዲዮ ማውረድ ከፈለጉ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
             reply_markup=get_main_menu_keyboard(),
             parse_mode="HTML"
         )
@@ -448,16 +446,22 @@ async def button_callback(
 
     elif data == "cmd_support":
         await query.edit_message_text(
-            "💬 <b>Support</b>\n\n"
-            "መልዕክትዎን እዚህ ይላኩ።\n\n"
-            "👨‍💻 Admin በቅርቡ ይመልስልዎታል።",
+            "🛠️ <b>Supported Platforms (የሚደገፉ መድረኮች):</b>\n\n"
+            "📸 Instagram: reels, posts & stories\n"
+            "🎵 TikTok: videos & audio\n"
+            "▶️ YouTube: videos & music\n"
+            "📌 Pinterest: videos & stories\n"
+            "❌ Twitter (X): videos & voice\n"
+            "📘 Facebook: video\n"
+            "🎧 SoundCloud / Spotify\n\n"
+            "📥 ከየትኛውም ከላይ ከተዘረዘሩት ሊንክ ልከው ማውረድ ይችላሉ!",
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
 
 
 # ==================================================
-# USER MESSAGES HANDLER
+# USER MESSAGES HANDLER (ሁሉም መድረኮች እንዲደገፉ የተደረገበት)
 # ==================================================
 
 async def handle_user_messages(
@@ -476,7 +480,14 @@ async def handle_user_messages(
 
     text = update.message.text or ""
 
-    valid_domains = ["instagram.com", "tiktok.com", "youtube.com", "youtu.be"]
+    # የሁሉም ታዋቂ መድረኮች ሊንኮች እዚህ ተካተዋል
+    valid_domains = [
+        "instagram.com", "tiktok.com", "youtube.com", "youtu.be",
+        "pinterest.com", "pin.it", "twitter.com", "x.com",
+        "facebook.com", "fb.watch", "reddit.com", "soundcloud.com",
+        "spotify.com", "vimeo.com", "twitch.tv", "tumblr.com", "vk.com"
+    ]
+    
     is_supported_link = any(domain in text.lower() for domain in valid_domains)
 
     if is_supported_link:
