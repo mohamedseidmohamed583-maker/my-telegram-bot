@@ -206,7 +206,7 @@ async def start(
 
     await update.message.reply_text(
         "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-        "📥 <b>የ Instagram፣ TikTok፣ Facebook እና ሌሎች መድረኮች ቪዲዮ ሊንክ ይላኩልኝ! አወርድላችኋለሁ👐</b> ⚡\n\n",
+        "📥 <b>የ Instagram፣ TikTok፣ Facebook እና ሌሎች መድረኮች ቪዲዮ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
         reply_markup=get_main_menu_keyboard(),
         parse_mode="HTML"
     )
@@ -289,19 +289,16 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==================================================
-# ULTRA-FAST PROFESSIONAL DOWNLOADER ENGINE (እንደ ታዋቂዎቹ ቦቶች የተስተካከለ)
+# INSTANT HIGH-SPEED DIRECT STREAM DOWNLOADER ENGINE
 # ==================================================
 
-def download_video(url: str, output_template: str):
+def get_direct_video_url(url: str):
     ydl_opts = {
-        'format': 'best',
-        'outtmpl': output_template,
+        'format': 'best[ext=mp4]/best',
         'quiet': True,
         'no_warnings': True,
         'nocheckcertificate': True,
-        'ignoreerrors': False,
         'geo_bypass': True,
-        # ለፌስቡክ እና ኢንስታግራም የሚከሰተውን መጓተት እና ኤረር የሚከላከሉ ፕለጊኖች እና ማስተካከያዎች
         'extractor_args': {
             'facebook': {
                 'fetch_shares': [False]
@@ -315,11 +312,18 @@ def download_video(url: str, output_template: str):
         }
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])
+        info = ydl.extract_info(url, download=False)
+        if 'url' in info:
+            return info['url']
+        elif 'formats' in info:
+            for f in info['formats']:
+                if f.get('url') and f.get('ext') == 'mp4':
+                    return f['url']
+        return None
 
 
 async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE, url: str):
-    status_msg = await update.message.reply_text("ዘ <b>ቪዲዮውን በማውረድ ላይ ይገኛል፣ እባክዎ ይጠብቁ...</b> 📥", parse_mode="HTML")
+    status_msg = await update.message.reply_text("🚀 <b>በማቀነባበር ላይ...</b> 📥", parse_mode="HTML")
 
     bot_username = context.bot.username or "mame_posts_bot"
     share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Video%20Downloader%20Bot!🔥"
@@ -331,42 +335,24 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    file_base = f"video_{update.effective_user.id}_{update.message.message_id}"
-    output_template = f"{file_base}.%(ext)s"
-    expected_file = f"{file_base}.mp4"
-
     try:
-        await asyncio.to_thread(download_video, url, output_template)
+        # ፈጣን የሆነውን የሊንክ ማውጫ እንጠቀማለን (Direct Stream URL)
+        direct_url = await asyncio.to_thread(get_direct_video_url, url)
 
-        actual_file = expected_file
-        if not os.path.exists(actual_file):
-            for f in os.listdir('.'):
-                if f.startswith(file_base):
-                    actual_file = f
-                    break
-
-        if os.path.exists(actual_file):
-            await status_msg.edit_text("📤 <b>ቪዲዮውን በመላክ ላይ ይገኛል...</b>", parse_mode="HTML")
-            with open(actual_file, 'rb') as video_file:
-                await update.message.reply_video(
-                    video=video_file,
-                    caption=f"🚀 <b>Downloaded with</b> @{bot_username}\n\n🥰 <b>Enjoy! Don't forget to share it with your friends.</b>",
-                    reply_markup=reply_markup,
-                    parse_mode="HTML"
-                )
+        if direct_url:
+            await status_msg.edit_text("📤 <b>በመላክ ላይ...</b>", parse_mode="HTML")
+            await update.message.reply_video(
+                video=direct_url,
+                caption=f"🚀 <b>Downloaded with</b> @{bot_username}\n\n🥰 <b>Enjoy! Don't forget to share it with your friends.</b>",
+                reply_markup=reply_markup,
+                parse_mode="HTML"
+            )
             await status_msg.delete()
-            os.remove(actual_file)
         else:
             await status_msg.edit_text("💔 <b>ቪዲዮውን ማግኘት አልተቻለም።</b>", parse_mode="HTML")
 
     except Exception as e:
         print("Download Error:", e)
-        for f in os.listdir('.'):
-            if f.startswith(file_base):
-                try:
-                    os.remove(f)
-                except:
-                    pass
         await status_msg.edit_text(
             "😭 <b>ቪዲዮውን ማውረድ አልተቻለም!</b>\n\n"
             "እባክዎ የላኩት ሊንክ ትክክለኛ መሆኑን አረጋግጠው እንደገና ይሞክሩ። በጣም ይቅርታ👐",
@@ -641,7 +627,7 @@ def main():
     # Commands Handlers
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("menu", start))
-    app.add_handler(CommandHandler("status", status_command))
+    app.add_handler(CommandHandlerya:=CommandHandler("status", status_command))
     app.add_handler(CommandHandler("rates", rates_command))
     app.add_handler(CommandHandler("payment", payment_command))
     app.add_handler(CommandHandler("help", help_command))
@@ -649,7 +635,7 @@ def main():
     app.add_handler(CallbackQueryHandler(check_join, pattern="^check_join$"))
     app.add_handler(CallbackQueryHandler(button_callback, pattern="^cmd_"))
     
-    admin_filter = filters.User(user_id=ADMIN_ID) & filters.REPLY & ~filters.COMMAND
+    admin_filter = filters.User(user_id=ADMIN_ID) &filters.REPLY & ~filters.COMMAND
     app.add_handler(MessageHandler(admin_filter, admin_reply))
     
     user_media_filter = (
