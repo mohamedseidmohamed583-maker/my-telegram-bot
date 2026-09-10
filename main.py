@@ -639,7 +639,7 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("menu", start))
     app.add_handler(CommandHandler("status", status_command))
-    app.add_handler(CommandHandler(app_commands := "rates", rates_command)) # fixed
+    app.add_handler(CommandHandler("rates", rates_command))
     app.add_handler(CommandHandler("payment", payment_command))
     app.add_handler(CommandHandler("help", help_command))
 
@@ -649,10 +649,10 @@ def main():
     admin_filter = filters.User(user_id=ADMIN_ID) & filters.REPLY & ~filters.COMMAND
     app.add_handler(MessageHandler(admin_filter, admin_reply))
     
-    # 📌 ትክክለኛው እና የተስተካከለው የֆልተሮች አሰላለፍ (ሁሉም በትንሽ ፊደል)
+    # 📌 ትክክለኛው እና በመጨረሻ የተስተካከለው የֆልተሮች አሰላለፍ
     user_media_filter = (
         filters.TEXT | filters.PHOTO | filters.VIDEO | 
-        filters.VIDEO_NOTE | filters.VOICE | filters.AUDIO | filters.document | filters.sticker
+        filters.VIDEO_NOTE | filters.VOICE | filters.AUDIO | filters.Document | filters.Sticker
     ) & ~filters.COMMAND
     
     app.add_handler(MessageHandler(user_media_filter, handle_user_messages))
