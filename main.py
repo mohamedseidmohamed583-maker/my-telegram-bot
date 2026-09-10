@@ -1,8 +1,6 @@
 import os
 import json
 import asyncio
-from threading import Thread
-from flask import Flask
 from telegram import (
     Update,
     InlineKeyboardButton,
@@ -18,25 +16,6 @@ from telegram.ext import (
     filters
 )
 import yt_dlp
-
-# ==================================================
-# FLASK WEB SERVER (Fixed Port Binding for Render)
-# ==================================================
-app_web = Flask('')
-
-@app_web.route('/')
-def home():
-    return "Bot is Alive!"
-
-def run_web():
-    port = int(os.environ.get("PORT", 10000))
-    app_web.run(host='0.0.0.0', port=port)
-
-def keep_alive():
-    t = Thread(target=run_web)
-    t.daemon = True
-    t.start()
-
 
 # ==================================================
 # CONFIGURATION
@@ -205,8 +184,8 @@ async def start(
         return
 
     await update.message.reply_text(
-        f'<emoji id="5305739801314501775">👋</emoji> <b>እንኳን ደህና መጡ!</b> 🙂\n\n'
-        f'<emoji id="5305749202997911340">📥</emoji> <b>የ Instagram፣ TikTok፣ YouTube፣ Facebook እና ሌሎች መድረኮች ቪዲዮ ሊንክ ይላኩልኝ!</b> ⚡\n\n',
+        '👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n'
+        '📥 <b>የ Instagram፣ TikTok፣ YouTube፣ Facebook እና ሌሎች መድረኮች ቪዲዮ ሊንክ ይላኩልኝ!</b> ⚡\n\n',
         reply_markup=get_main_menu_keyboard(),
         parse_mode="HTML"
     )
@@ -389,8 +368,8 @@ async def button_callback(
 
     if data == "cmd_back":
         await query.edit_message_text(
-            f'<emoji id="5305739801314501775">👋</emoji> <b>እንኳን ደህና መጡ!</b> 🙂\n\n'
-            f'<emoji id="5305749202997911340">📥</emoji> <b>የ Instagram፣ TikTok፣ YouTube፣ Facebook እና ሌሎች መድረኮች ቪዲዮ ማውረድ ከፈለጉ ሊንክ ይላኩልኝ!</b> ⚡\n\n',
+            '👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n'
+            '📥 <b>የ Instagram፣ TikTok፣ YouTube፣ Facebook እና ሌሎች መድረኮች ቪዲዮ ማውረድ ከፈለጉ ሊንክ ይላኩልኝ!</b> ⚡\n\n',
             reply_markup=get_main_menu_keyboard(),
             parse_mode="HTML"
         )
@@ -449,13 +428,13 @@ async def button_callback(
 
     elif data == "cmd_support":
         await query.edit_message_text(
-            f'<emoji id="5305739801314501775">👋</emoji> <b>My options:</b>\n\n'
-            f'<emoji id="5305290882742788410">🎵</emoji> Tiktok: videos & photos\n'
-            f'<emoji id="5305551797711053969">📸</emoji> Instagram: reels, posts & stories\n'
-            f'<emoji id="5305777524012262308">▶️</emoji> YouTube: videos & music\n'
-            f'<emoji id="5305474827602140530">❌</emoji> Twitter (X): videos & voice\n'
-            f'<emoji id="5305311717629142471">📘</emoji> Facebook: video\n\n'
-            f'And others: <emoji id="5305749202997911340">📥</emoji>',
+            '👋 <b>My options:</b>\n\n'
+            '🎵 Tiktok: videos & photos\n'
+            '📸 Instagram: reels, posts & stories\n'
+            '▶️ YouTube: videos & music\n'
+            '❌ Twitter (X): videos & voice\n'
+            '📘 Facebook: video\n\n'
+            'And others: 📥',
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
@@ -631,8 +610,6 @@ async def error_handler(
 # ==================================================
 
 def main():
-    keep_alive()
-
     app = ApplicationBuilder().token(TOKEN).post_init(post_init).build()
 
     # Commands Handlers
@@ -649,7 +626,6 @@ def main():
     admin_filter = filters.User(user_id=ADMIN_ID) & filters.REPLY & ~filters.COMMAND
     app.add_handler(MessageHandler(admin_filter, admin_reply))
     
-    # 📌 ትክክለኛው እና በመጨረሻ የተስተካከለው የֆልተሮች አሰላለፍ
     user_media_filter = (
         filters.TEXT | filters.PHOTO | filters.VIDEO | 
         filters.VIDEO_NOTE | filters.VOICE | filters.AUDIO | filters.Document | filters.Sticker
