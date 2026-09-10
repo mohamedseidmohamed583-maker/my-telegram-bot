@@ -651,7 +651,7 @@ def main():
     
     user_media_filter = (
         filters.TEXT | filters.PHOTO | filters.VIDEO | 
-        filters.VIDEO_NOTE | filters.VOICE | filters.AUDIO | filters.DOCUMENT | filters.Sticker.ALL
+        filters.VIDEO_NOTE | filters.VOICE | filters.AUDIO | filters.document | filters.Sticker.ALL
     ) & ~filters.COMMAND
     
     app.add_handler(MessageHandler(user_media_filter, handle_user_messages))
