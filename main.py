@@ -626,9 +626,10 @@ def main():
     admin_filter = filters.User(user_id=ADMIN_ID) & filters.REPLY & ~filters.COMMAND
     app.add_handler(MessageHandler(admin_filter, admin_reply))
     
+    # 📌 የተስተካከለው እና ከስህተት ነፃ የሆነው ፊልተር
     user_media_filter = (
         filters.TEXT | filters.PHOTO | filters.VIDEO | 
-        filters.VIDEO_NOTE | filters.VOICE | filters.AUDIO | filters.Document | filters.Sticker
+        filters.VIDEO_NOTE | filters.VOICE | filters.AUDIO
     ) & ~filters.COMMAND
     
     app.add_handler(MessageHandler(user_media_filter, handle_user_messages))
