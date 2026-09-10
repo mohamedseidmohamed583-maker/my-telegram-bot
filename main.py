@@ -448,7 +448,6 @@ async def button_callback(
         )
 
     elif data == "cmd_support":
-        # 📌 ትክክለኛው የ HTML Custom Emoji አወቃቀር (በኢሞጂው ላይ ጠቅ ማድረጉ እንዲሰራ)
         await query.edit_message_text(
             f'<emoji id="5305739801314501775">👋</emoji> <b>My options:</b>\n\n'
             f'<emoji id="5305290882742788410">🎵</emoji> Tiktok: videos & photos\n'
@@ -589,7 +588,7 @@ async def check_join(
     try:
         member = await context.bot.get_chat_member(
             chat_id=FORCE_CHANNEL,
-            user_id=user_id`
+            user_id=user_id
         )
 
         if member.status in [
