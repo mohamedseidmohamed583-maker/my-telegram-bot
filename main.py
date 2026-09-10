@@ -205,8 +205,8 @@ async def start(
         return
 
     await update.message.reply_text(
-        f"<emoji id=\"5305739801314501775\">👋</emoji> <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-        f"<emoji id=\"5305749202997911340\">📥</emoji> <b>የ Instagram፣ TikTok፣ YouTube፣ Facebook እና ሌሎች መድረኮች ቪዲዮ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
+        f'<emoji id="5305739801314501775">👋</emoji> <b>እንኳን ደህና መጡ!</b> 🙂\n\n'
+        f'<emoji id="5305749202997911340">📥</emoji> <b>የ Instagram፣ TikTok፣ YouTube፣ Facebook እና ሌሎች መድረኮች ቪዲዮ ሊንክ ይላኩልኝ!</b> ⚡\n\n',
         reply_markup=get_main_menu_keyboard(),
         parse_mode="HTML"
     )
@@ -389,8 +389,8 @@ async def button_callback(
 
     if data == "cmd_back":
         await query.edit_message_text(
-            f"<emoji id=\"5305739801314501775\">👋</emoji> <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-            f"<emoji id=\"5305749202997911340\">📥</emoji> <b>የ Instagram፣ TikTok፣ YouTube፣ Facebook እና ሌሎች መድረኮች ቪዲዮ ማውረድ ከፈለጉ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
+            f'<emoji id="5305739801314501775">👋</emoji> <b>እንኳን ደህና መጡ!</b> 🙂\n\n'
+            f'<emoji id="5305749202997911340">📥</emoji> <b>የ Instagram፣ TikTok፣ YouTube፣ Facebook እና ሌሎች መድረኮች ቪዲዮ ማውረድ ከፈለጉ ሊንክ ይላኩልኝ!</b> ⚡\n\n',
             reply_markup=get_main_menu_keyboard(),
             parse_mode="HTML"
         )
@@ -448,16 +448,15 @@ async def button_callback(
         )
 
     elif data == "cmd_support":
+        # 📌 አንተ የሰጠኸውን ጽሁፍ እና የኢሞጂ IDs ብቻ በትክክል እዚህ አስገባሁት
         await query.edit_message_text(
-            "🛠️ <b>Supported Platforms (የሚደገፉ መድረኮች):</b>\n\n"
-            f"<emoji id=\"5305551797711053969\">📸</emoji> Instagram: reels, posts & stories\n"
-            f"<emoji id=\"5305290882742788410\">🎵</emoji> TikTok: videos & photos\n"
-            f"<emoji id=\"5305777524012262308\">▶️</emoji> YouTube: videos & music\n"
-            f"<emoji id=\"5305474827602140530\">❌</emoji> Twitter (X): videos & voice\n"
-            f"<emoji id=\"5305311717629142471\">📘</emoji> Facebook: video\n"
-            "📌 Pinterest: videos & stories\n"
-            "🎧 SoundCloud / Spotify\n\n"
-            "📥 ከየትኛውም ከላይ ከተዘረዘሩት ሊንክ ልከው ማውረድ ይችላሉ!",
+            f'<emoji id="5305739801314501775">My options:</emoji>\n\n'
+            f'<emoji id="5305290882742788410">🎵</emoji> Tiktok: videos & photos\n'
+            f'<emoji id="5305551797711053969">📸</emoji> Instagram: reels, posts & stories\n'
+            f'<emoji id="5305777524012262308">▶️</emoji> YouTube: videos & music\n'
+            f'<emoji id="5305474827602140530">❌</emoji> Twitter (X): videos & voice\n'
+            f'<emoji id="5305311717629142471">📘</emoji> Facebook: video\n\n'
+            f'And others: <emoji id="5305749202997911340">📥</emoji>',
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
@@ -658,6 +657,7 @@ def main():
     
     app.add_handler(MessageHandler(user_media_filter, handle_user_messages))
     
+    app.error_handlers.clear()
     app.add_error_handler(error_handler)
 
     print("🤖 Mame Posts Bot is running...")
