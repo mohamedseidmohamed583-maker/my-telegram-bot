@@ -205,8 +205,14 @@ async def start(
         return
 
     await update.message.reply_text(
-        "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-        "📥 <b>የ Instagram እና የ TikTok ቪዲዮዎችን ማውረድ ከፈለጉ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
+        f'Hello <emoji id="5305577086478489521">🧳</emoji>\n\n'
+        f'<emoji id="5305739801314501775">✅</emoji> <b>My options:</b>\n\n'
+        f'<emoji id="5305290882742788410">🎵</emoji> | Tiktok: videos & photos\n'
+        f'<emoji id="5305551797711053969">📸</emoji> | Instagram: reels, posts & stories\n'
+        f'<emoji id="5305777524012262308">▶️</emoji> | YouTube: videos & music\n'
+        f'<emoji id="5305474827602140530">✖️</emoji> | Twitter (X): videos & voice\n'
+        f'<emoji id="5305311717629142471">📘</emoji> | Facebook: video\n\n'
+        f'And others Social Media: <emoji id="5305749202997911340">📥</emoji>',
         reply_markup=get_main_menu_keyboard(),
         parse_mode="HTML"
     )
@@ -282,7 +288,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     await update.message.reply_text(
         "💬 <b>Support & Downloader Help</b>\n\n"
-        "📥 <b>ቪዲዮ ለማውረድ:</b> የ Instagram እና TikTok ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n"
+        "📥 <b>ቪዲዮ ለማውረድ:</b> የ Instagram, TikTok, YouTube እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n"
         "👨‍💻 ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።",
         parse_mode="HTML"
     )
@@ -302,7 +308,6 @@ def download_video(url: str, output_template: str):
         'nocheckcertificate': True,
         'ignoreerrors': False,
         'geo_bypass': True,
-        # ለትላልቅ ፕላትፎርሞች (እንደ ዩቲዩብ እና ቲክቶክ) የማገጃ (Bot Detection) ችግር እንዳያጋጥም የሚረዱ ማዋቀሪያዎች
         'extractor_args': {
             'youtube': {
                 'player_client': ['android', 'web'],
@@ -388,8 +393,14 @@ async def button_callback(
 
     if data == "cmd_back":
         await query.edit_message_text(
-            "👋 <b>እንኳን ደህና መጡ!</b> 🙂\n\n"
-            "📥 <b>የ Instagram እና የTikTok ቪዲዮዎችን ማውረድ ከፈለጉ ሊንክ ይላኩልኝ!</b> ⚡\n\n",
+            f'Hello <emoji id="5305577086478489521">🧳</emoji>\n\n'
+            f'<emoji id="5305739801314501775">✅</emoji> <b>My options:</b>\n\n'
+            f'<emoji id="5305290882742788410">🎵</emoji> | Tiktok: videos & photos\n'
+            f'<emoji id="5305551797711053969">📸</emoji> | Instagram: reels, posts & stories\n'
+            f'<emoji id="5305777524012262308">▶️</emoji> | YouTube: videos & music\n'
+            f'<emoji id="5305474827602140530">✖️</emoji> | Twitter (X): videos & voice\n'
+            f'<emoji id="5305311717629142471">📘</emoji> | Facebook: video\n\n'
+            f'And others Social Media: <emoji id="5305749202997911340">📥</emoji>',
             reply_markup=get_main_menu_keyboard(),
             parse_mode="HTML"
         )
@@ -448,9 +459,14 @@ async def button_callback(
 
     elif data == "cmd_support":
         await query.edit_message_text(
-            "💬 <b>Support</b>\n\n"
-            "መልዕክትዎን እዚህ ይላኩ።\n\n"
-            "👨‍💻 Admin በቅርቡ ይመልስልዎታል።",
+            f'Hello <emoji id="5305577086478489521">🧳</emoji>\n\n'
+            f'<emoji id="5305739801314501775">✅</emoji> <b>My options:</b>\n\n'
+            f'<emoji id="5305290882742788410">🎵</emoji> | Tiktok: videos & photos\n'
+            f'<emoji id="5305551797711053969">📸</emoji> | Instagram: reels, posts & stories\n'
+            f'<emoji id="5305777524012262308">▶️</emoji> | YouTube: videos & music\n'
+            f'<emoji id="5305474827602140530">✖️</emoji> | Twitter (X): videos & voice\n'
+            f'<emoji id="5305311717629142471">📘</emoji> | Facebook: video\n\n'
+            f'And others Social Media: <emoji id="5305749202997911340">📥</emoji>',
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
@@ -476,7 +492,7 @@ async def handle_user_messages(
 
     text = update.message.text or ""
 
-    valid_domains = ["instagram.com", "tiktok.com", "youtube.com", "youtu.be"]
+    valid_domains = ["instagram.com", "tiktok.com", "youtube.com", "youtu.be", "facebook.com", "fb.watch", "twitter.com", "x.com"]
     is_supported_link = any(domain in text.lower() for domain in valid_domains)
 
     if is_supported_link:
@@ -652,4 +668,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
