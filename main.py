@@ -7,7 +7,8 @@ from telegram import (
     Update,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
-    BotCommand
+    BotCommand,
+    WebAppInfo
 )
 from telegram.ext import (
     ApplicationBuilder,
@@ -88,11 +89,14 @@ def get_user_stats(user_id):
     return total_users, user_msg_count
 
 # ==================================================
-# MAIN MENU KEYBOARD (በፕሪሚየም ኢሞጂዎች የተስተካከለ)
+# MAIN MENU KEYBOARD (በምስሉ ላይ እንዳለው Add to Group የተካተተበት)
 # ==================================================
 
-def get_main_menu_keyboard():
+def get_main_menu_keyboard(bot_username):
     keyboard = [
+        [
+            InlineKeyboardButton("🤖 Add a bot to the chat ➕", url=f"https://t.me/{bot_username}?startgroup=true")
+        ],
         [
             InlineKeyboardButton("📢 ማስታወቂያ ለማሰራት 🪪", callback_data="cmd_order")
         ],
@@ -217,9 +221,10 @@ async def start(
         await show_force_join(update, context)
         return
 
+    bot_username = context.bot.username or "mame_posts_bot"
     await update.message.reply_text(
         get_welcome_text(),
-        reply_markup=get_main_menu_keyboard(),
+        reply_markup=get_main_menu_keyboard(bot_username),
         parse_mode="HTML"
     )
 
@@ -252,6 +257,52 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
     await update.message.reply_text(msg, parse_mode="HTML")
+
+
+# ==================================================
+# BROADCAST COMMAND (ለተጠቃሚዎች በሙሉ መልዕክት ለመላክ)
+# አጠቃቀም: `/broadcast የጻፉት ጽሁፍ` ወይም ጽሁፉን ሬፕላይ አድርጎ `/broadcast` ማለት
+# ==================================================
+
+async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != ADMIN_ID:
+        return
+
+    # መልእክት ወይ ከጽሁፍ ወይም ከሬፕላይ የተደረገ ይወሰዳል
+    message_to_send = None
+    if context.args:
+        message_to_send = " ".join(context.args)
+    elif update.message.reply_to_message:
+        message_to_send = update.message.reply_to_message.text or update.message.reply_to_message.caption
+
+    if not message_to_send:
+        await update.message.reply_text("⚠️ እባክዎ የሚተላለፈውን መልዕክት ከኮማንድ ጋር ይጻፉ (ለምሳሌ: `/broadcast ሰላም ለሁላችሁም`) ወይም መልዕክት ሬፕላይ ያድርጉ።")
+        return
+
+    data = load_data()
+    success_count = 0
+    fail_count = 0
+
+    status_msg = await update.message.reply_text("ዮ 🚀 መልዕክቱን ለተጠቃሚዎች በመላክ ላይ ይገኛል...")
+
+    for uid_str in data.keys():
+        try:
+            await context.bot.send_message(
+                chat_id=int(uid_str),
+                text=message_to_send,
+                parse_mode="HTML"
+            )
+            success_count += 1
+            await asyncio.sleep(0.05) # ቴሌግራም ፍሉድ እንዳይቀጣ አጭር ማቆያ
+        except Exception:
+            fail_count += 1
+
+    await status_msg.edit_text(
+        f"✅ <b>ብሮድካስት ተጠናቋል!</b>\n\n"
+        f"• የተሳካ: <code>{success_count}</code>\n"
+        f"• ያልተሳካ (ቦቱን የዘጉ): <code>{fail_count}</code>",
+        parse_mode="HTML"
+    )
 
 
 # ==================================================
@@ -401,9 +452,10 @@ async def button_callback(
     user = query.from_user
 
     if data == "cmd_back":
+        bot_username = context.bot.username or "mame_posts_bot"
         await query.edit_message_text(
             get_welcome_text(),
-            reply_markup=get_main_menu_keyboard(),
+            reply_markup=get_main_menu_keyboard(bot_username),
             parse_mode="HTML"
         )
 
@@ -646,6 +698,7 @@ def main():
     app.add_handler(CommandHandler("rate", rates_command))
     app.add_handler(CommandHandler("payment", payment_command))
     app.add_handler(CommandHandler("help", help_command))
+    app.add_handler(CommandHandler("broadcast", broadcast_command)) # ለሁሉም ዩዘሮች መልዕክት ለመላክ
 
     app.add_handler(CallbackQueryHandler(check_join, pattern="^check_join$"))
     app.add_handler(CallbackQueryHandler(button_callback, pattern="^cmd_"))
