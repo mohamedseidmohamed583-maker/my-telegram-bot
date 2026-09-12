@@ -190,7 +190,7 @@ async def show_force_join(
 
 
 # ==================================================
-# START & MENU COMMAND (የፕሪሚየም ኢሞጂ ቴጎች የገቡበት ዋና ጽሁፍ)
+# START & MENU COMMAND
 # ==================================================
 
 def get_welcome_text():
@@ -404,7 +404,7 @@ async def button_callback(
             parse_mode="HTML"
         )
 
-        elif data == "cmd_price":
+    elif data == "cmd_price":
         await query.edit_message_text(
             f'<tg-emoji emoji-id="5447458260200214425">💰</tg-emoji> <b>የማስታወቂያ ዋጋዎች</b>\n\n'
             f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 12 Hours — <b>በስምምነት ETB</b>\n'
