@@ -42,7 +42,7 @@ def keep_alive():
 # CONFIGURATION
 # ==================================================
 
-TOKEN = "8795814797:AAGTCCJMZ8q1r7i1ZJlB47UX2SzNuaNFKig"
+TOKEN = "8795814797:AAG9Innb0_LALV9SXs2mGsFqH4EKgYI9RMg"
 ADMIN_ID = 6753546651
 
 # Force Join Channel
@@ -88,7 +88,7 @@ def get_user_stats(user_id):
     return total_users, user_msg_count
 
 # ==================================================
-# MAIN MENU KEYBOARD (ዋና ማውጫ አዝራሮች)
+# MAIN MENU KEYBOARD (በፕሪሚየም ኢሞጂዎች የተስተካከለ)
 # ==================================================
 
 def get_main_menu_keyboard():
@@ -126,7 +126,7 @@ async def post_init(application):
         BotCommand("start", "ቦቱን ለመጀመር"),
         BotCommand("menu", "ዋና ማውጫ"),
         BotCommand("status", "የእርስዎን እና የቦቱን Status ለማየት"),
-        BotCommand("rates", "የማስታወቂያ ዋጋዎች"),
+        BotCommand("rate", "የማስታወቂያ ዋጋዎች"),
         BotCommand("payment", "የከፈያ መንገድ"),
         BotCommand("help", "እርዳታና ድጋፍ"),
     ]
@@ -295,7 +295,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==================================================
-# PRO-LEVEL DOWNLOADER ENGINE (እንደ ትልልቅ ቦቶች የተስተካከለ)
+# PRO-LEVEL DOWNLOADER ENGINE
 # ==================================================
 
 def download_video(url: str, output_template: str):
@@ -645,6 +645,7 @@ def main():
     app.add_handler(CommandHandler("menu", start))
     app.add_handler(CommandHandler("status", status_command))
     app.add_handler(CommandHandler("rates", rates_command))
+    app.add_handler(CommandHandler("rate", rates_command))
     app.add_handler(CommandHandler("payment", payment_command))
     app.add_handler(CommandHandler("help", help_command))
 
@@ -654,12 +655,12 @@ def main():
     admin_filter = filters.User(user_id=ADMIN_ID) & filters.REPLY & ~filters.COMMAND
     app.add_handler(MessageHandler(admin_filter, admin_reply))
     
-    user_media_filter = (
+    type_filter = (
         filters.TEXT | filters.PHOTO | filters.VIDEO | 
         filters.Document.ALL | filters.VOICE | filters.AUDIO | filters.Sticker.ALL
     ) & ~filters.COMMAND
     
-    app.add_handler(MessageHandler(user_media_filter, handle_user_messages))
+    app.add_handler(MessageHandler(type_filter, handle_user_messages))
     
     app.add_error_handler(error_handler)
 
