@@ -7,8 +7,7 @@ from telegram import (
     Update,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
-    BotCommand,
-    WebAppInfo
+    BotCommand
 )
 from telegram.ext import (
     ApplicationBuilder,
@@ -89,7 +88,7 @@ def get_user_stats(user_id):
     return total_users, user_msg_count
 
 # ==================================================
-# MAIN MENU KEYBOARD (በምስሉ ላይ እንዳለው Add to Group የተካተበት)
+# MAIN MENU KEYBOARD
 # ==================================================
 
 def get_main_menu_keyboard(bot_username):
@@ -260,7 +259,7 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==================================================
-# BROADCAST COMMAND (ለተጠቃሚዎች በሙሉ መልዕክት ለመላክ)
+# BROADCAST COMMAND
 # ==================================================
 
 async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -351,11 +350,11 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==================================================
-# ULTIMATE UNLIMITED DOWNLOADER ENGINE (YouTube + All Social Media)
+# ULTIMATE UNLIMITED DOWNLOADER ENGINE (WITH COOKIES BYPASS)
 # ==================================================
 
-def get_direct_video_url(url: str):
-    ydl_opts = {
+def get_ydl_options(output_template=None):
+    opts = {
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'quiet': True,
         'no_warnings': True,
@@ -372,13 +371,24 @@ def get_direct_video_url(url: str):
             'Accept-Language': 'en-US,en;q=0.5',
         }
     }
+    
+    # 🍪 cookies.txt ካለ በራስሰር ይጠቀማል (ለ YouTube Bot Error ማስተካከያ)
+    if os.path.exists('cookies.txt'):
+        opts['cookiefile'] = 'cookies.txt'
+
+    if output_template:
+        opts['outtmpl'] = output_template
+        opts['merge_output_format'] = 'mp4'
+
+    return opts
+
+def get_direct_video_url(url: str):
     try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        with yt_dlp.YoutubeDL(get_ydl_options()) as ydl:
             info = ydl.extract_info(url, download=False)
             if 'url' in info:
                 return info['url'], info.get('title', 'Video')
             elif 'formats' in info:
-                # ምርጥ ሊንክ መርጦ ለመስጠት
                 for f in reversed(info['formats']):
                     if f.get('url') and f.get('ext') == 'mp4':
                         return f['url'], info.get('title', 'Video')
@@ -387,27 +397,7 @@ def get_direct_video_url(url: str):
     return None, None
 
 def download_video(url: str, output_template: str):
-    ydl_opts = {
-        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-        'merge_output_format': 'mp4',
-        'outtmpl': output_template,
-        'quiet': True,
-        'no_warnings': True,
-        'nocheckcertificate': True,
-        'ignoreerrors': False,
-        'geo_bypass': True,
-        'extractor_args': {
-            'youtube': {
-                'player_client': ['android', 'web', 'ios'],
-            }
-        },
-        'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
-        }
-    }
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+    with yt_dlp.YoutubeDL(get_ydl_options(output_template)) as ydl:
         ydl.download([url])
 
 
@@ -437,7 +427,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
             keyboard_share = [[InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)]]
             reply_markup_share = InlineKeyboardMarkup(keyboard_share)
 
-            # ከ 50MB በላይ ከሆነ ቴሌግራም ቦት ስለማይቀበለው ዳይሬክት ሊንክ ወይም ማውረጃ አገናኝ እንዲኖረው ይደረጋል
+            # ከ 50MB በላይ ከሆነ ዳይሬክት ሊንክ ይሰጣል
             if file_size > 50 * 1024 * 1024:
                 direct_url, title = await asyncio.to_thread(get_direct_video_url, url)
                 await status_msg.delete()
@@ -485,9 +475,8 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
         )
 
 
-
 # ==================================================
-# BUTTON CLICK HANDLER (EDIT MESSAGE IN-PLACE)
+# BUTTON CLICK HANDLER
 # ==================================================
 
 async def button_callback(
@@ -547,7 +536,6 @@ async def button_callback(
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
-
 
     elif data == "cmd_payment":
         await query.edit_message_text(
