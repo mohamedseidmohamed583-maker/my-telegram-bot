@@ -240,14 +240,14 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     msg = (
         "📊 <b>የእርስዎ እና የቦቱ Status</b>\n\n"
-        "👤 <b>የግል መረጃዎት፦</b>\n"
-        f"• <b>ስም:</b> {user.full_name}\n"
-        f"• <b>Username:</b> {username_text}\n"
-        f"• <b>Telegram ID:</b> <code>{user.id}</code>\n"
-        f"• <b>የላኳቸው አጠቃላይ መልዕክቶች:</b> <code>{user_msg_count}</code>\n\n"
-        "🤖 <b>የቦቱ አጠቃላይ መረጃ፦</b>\n"
-        f"• <b>አጠቃላይ የቦቱ ተጠቃሚዎች:</b> <code>{total_users} Users</code>\n"
-        "• <b>ሁኔታ:</b> Active ✅"
+        f'<tg-emoji emoji-id="5875078913725571378">👤</tg-emoji> <b>የግል መረጃዎት፦</b>\n'
+        f'• <b>ስም:</b> {user.full_name}\n'
+        f'• <b>Username:</b> {username_text}\n'
+        f'• <b>Telegram ID:</b> <code>{user.id}</code>\n'
+        f'• <b>የላኳቸው አጠቃላይ መልዕክቶች:</b> <code>{user_msg_count}</code>\n\n'
+        f'<tg-emoji emoji-id="5307979128543158051">🤖</tg-emoji> <b>የቦቱ አጠቃላይ መረጃ፦</b>\n'
+        f'• <b>አጠቃላይ የቦቱ ተጠቃሚዎች:</b> <code>{total_users} Users</code>\n'
+        f'• <b>ሁኔታ:</b> Active ✅'
     )
 
     await update.message.reply_text(msg, parse_mode="HTML")
@@ -263,13 +263,14 @@ async def rates_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await show_force_join(update, context)
         return
     await update.message.reply_text(
-        f'<tg-emoji emoji-id="5447458260200214425">💰</tg-emoji> <b>ማስታወቂያ ዋጋዎች</b>\n\n'
-        f'📌 12 Hours — <b>በስምምነት ETB</b>\n'
-        f'📌 24 Hours — <b>500 ETB</b>\n'
-        f'📌 48 Hours — <b>700 ETB</b>\n\n'
+        f'<tg-emoji emoji-id="5447458260200214425">💰</tg-emoji> <b>የማስታወቂያ ዋጋዎች</b>\n\n'
+        f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 12 Hours — <b>በስምምነት ETB</b>\n'
+        f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 24 Hours — <b>500 ETB</b>\n'
+        f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 48 Hours — <b>700 ETB</b>\n\n'
         f'የማስታወቂያውን አይነት አይተን አስተያየት እናደርጋለን! 🤝',
         parse_mode="HTML"
     )
+
 
 async def payment_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     record_user_activity(update.effective_user.id)
@@ -403,12 +404,12 @@ async def button_callback(
             parse_mode="HTML"
         )
 
-    elif data == "cmd_price":
+        elif data == "cmd_price":
         await query.edit_message_text(
-            f'<tg-emoji emoji-id="5447458260200214425">💰</tg-emoji> <b>ማስታወቂያ ዋጋዎች</b>\n\n'
-            f'📌 12 Hours — <b>በስምምነት ETB</b>\n'
-            f'📌 24 Hours — <b>500 ETB</b>\n'
-            f'📌 48 Hours — <b>700 ETB</b>\n\n'
+            f'<tg-emoji emoji-id="5447458260200214425">💰</tg-emoji> <b>የማስታወቂያ ዋጋዎች</b>\n\n'
+            f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 12 Hours — <b>በስምምነት ETB</b>\n'
+            f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 24 Hours — <b>500 ETB</b>\n'
+            f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 48 Hours — <b>700 ETB</b>\n\n'
             f'የማስታወቂያውን አይነት አይተን አስተያየት እናደርጋለን! 🤝',
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
@@ -428,12 +429,12 @@ async def button_callback(
 
         msg = (
             f'<tg-emoji emoji-id="5431577498364158238">📊</tg-emoji> <b>የእርስዎ እና የቦቱ Status</b>\n\n'
-            f'👤 <b>የግል መረጃዎት፦</b>\n'
+            f'<tg-emoji emoji-id="5875078913725571378">👤</tg-emoji> <b>የግል መረጃዎት፦</b>\n'
             f'• <b>ስም:</b> {user.full_name}\n'
             f'• <b>Username:</b> {username_text}\n'
             f'• <b>Telegram ID:</b> <code>{user.id}</code>\n'
             f'• <b>የላኳቸው አጠቃላይ መልዕክቶች:</b> <code>{user_msg_count}</code>\n\n'
-            f'🤖 <b>የቦቱ አጠቃላይ መረጃ፦</b>\n'
+            f'<tg-emoji emoji-id="5307979128543158051">🤖</tg-emoji> <b>የቦቱ አጠቃላይ መረጃ፦</b>\n'
             f'• <b>አጠቃላይ የቦቱ ተጠቃሚዎች:</b> <code>{total_users} Users</code>\n'
             f'• <b>ሁኔታ:</b> Active ✅'
         )
@@ -442,6 +443,7 @@ async def button_callback(
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
+
 
     elif data == "cmd_payment":
         await query.edit_message_text(
