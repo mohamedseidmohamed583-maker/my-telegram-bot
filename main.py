@@ -197,13 +197,14 @@ def get_welcome_text():
     return (
         f'Hello <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
         f'<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>My options:</b>\n\n'
-        f'<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | Tiktok: videos & photos\n'
-        f'<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | Instagram: reels, posts & stories\n'
-        f'<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | YouTube: videos & music\n'
-        f'<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | Twitter (X): videos & voice\n'
-        f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | Facebook: video\n\n'
-        f'And others Social Media: <tg-emoji emoji-id="5305749202997911340">📥</tg-emoji>'
+        f'<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | <b>Tiktok: videos & photos</b>\n'
+        f'<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | <b>Instagram: reels, posts & stories</b>\n'
+        f'<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | <b>YouTube: videos & music</b>\n'
+        f'<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | <b>Twitter (X): videos & voice</b>\n'
+        f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>Facebook: video</b>\n\n'
+        f'<b>And others Social Media:</b> <tg-emoji emoji-id="5305749202997911340">📥</tg-emoji>'
     )
+
 
 async def start(
     update: Update,
@@ -247,7 +248,7 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f'• <b>የላኳቸው አጠቃላይ መልዕክቶች:</b> <code>{user_msg_count}</code>\n\n'
         f'<tg-emoji emoji-id="5307979128543158051">🤖</tg-emoji> <b>የቦቱ አጠቃላይ መረጃ፦</b>\n'
         f'• <b>አጠቃላይ የቦቱ ተጠቃሚዎች:</b> <code>{total_users} Users</code>\n'
-        f'• <b>ሁኔታ:</b> Active ✅'
+        f'• <b>ሁኔታ:</b> Active <tg-emoji emoji-id="5307976826440687996">🔥</tg-emoji>'
     )
 
     await update.message.reply_text(msg, parse_mode="HTML")
@@ -267,7 +268,7 @@ async def rates_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 12 Hours — <b>በስምምነት ETB</b>\n'
         f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 24 Hours — <b>500 ETB</b>\n'
         f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 48 Hours — <b>700 ETB</b>\n\n'
-        f'የማስታወቂያውን አይነት አይተን አስተያየት እናደርጋለን! 🤝',
+        f'የማስታወቂያውን አይነት አይተን አስተያየት እናደርጋለን! <tg-emoji emoji-id="5463249828450424568">🤝</tg-emoji>',
         parse_mode="HTML"
     )
 
@@ -377,8 +378,8 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
                 except:
                     pass
         await status_msg.edit_text(
-            "😭 <b>ቪዲዮውን ማውረድ አልተቻለም!</b>\n\n"
-            "እባክዎ የላኩት ሊንክ ትክክለኛ መሆኑን አረጋግጠው እንደገና ይሞክሩ። በጣም ይቅርታ 👐",
+            "<tg-emoji emoji-id="5226970779710689074">😭</tg-emoji> <b>ቪዲዮውን ማውረድ አልተቻለም!</b>\n\n"
+            "እባክዎ የላኩት ሊንክ ትክክለኛ መሆኑን አረጋግጠው እንደገና ይሞክሩ። በጣም ይቅርታ <tg-emoji emoji-id="5942913498349571809">🙂</tg-emoji>",
             parse_mode="HTML"
         )
 
@@ -418,7 +419,7 @@ async def button_callback(
     elif data == "cmd_order":
         await query.edit_message_text(
             f'<tg-emoji emoji-id="5197304993920616826">📢</tg-emoji> <b>ማስታወቂያ ለማስታወቅ/ለማሰራት</b>\n\n'
-            f'<tg-emoji emoji-id="5305634553140912174">👇</tg-emoji> እባክዎ ማስታወቂያ ማሰራት የሚፈልጉትን Post እዚህ ይላኩ 👐',
+            f'<tg-emoji emoji-id="5305634553140912174">👇</tg-emoji> እባክዎ ማስታወቂያ ማሰራት የሚፈልጉትን Post እዚህ ይላኩ 🙂',
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
@@ -436,7 +437,7 @@ async def button_callback(
             f'• <b>የላኳቸው አጠቃላይ መልዕክቶች:</b> <code>{user_msg_count}</code>\n\n'
             f'<tg-emoji emoji-id="5307979128543158051">🤖</tg-emoji> <b>የቦቱ አጠቃላይ መረጃ፦</b>\n'
             f'• <b>አጠቃላይ የቦቱ ተጠቃሚዎች:</b> <code>{total_users} Users</code>\n'
-            f'• <b>ሁኔታ:</b> Active ✅'
+            f'• <b>ሁኔታ:</b> Active <tg-emoji emoji-id="5307976826440687996">🔥</tg-emoji>'
         )
         await query.edit_message_text(
             msg, 
