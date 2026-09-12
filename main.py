@@ -203,7 +203,7 @@ def get_welcome_text():
         f'<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>My options:</b>\n\n'
         f'<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | <b>Tiktok: videos & photos</b>\n'
         f'<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | <b>Instagram: reels, posts & stories</b>\n'
-        f'<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | <b>YouTube: videos & music</b>\n'
+        f'<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | <b>YouTube: videos & music (Full & Shorts)</b>\n'
         f'<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | <b>Twitter (X): videos & voice</b>\n'
         f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>Facebook & Pinterest: video</b>\n\n'
         f'<b>And others Social Media:</b> <tg-emoji emoji-id="5305749202997911340">📥</tg-emoji>'
@@ -344,15 +344,47 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     await update.message.reply_text(
         f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
-        f' <tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ Instagram, TikTok, YouTube, Facebook, Pinterest እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
+        f' <tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ YouTube, Instagram, TikTok, Facebook, Pinterest እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
         f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji>  ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
         parse_mode="HTML"
     )
 
 
 # ==================================================
-# ULTIMATE PRO-LEVEL DOWNLOADER ENGINE (Fixed & Universal)
+# ULTIMATE UNLIMITED DOWNLOADER ENGINE (YouTube + All Social Media)
 # ==================================================
+
+def get_direct_video_url(url: str):
+    ydl_opts = {
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        'quiet': True,
+        'no_warnings': True,
+        'nocheckcertificate': True,
+        'geo_bypass': True,
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['android', 'web', 'ios'],
+            }
+        },
+        'http_headers': {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+        }
+    }
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            if 'url' in info:
+                return info['url'], info.get('title', 'Video')
+            elif 'formats' in info:
+                # ምርጥ ሊንክ መርጦ ለመስጠት
+                for f in reversed(info['formats']):
+                    if f.get('url') and f.get('ext') == 'mp4':
+                        return f['url'], info.get('title', 'Video')
+    except Exception as e:
+        print("Extract URL Error:", e)
+    return None, None
 
 def download_video(url: str, output_template: str):
     ydl_opts = {
@@ -370,10 +402,9 @@ def download_video(url: str, output_template: str):
             }
         },
         'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.5',
-            'Sec-Fetch-Mode': 'navigate',
         }
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -385,13 +416,6 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     bot_username = context.bot.username or "mame_posts_bot"
     share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Video%20Downloader%20Bot!🔥"
-
-    keyboard = [
-        [
-            InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)
-        ]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
 
     file_base = f"video_{update.effective_user.id}_{update.message.message_id}"
     output_template = f"{file_base}.%(ext)s"
@@ -409,10 +433,27 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
 
         if os.path.exists(actual_file):
             file_size = os.path.getsize(actual_file)
-            # ቴሌግራም በቦት በኩል ከ 50MB በላይ መላክ ስለማይፈቅድ (ለተሻለ ፍጥነት) መጠን ይረጋገጣል
+            
+            keyboard_share = [[InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)]]
+            reply_markup_share = InlineKeyboardMarkup(keyboard_share)
+
+            # ከ 50MB በላይ ከሆነ ቴሌግራም ቦት ስለማይቀበለው ዳይሬክት ሊንክ ወይም ማውረጃ አገናኝ እንዲኖረው ይደረጋል
             if file_size > 50 * 1024 * 1024:
-                await status_msg.edit_text("⚠️ <b>ቪዲዮው በጣም ትልቅ ነው (ከ 50MB በላይ)፣ መላክ አልተቻለም።</b>", parse_mode="HTML")
-                os.remove(actual_file)
+                direct_url, title = await asyncio.to_thread(get_direct_video_url, url)
+                await status_msg.delete()
+                
+                big_file_keyboard = [
+                    [InlineKeyboardButton("📥 ቪዲዮውን በቀጥታ አውርድ (Direct Download)", url=direct_url or url)],
+                    [InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)]
+                ]
+                await update.message.reply_text(
+                    f"⚠️ <b>ቪዲዮው ከ 50MB በላይ በመሆኑ (Large File) በቴሌግራም ቻት በቀጥታ መላክ አልተቻለም።</b>\n\n"
+                    f"ነገር ግን ከታች ባለው ቁልፍ ተጭነው በከፍተኛ ፍጥነት ማውረድ ይችላሉ! 🔥",
+                    reply_markup=InlineKeyboardMarkup(big_file_keyboard),
+                    parse_mode="HTML"
+                )
+                if os.path.exists(actual_file):
+                    os.remove(actual_file)
                 return
 
             await status_msg.edit_text("📤 <b>ቪዲዮውን በመላክ ላይ ይገኛል...</b>", parse_mode="HTML")
@@ -420,7 +461,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
                 await update.message.reply_video(
                     video=video_file,
                     caption=f'<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts\n\n <tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy! Don\'t forget to share it with your friends.</b>',
-                    reply_markup=reply_markup,
+                    reply_markup=reply_markup_share,
                     parse_mode="HTML"
                 )
             await status_msg.delete()
@@ -523,7 +564,7 @@ async def button_callback(
     elif data == "cmd_support":
         await query.edit_message_text(
             f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
-            f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ Instagram, TikTok, YouTube, Facebook, Pinterest እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
+            f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ YouTube, Instagram, TikTok, Facebook, Pinterest እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
             f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
