@@ -97,7 +97,7 @@ def get_main_menu_keyboard():
             InlineKeyboardButton("📢 ማስታወቂያ ለማሰራት 🪪", callback_data="cmd_order")
         ],
         [
-            InlineKeyboardButton("💰 Price | ዋጋ", callback_data="cmd_price"),
+            InlineKeyboardButton("🪙 Price | ዋጋ", callback_data="cmd_price"),
             InlineKeyboardButton("💳 Payment Method", callback_data="cmd_payment")
         ],
         [
