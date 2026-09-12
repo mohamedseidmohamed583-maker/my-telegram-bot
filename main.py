@@ -251,8 +251,6 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f'• <b>ሁኔታ:</b> Active <tg-emoji emoji-id="5307976826440687996">🔥</tg-emoji>'
     )
 
-
-
     await update.message.reply_text(msg, parse_mode="HTML")
 
 
@@ -362,7 +360,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
             with open(actual_file, 'rb') as video_file:
                 await update.message.reply_video(
                     video=video_file,
-                    caption=f"<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username & @mame_posts }\n\n <tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy! Don't forget to share it with your friends.</b>",
+                    caption=f'<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts\n\n <tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy! Don\'t forget to share it with your friends.</b>',
                     reply_markup=reply_markup,
                     parse_mode="HTML"
                 )
@@ -380,7 +378,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
                 except:
                     pass
                     
-                await status_msg.edit_text(
+        await status_msg.edit_text(
             "😭 <b>ቪዲዮውን ማውረድ አልተቻለም!</b>\n\n"
             "እባክዎ የላኩት ሊንክ ትክክለኛ መሆኑን አረጋግጠው እንደገና ይሞክሩ። በጣም ይቅርታ 👐",
             parse_mode="HTML"
