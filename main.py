@@ -377,11 +377,13 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
                     os.remove(f)
                 except:
                     pass
-        await status_msg.edit_text(
-            "😭<b>ቪዲዮውን ማውረድ አልተቻለም!</b>\n\n"
-            "እባክዎ የላኩት ሊንክ ትክክለኛ መሆኑን አረጋግጠው እንደገና ይሞክሩ። በጣም ይቅርታ <tg-emoji emoji-id="5942913498349571809">🙂</tg-emoji>",
+                    
+                await status_msg.edit_text(
+            "😭 <b>ቪዲዮውን ማውረድ አልተቻለም!</b>\n\n"
+            "እባክዎ የላኩት ሊንክ ትክክለኛ መሆኑን አረጋግጠው እንደገና ይሞክሩ። በጣም ይቅርታ 👐",
             parse_mode="HTML"
         )
+
 
 
 # ==================================================
