@@ -42,7 +42,7 @@ def keep_alive():
 # CONFIGURATION
 # ==================================================
 
-TOKEN = "8795814797:AAFiYfrJgo-hAPy1CkXlf6qqKeyjrvAQUgs"
+TOKEN = "8795814797:AAG-d-XOtl-yQfsTnuSSNeErY4b-qesRIhY"
 ADMIN_ID = 6753546651
 
 # Force Join Channel
@@ -190,8 +190,20 @@ async def show_force_join(
 
 
 # ==================================================
-# START & MENU COMMAND
+# START & MENU COMMAND (የፕሪሚየም ኢሞጂ ቴጎች የገቡበት ዋና ጽሁፍ)
 # ==================================================
+
+def get_welcome_text():
+    return (
+        f'Hello <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
+        f'<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>My options:</b>\n\n'
+        f'<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | Tiktok: videos & photos\n'
+        f'<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | Instagram: reels, posts & stories\n'
+        f'<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | YouTube: videos & music\n'
+        f'<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | Twitter (X): videos & voice\n'
+        f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | Facebook: video\n\n'
+        f'And others Social Media: <tg-emoji emoji-id="5305749202997911340">📥</tg-emoji>'
+    )
 
 async def start(
     update: Update,
@@ -205,14 +217,7 @@ async def start(
         return
 
     await update.message.reply_text(
-        f'Hello <emoji id="5305577086478489521">🧳</emoji>\n\n'
-        f'<emoji id="5305739801314501775">✅</emoji> <b>My options:</b>\n\n'
-        f'<emoji id="5305290882742788410">🎵</emoji> | Tiktok: videos & photos\n'
-        f'<emoji id="5305551797711053969">📸</emoji> | Instagram: reels, posts & stories\n'
-        f'<emoji id="5305777524012262308">▶️</emoji> | YouTube: videos & music\n'
-        f'<emoji id="5305474827602140530">✖️</emoji> | Twitter (X): videos & voice\n'
-        f'<emoji id="5305311717629142471">📘</emoji> | Facebook: video\n\n'
-        f'And others Social Media: <emoji id="5305749202997911340">📥</emoji>',
+        get_welcome_text(),
         reply_markup=get_main_menu_keyboard(),
         parse_mode="HTML"
     )
@@ -258,11 +263,11 @@ async def rates_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await show_force_join(update, context)
         return
     await update.message.reply_text(
-        "💰 <b>የማስታወቂያ ዋጋዎች</b>\n\n"
-        "📌 12 Hours — <b> በስምምነት ETB</b>\n"
-        "📌 24 Hours — <b> 500 ETB</b>\n"
-        "📌 48 Hours — <b> 700 ETB</b>\n\n"
-        " የ ማስታወቂያውን አይነት አይተን አስተያየት እናደርጋለን!🤝።",
+        f'<tg-emoji emoji-id="5447458260200214425">💰</tg-emoji> <b>ማስታወቂያ ዋጋዎች</b>\n\n'
+        f'📌 12 Hours — <b>በስምምነት ETB</b>\n'
+        f'📌 24 Hours — <b>500 ETB</b>\n'
+        f'📌 48 Hours — <b>700 ETB</b>\n\n'
+        f'የማስታወቂያውን አይነት አይተን አስተያየት እናደርጋለን! 🤝',
         parse_mode="HTML"
     )
 
@@ -272,12 +277,12 @@ async def payment_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await show_force_join(update, context)
         return
     await update.message.reply_text(
-        "💳 <b>Payment Method</b>\n\n"
-        "🏦 <b>CBE</b>\n"
-        "1000528274394\n\n"
-        "Mohammed Seid\n"
-        "📱 <b>TELE BIRR</b>\n"
-        "+251963266849\n\n",
+        f'<tg-emoji emoji-id="5186349709169525403">💳</tg-emoji> <b>Payment Method</b>\n\n'
+        f'<tg-emoji emoji-id="5961054379350955385">🏦</tg-emoji> <b>ንግድ ባንክ (CBE)</b>\n'
+        f'<code>1000528274394</code>\n\n'
+        f'Mohammed Seid\n\n'
+        f'<tg-emoji emoji-id="5960632377339285724">📱</tg-emoji> <b>ቴሌ ብር (TELE BIRR)</b>\n'
+        f'<code>+251963266849</code>',
         parse_mode="HTML"
     )
 
@@ -287,9 +292,9 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await show_force_join(update, context)
         return
     await update.message.reply_text(
-        "💬 <b>Support & Downloader Help</b>\n\n"
-        "📥 <b>ቪዲዮ ለማውረድ:</b> የ Instagram, TikTok, YouTube እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n"
-        "👨‍💻 ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።",
+        f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
+        f'📥 <b>ቪዲዮ ለማውረድ:</b> የ Instagram, TikTok, YouTube እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
+        f'👨‍💻 ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
         parse_mode="HTML"
     )
 
@@ -372,7 +377,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
                     pass
         await status_msg.edit_text(
             "😭 <b>ቪዲዮውን ማውረድ አልተቻለም!</b>\n\n"
-            "እባክዎ የላኩት ሊንክ ትክክለኛ መሆኑን አረጋግጠው እንደገና ይሞክሩ። በጣም ይቅርታ👐",
+            "እባክዎ የላኩት ሊንክ ትክክለኛ መሆኑን አረጋግጠው እንደገና ይሞክሩ። በጣም ይቅርታ 👐",
             parse_mode="HTML"
         )
 
@@ -393,33 +398,26 @@ async def button_callback(
 
     if data == "cmd_back":
         await query.edit_message_text(
-            f'Hello <emoji id="5305577086478489521">🧳</emoji>\n\n'
-            f'<emoji id="5305739801314501775">✅</emoji> <b>My options:</b>\n\n'
-            f'<emoji id="5305290882742788410">🎵</emoji> | Tiktok: videos & photos\n'
-            f'<emoji id="5305551797711053969">📸</emoji> | Instagram: reels, posts & stories\n'
-            f'<emoji id="5305777524012262308">▶️</emoji> | YouTube: videos & music\n'
-            f'<emoji id="5305474827602140530">✖️</emoji> | Twitter (X): videos & voice\n'
-            f'<emoji id="5305311717629142471">📘</emoji> | Facebook: video\n\n'
-            f'And others Social Media: <emoji id="5305749202997911340">📥</emoji>',
+            get_welcome_text(),
             reply_markup=get_main_menu_keyboard(),
             parse_mode="HTML"
         )
 
     elif data == "cmd_price":
         await query.edit_message_text(
-            "💰 <b>የማስታወቂያ ዋጋዎች</b>\n\n"
-            "📌 12 Hours — <b> በስምምነት ETB</b>\n"
-            "📌 24 Hours — <b> 500 ETB</b>\n"
-            "📌 48 Hours — <b> 700 ETB</b>\n\n"
-            " የ ማስታወቂያውን አይነት አይተን አስተያየት እናደርጋለን!🤝።",
+            f'<tg-emoji emoji-id="5447458260200214425">💰</tg-emoji> <b>ማስታወቂያ ዋጋዎች</b>\n\n'
+            f'📌 12 Hours — <b>በስምምነት ETB</b>\n'
+            f'📌 24 Hours — <b>500 ETB</b>\n'
+            f'📌 48 Hours — <b>700 ETB</b>\n\n'
+            f'የማስታወቂያውን አይነት አይተን አስተያየት እናደርጋለን! 🤝',
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
 
     elif data == "cmd_order":
         await query.edit_message_text(
-            "📢 <b>ማስታወቂያ ለማሰራት </b>\n\n"
-            " 👇 እባክዎ ማስታወቂያ ማሰራት የሚፈልጉትን Post እዚህ ይላኩ👐 ።\n\n",
+            f'<tg-emoji emoji-id="5197304993920616826">📢</tg-emoji> <b>ማስታወቂያ ለማስታወቅ/ለማሰራት</b>\n\n'
+            f'👇 እባክዎ ማስታወቂያ ማሰራት የሚፈልጉትን Post እዚህ ይላኩ 👐',
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
@@ -429,15 +427,15 @@ async def button_callback(
         username_text = f"@{user.username}" if user.username else "የለውም"
 
         msg = (
-            "📊 <b>የእርስዎ እና የቦቱ Status</b>\n\n"
-            "👤 <b>የግል መረጃዎት፦</b>\n"
-            f"• <b>ስም:</b> {user.full_name}\n"
-            f"• <b>Username:</b> {username_text}\n"
-            f"• <b>Telegram ID:</b> <code>{user.id}</code>\n"
-            f"• <b>የላኳቸው አጠቃላይ መልዕክቶች:</b> <code>{user_msg_count}</code>\n\n"
-            "🤖 <b>የቦቱ አጠቃላይ መረጃ፦</b>\n"
-            f"• <b>አጠቃላይ የቦቱ ተጠቃሚዎች:</b> <code>{total_users} Users</code>\n"
-            "• <b>ሁኔታ:</b> Active ✅"
+            f'<tg-emoji emoji-id="5431577498364158238">📊</tg-emoji> <b>የእርስዎ እና የቦቱ Status</b>\n\n'
+            f'👤 <b>የግል መረጃዎት፦</b>\n'
+            f'• <b>ስም:</b> {user.full_name}\n'
+            f'• <b>Username:</b> {username_text}\n'
+            f'• <b>Telegram ID:</b> <code>{user.id}</code>\n'
+            f'• <b>የላኳቸው አጠቃላይ መልዕክቶች:</b> <code>{user_msg_count}</code>\n\n'
+            f'🤖 <b>የቦቱ አጠቃላይ መረጃ፦</b>\n'
+            f'• <b>አጠቃላይ የቦቱ ተጠቃሚዎች:</b> <code>{total_users} Users</code>\n'
+            f'• <b>ሁኔታ:</b> Active ✅'
         )
         await query.edit_message_text(
             msg, 
@@ -447,26 +445,21 @@ async def button_callback(
 
     elif data == "cmd_payment":
         await query.edit_message_text(
-            "💳 <b>Payment Method</b>\n\n"
-            "🏦 <b>CBE</b>\n"
-            "1000528274394\n\n"
-            "Mohammed Seid\n"
-            "📱 <b>TELE BIRR</b>\n"
-            "+251963266849\n\n",
+            f'<tg-emoji emoji-id="5186349709169525403">💳</tg-emoji> <b>Payment Method</b>\n\n'
+            f'<tg-emoji emoji-id="5961054379350955385">🏦</tg-emoji> <b>ንግድ ባንክ (CBE)</b>\n'
+            f'<code>1000528274394</code>\n\n'
+            f'Mohammed Seid\n\n'
+            f'<tg-emoji emoji-id="5960632377339285724">📱</tg-emoji> ቴሌ ብር (TELE BIRR)\n'
+            f'<code>+251963266849</code>',
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
 
     elif data == "cmd_support":
         await query.edit_message_text(
-            f'Hello <emoji id="5305577086478489521">🧳</emoji>\n\n'
-            f'<emoji id="5305739801314501775">✅</emoji> <b>My options:</b>\n\n'
-            f'<emoji id="5305290882742788410">🎵</emoji> | Tiktok: videos & photos\n'
-            f'<emoji id="5305551797711053969">📸</emoji> | Instagram: reels, posts & stories\n'
-            f'<emoji id="5305777524012262308">▶️</emoji> | YouTube: videos & music\n'
-            f'<emoji id="5305474827602140530">✖️</emoji> | Twitter (X): videos & voice\n'
-            f'<emoji id="5305311717629142471">📘</emoji> | Facebook: video\n\n'
-            f'And others Social Media: <emoji id="5305749202997911340">📥</emoji>',
+            f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
+            f'📥 <b>ቪዲዮ ለማውረድ:</b> የ Instagram, TikTok, YouTube እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
+            f'👨‍💻 ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
@@ -608,14 +601,14 @@ async def check_join(
             )
         else:
             await query.answer(
-                " እባክዎ መጀመሪያ Channel ይቀላቀሉ!🙂",
+                "እባክዎ መጀመሪያ Channel ይቀላቀሉ! 🙂",
                 show_alert=True
             )
 
     except Exception as e:
         print("Check Join Error:", e)
         await query.answer(
-            "⚠️ አባልነትዎን ማረጋገጥ አልተቻለም🙂።",
+            "⚠️ አባልነትዎን ማረጋገጥ አልተቻለም። 🙂",
             show_alert=True
         )
 
