@@ -239,19 +239,18 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     total_users, user_msg_count = get_user_stats(user.id)
     username_text = f"@{user.username}" if user.username else "የለውም"
 
-        msg = (
+     msg = (
         f'<tg-emoji emoji-id="5431577498364158238">📊</tg-emoji> <b>የእርስዎ እና የቦቱ Status</b>\n\n'
-        
         f'<tg-emoji emoji-id="5875078913725571378">👤</tg-emoji> <b>የግል መረጃዎት፦</b>\n'
         f'• <b>ስም:</b> {user.full_name}\n'
         f'• <b>Username:</b> {username_text}\n'
         f'• <b>Telegram ID:</b> <code>{user.id}</code>\n'
         f'• <b>የላኳቸው አጠቃላይ መልዕክቶች:</b> <code>{user_msg_count}</code>\n\n'
-        
         f'<tg-emoji emoji-id="5307979128543158051">🤖</tg-emoji> <b>የቦቱ አጠቃላይ መረጃ፦</b>\n'
         f'• <b>አጠቃላይ የቦቱ ተጠቃሚዎች:</b> <code>{total_users} Users</code>\n'
         f'• <b>ሁኔታ:</b> Active <tg-emoji emoji-id="5307976826440687996">🔥</tg-emoji>'
     )
+
 
     await update.message.reply_text(msg, parse_mode="HTML")
 
