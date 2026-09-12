@@ -329,11 +329,12 @@ async def payment_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         f'<tg-emoji emoji-id="5186349709169525403">💳</tg-emoji> <b>Payment Method</b>\n\n'
         f'<tg-emoji emoji-id="5961054379350955385">🏦</tg-emoji> <b>ንግድ ባንክ (CBE)</b>\n'
-        f'<code> 1000528274394 </code>\n\n'
+        f'<code>1000528274394</code>\n\n'
         f'Mohammed Seid\n\n'
         f'<tg-emoji emoji-id="5960632377339285724">📱</tg-emoji> <b>ቴሌ ብር (TELE BIRR)</b>\n'
-        f'<code> +251963266849 </code>\n\n'
-        f'<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> ክፍያውን ሲፈጽሙ ስክሪን ሹቱን ይላኩ!'
+        f'<code>+251963266849</code>\n\n'
+        f'<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>ክፍያውን ሲፈጽሙ ስክሪን ሹቱን ይላኩ!</b>',
+        parse_mode="HTML"
     )
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -343,7 +344,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     await update.message.reply_text(
         f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
-        f' <tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ YouTube, Instagram, TikTok, Facebook, Pinterest እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
+        f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ YouTube, Instagram, TikTok, Facebook, Pinterest እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
         f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji>  ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
         parse_mode="HTML"
     )
@@ -416,7 +417,6 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
             await status_msg.edit_text("📤 <b>ቪዲዮውን በመላክ ላይ ይገኛል...</b>", parse_mode="HTML")
             
             with open(actual_file, 'rb') as f_obj:
-                # ከ 50 ሜጋባይት በላይ ከሆነ እንደ ዶክመንት (Document) ይልካል፣ ከዛ በታች ከሆነ ደግሞ እንደ ቪዲዮ ይልካል
                 if file_size > 50 * 1024 * 1024:
                     await update.message.reply_document(
                         document=f_obj,
@@ -521,9 +521,9 @@ async def button_callback(
             f'<tg-emoji emoji-id="5961054379350955385">🏦</tg-emoji> <b>ንግድ ባንክ (CBE)</b>\n'
             f'<code>1000528274394</code>\n\n'
             f'Mohammed Seid\n\n'
-            f'<tg-emoji emoji-id="5960632377339285724">📱</tg-emoji> ቴሌ ብር (TELE BIRR)\n'
+            f'<tg-emoji emoji-id="5960632377339285724">📱</tg-emoji> <b>ቴሌ ብር (TELE BIRR)</b>\n'
             f'<code>+251963266849</code>\n\n'
-            f'<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji>ክፍያውን ሲፈጽሙ ስክሪን ሹቱን ይላኩ!',
+            f'<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>ክፍያውን ሲፈጽሙ ስክሪን ሹቱን ይላኩ!</b>',
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
