@@ -97,7 +97,7 @@ def get_main_menu_keyboard():
             InlineKeyboardButton("📢 ማስታወቂያ ለማሰራት 🪪", callback_data="cmd_order")
         ],
         [
-            InlineKeyboardButton("🪙 Price | ዋጋ", callback_data="cmd_price"),
+            InlineKeyboardButton("💵 Price | ዋጋ", callback_data="cmd_price"),
             InlineKeyboardButton("💳 Payment Method", callback_data="cmd_payment")
         ],
         [
@@ -240,14 +240,21 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     username_text = f"@{user.username}" if user.username else "የለውም"
 
     msg = (
-        "📊 <b>የእርስዎ እና የቦቱ Status</b>\n\n"
+        "<tg-emoji emoji-id="5431577498364158238">📊</tg-emoji> <b>የእርስዎ እና የቦቱ Status</b>\n\n"
         f'<tg-emoji emoji-id="5875078913725571378">👤</tg-emoji> <b>የግል መረጃዎት፦</b>\n'
+        
         f'• <b>ስም:</b> {user.full_name}\n'
+        
         f'• <b>Username:</b> {username_text}\n'
+        
         f'• <b>Telegram ID:</b> <code>{user.id}</code>\n'
+        
         f'• <b>የላኳቸው አጠቃላይ መልዕክቶች:</b> <code>{user_msg_count}</code>\n\n'
+        
         f'<tg-emoji emoji-id="5307979128543158051">🤖</tg-emoji> <b>የቦቱ አጠቃላይ መረጃ፦</b>\n'
+        
         f'• <b>አጠቃላይ የቦቱ ተጠቃሚዎች:</b> <code>{total_users} Users</code>\n'
+        
         f'• <b>ሁኔታ:</b> Active <tg-emoji emoji-id="5307976826440687996">🔥</tg-emoji>'
     )
 
@@ -281,10 +288,10 @@ async def payment_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         f'<tg-emoji emoji-id="5186349709169525403">💳</tg-emoji> <b>Payment Method</b>\n\n'
         f'<tg-emoji emoji-id="5961054379350955385">🏦</tg-emoji> <b>ንግድ ባንክ (CBE)</b>\n'
-        f'<code>1000528274394</code>\n\n'
+        f'<code> 1000528274394 </code>\n\n'
         f'Mohammed Seid\n\n'
         f'<tg-emoji emoji-id="5960632377339285724">📱</tg-emoji> <b>ቴሌ ብር (TELE BIRR)</b>\n'
-        f'<code>+251963266849</code>',
+        f'<code> +251963266849 </code>',
         parse_mode="HTML"
     )
 
@@ -360,7 +367,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
             with open(actual_file, 'rb') as video_file:
                 await update.message.reply_video(
                     video=video_file,
-                    caption=f"🚀 <b>Downloaded with</b> @{bot_username}\n\n🥰 <b>Enjoy! Don't forget to share it with your friends.</b>",
+                    caption=f"<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username & @mame_posts }\n\n <tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy! Don't forget to share it with your friends.</b>",
                     reply_markup=reply_markup,
                     parse_mode="HTML"
                 )
