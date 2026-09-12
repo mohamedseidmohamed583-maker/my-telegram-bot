@@ -20,7 +20,7 @@ from telegram.ext import (
 import yt_dlp
 
 # ==================================================
-# FLASK WEB SERVER (Render Port Binding)
+# FLASK WEB SERVER (Fixed Port Binding for Render)
 # ==================================================
 app_web = Flask('')
 
@@ -350,37 +350,51 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==================================================
-# ULTIMATE FIXED YOUTUBE & DOWNLOADER ENGINE
+# ULTIMATE UNLIMITED DOWNLOADER ENGINE (WITH COOKIES BYPASS)
 # ==================================================
 
 def get_ydl_options(output_template=None):
     opts = {
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-        'merge_output_format': 'mp4',
         'quiet': True,
         'no_warnings': True,
         'nocheckcertificate': True,
-        'ignoreerrors': False,
         'geo_bypass': True,
         'extractor_args': {
             'youtube': {
-                'player_client': ['android', 'web', 'mweb'],
+                'player_client': ['android', 'web', 'ios'],
             }
         },
         'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.5',
         }
     }
     
+    # 🍪 cookies.txt ካለ በራስሰር ይጠቀማል (ለ YouTube Bot Error ማስተካከያ)
     if os.path.exists('cookies.txt'):
         opts['cookiefile'] = 'cookies.txt'
 
     if output_template:
         opts['outtmpl'] = output_template
+        opts['merge_output_format'] = 'mp4'
 
     return opts
+
+def get_direct_video_url(url: str):
+    try:
+        with yt_dlp.YoutubeDL(get_ydl_options()) as ydl:
+            info = ydl.extract_info(url, download=False)
+            if 'url' in info:
+                return info['url'], info.get('title', 'Video')
+            elif 'formats' in info:
+                for f in reversed(info['formats']):
+                    if f.get('url') and f.get('ext') == 'mp4':
+                        return f['url'], info.get('title', 'Video')
+    except Exception as e:
+        print("Extract URL Error:", e)
+    return None, None
 
 def download_video(url: str, output_template: str):
     with yt_dlp.YoutubeDL(get_ydl_options(output_template)) as ydl:
@@ -413,25 +427,33 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
             keyboard_share = [[InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)]]
             reply_markup_share = InlineKeyboardMarkup(keyboard_share)
 
-            await status_msg.edit_text("📤 <b>ቪዲዮውን በመላክ ላይ ይገኛል...</b>", parse_mode="HTML")
-            
-            with open(actual_file, 'rb') as f_obj:
-                # ከ 50 ሜጋባይት በላይ ከሆነ እንደ ዶክመንት (Document) ይልካል፣ ከዛ በታች ከሆነ ደግሞ እንደ ቪዲዮ ይልካል
-                if file_size > 50 * 1024 * 1024:
-                    await update.message.reply_document(
-                        document=f_obj,
-                        caption=f'<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts\n\n <tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy! Large file downloaded successfully.</b>',
-                        reply_markup=reply_markup_share,
-                        parse_mode="HTML"
-                    )
-                else:
-                    await update.message.reply_video(
-                        video=f_obj,
-                        caption=f'<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts\n\n <tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy! Don\'t forget to share it with your friends.</b>',
-                        reply_markup=reply_markup_share,
-                        parse_mode="HTML"
-                    )
+            # ከ 50MB በላይ ከሆነ ዳይሬክት ሊንክ ይሰጣል
+            if file_size > 50 * 1024 * 1024:
+                direct_url, title = await asyncio.to_thread(get_direct_video_url, url)
+                await status_msg.delete()
+                
+                big_file_keyboard = [
+                    [InlineKeyboardButton("📥 ቪዲዮውን በቀጥታ አውርድ (Direct Download)", url=direct_url or url)],
+                    [InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)]
+                ]
+                await update.message.reply_text(
+                    f"⚠️ <b>ቪዲዮው ከ 50MB በላይ በመሆኑ (Large File) በቴሌግራም ቻት በቀጥታ መላክ አልተቻለም።</b>\n\n"
+                    f"ነገር ግን ከታች ባለው ቁልፍ ተጭነው በከፍተኛ ፍጥነት ማውረድ ይችላሉ! 🔥",
+                    reply_markup=InlineKeyboardMarkup(big_file_keyboard),
+                    parse_mode="HTML"
+                )
+                if os.path.exists(actual_file):
+                    os.remove(actual_file)
+                return
 
+            await status_msg.edit_text("📤 <b>ቪዲዮውን በመላክ ላይ ይገኛል...</b>", parse_mode="HTML")
+            with open(actual_file, 'rb') as video_file:
+                await update.message.reply_video(
+                    video=video_file,
+                    caption=f'<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts\n\n <tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy! Don\'t forget to share it with your friends.</b>',
+                    reply_markup=reply_markup_share,
+                    parse_mode="HTML"
+                )
             await status_msg.delete()
             os.remove(actual_file)
         else:
@@ -738,3 +760,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
