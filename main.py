@@ -378,7 +378,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
                 except:
                     pass
         await status_msg.edit_text(
-            "<tg-emoji emoji-id=😭 <b>ቪዲዮውን ማውረድ አልተቻለም!</b>\n\n"
+            "😭<b>ቪዲዮውን ማውረድ አልተቻለም!</b>\n\n"
             "እባክዎ የላኩት ሊንክ ትክክለኛ መሆኑን አረጋግጠው እንደገና ይሞክሩ። በጣም ይቅርታ <tg-emoji emoji-id="5942913498349571809">🙂</tg-emoji>",
             parse_mode="HTML"
         )
