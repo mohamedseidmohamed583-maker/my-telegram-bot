@@ -350,35 +350,39 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==================================================
-# ULTIMATE UNLIMITED DOWNLOADER ENGINE (WITH COOKIES BYPASS)
+# ULTIMATE UNLIMITED DOWNLOADER ENGINE (FIXED CLIENTS & HEADERS)
 # ==================================================
 
 def get_ydl_options(output_template=None):
     opts = {
-        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        'format': 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4] / bv+ba/b',
+        'merge_output_format': 'mp4',
         'quiet': True,
         'no_warnings': True,
         'nocheckcertificate': True,
+        'ignoreerrors': False,
         'geo_bypass': True,
         'extractor_args': {
             'youtube': {
-                'player_client': ['android', 'web', 'ios'],
+                'player_client': ['mweb', 'android', 'ios', 'web'],
             }
         },
         'http_headers': {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.5',
+            'Sec-Ch-Ua': '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+            'Sec-Ch-Ua-Mobile': '?0',
+            'Sec-Ch-Ua-Platform': '"Windows"',
         }
     }
     
-    # 🍪 cookies.txt ካለ በራስሰር ይጠቀማል (ለ YouTube Bot Error ማስተካከያ)
+    # 🍪 cookies.txt ፋይል Render ሰርቨር ላይ ካለ በራሰሰር እንዲጠቀምበት
     if os.path.exists('cookies.txt'):
         opts['cookiefile'] = 'cookies.txt'
 
     if output_template:
         opts['outtmpl'] = output_template
-        opts['merge_output_format'] = 'mp4'
 
     return opts
 
