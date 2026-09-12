@@ -7,7 +7,8 @@ from telegram import (
     Update,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
-    BotCommand
+    BotCommand,
+    WebAppInfo
 )
 from telegram.ext import (
     ApplicationBuilder,
@@ -88,7 +89,7 @@ def get_user_stats(user_id):
     return total_users, user_msg_count
 
 # ==================================================
-# MAIN MENU KEYBOARD
+# MAIN MENU KEYBOARD (በምስሉ ላይ እንዳለው Add to Group የተካተበት)
 # ==================================================
 
 def get_main_menu_keyboard(bot_username):
@@ -204,7 +205,7 @@ def get_welcome_text():
         f'<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | <b>Instagram: reels, posts & stories</b>\n'
         f'<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | <b>YouTube: videos & music</b>\n'
         f'<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | <b>Twitter (X): videos & voice</b>\n'
-        f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>Facebook: video</b>\n\n'
+        f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>Facebook & Pinterest: video</b>\n\n'
         f'<b>And others Social Media:</b> <tg-emoji emoji-id="5305749202997911340">📥</tg-emoji>'
     )
 
@@ -259,7 +260,7 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==================================================
-# BROADCAST COMMAND
+# BROADCAST COMMAND (ለተጠቃሚዎች በሙሉ መልዕክት ለመላክ)
 # ==================================================
 
 async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -329,10 +330,10 @@ async def payment_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         f'<tg-emoji emoji-id="5186349709169525403">💳</tg-emoji> <b>Payment Method</b>\n\n'
         f'<tg-emoji emoji-id="5961054379350955385">🏦</tg-emoji> <b>ንግድ ባንክ (CBE)</b>\n'
-        f'<code>1000528274394</code>\n\n'
+        f'<code> 1000528274394 </code>\n\n'
         f'Mohammed Seid\n\n'
         f'<tg-emoji emoji-id="5960632377339285724">📱</tg-emoji> <b>ቴሌ ብር (TELE BIRR)</b>\n'
-        f'<code>+251963266849</code>',
+        f'<code> +251963266849 </code>',
         parse_mode="HTML"
     )
 
@@ -343,19 +344,19 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     await update.message.reply_text(
         f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
-        f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ Instagram, TikTok, YouTube እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
-        f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
+        f' <tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ Instagram, TikTok, YouTube, Facebook, Pinterest እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
+        f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji>  ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
         parse_mode="HTML"
     )
 
 
 # ==================================================
-# PRO-LEVEL DOWNLOADER ENGINE
+# ULTIMATE PRO-LEVEL DOWNLOADER ENGINE (Fixed & Universal)
 # ==================================================
 
 def download_video(url: str, output_template: str):
     ydl_opts = {
-        'format': 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4] / bv+ba/b',
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'merge_output_format': 'mp4',
         'outtmpl': output_template,
         'quiet': True,
@@ -365,11 +366,14 @@ def download_video(url: str, output_template: str):
         'geo_bypass': True,
         'extractor_args': {
             'youtube': {
-                'player_client': ['android', 'web'],
+                'player_client': ['android', 'web', 'ios'],
             }
         },
         'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Sec-Fetch-Mode': 'navigate',
         }
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -404,11 +408,18 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
                     break
 
         if os.path.exists(actual_file):
+            file_size = os.path.getsize(actual_file)
+            # ቴሌግራም በቦት በኩል ከ 50MB በላይ መላክ ስለማይፈቅድ (ለተሻለ ፍጥነት) መጠን ይረጋገጣል
+            if file_size > 50 * 1024 * 1024:
+                await status_msg.edit_text("⚠️ <b>ቪዲዮው በጣም ትልቅ ነው (ከ 50MB በላይ)፣ መላክ አልተቻለም።</b>", parse_mode="HTML")
+                os.remove(actual_file)
+                return
+
             await status_msg.edit_text("📤 <b>ቪዲዮውን በመላክ ላይ ይገኛል...</b>", parse_mode="HTML")
             with open(actual_file, 'rb') as video_file:
                 await update.message.reply_video(
                     video=video_file,
-                    caption=f'<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy! Don\'t forget to share it with your friends.</b>',
+                    caption=f'<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts\n\n <tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy! Don\'t forget to share it with your friends.</b>',
                     reply_markup=reply_markup,
                     parse_mode="HTML"
                 )
@@ -433,8 +444,9 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
         )
 
 
+
 # ==================================================
-# BUTTON CLICK HANDLER
+# BUTTON CLICK HANDLER (EDIT MESSAGE IN-PLACE)
 # ==================================================
 
 async def button_callback(
@@ -495,13 +507,14 @@ async def button_callback(
             parse_mode="HTML"
         )
 
+
     elif data == "cmd_payment":
         await query.edit_message_text(
             f'<tg-emoji emoji-id="5186349709169525403">💳</tg-emoji> <b>Payment Method</b>\n\n'
             f'<tg-emoji emoji-id="5961054379350955385">🏦</tg-emoji> <b>ንግድ ባንክ (CBE)</b>\n'
             f'<code>1000528274394</code>\n\n'
             f'Mohammed Seid\n\n'
-            f'<tg-emoji emoji-id="5960632377339285724">📱</tg-emoji> <b>ቴሌ ብር (TELE BIRR)</b>\n'
+            f'<tg-emoji emoji-id="5960632377339285724">📱</tg-emoji> ቴሌ ብር (TELE BIRR)\n'
             f'<code>+251963266849</code>',
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
@@ -510,7 +523,7 @@ async def button_callback(
     elif data == "cmd_support":
         await query.edit_message_text(
             f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
-            f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ Instagram, TikTok, YouTube እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
+            f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ Instagram, TikTok, YouTube, Facebook, Pinterest እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
             f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
@@ -537,7 +550,10 @@ async def handle_user_messages(
 
     text = update.message.text or ""
 
-    valid_domains = ["instagram.com", "tiktok.com", "youtube.com", "youtu.be", "facebook.com", "fb.watch", "twitter.com", "x.com"]
+    valid_domains = [
+        "instagram.com", "tiktok.com", "youtube.com", "youtu.be", 
+        "facebook.com", "fb.watch", "twitter.com", "x.com", "pinterest.com", "pin.it"
+    ]
     is_supported_link = any(domain in text.lower() for domain in valid_domains)
 
     if is_supported_link:
@@ -670,7 +686,7 @@ async def check_join(
 # ==================================================
 
 async def error_handler(
-    object,
+    update: object,
     context: ContextTypes.DEFAULT_TYPE
 ):
     print("❌ ERROR:", context.error)
