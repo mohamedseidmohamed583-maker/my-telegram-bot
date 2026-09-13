@@ -1,5 +1,4 @@
 import os
-import json
 import asyncio
 from threading import Thread
 from flask import Flask
@@ -18,6 +17,7 @@ from telegram.ext import (
     filters
 )
 import yt_dlp
+from pymongo import MongoClient
 
 # ==================================================
 # FLASK WEB SERVER (Render Port Binding)
@@ -50,42 +50,45 @@ FORCE_CHANNEL = "@mame_posts"
 FORCE_CHANNEL_LINK = "https://t.me/mame_posts"
 
 # ==================================================
-# DATABASE MANAGEMENT
+# MONGODB PERMANENT DATABASE CONNECTION
 # ==================================================
 
-DATA_FILE = "user_data.json"
+MONGO_URI = "mongodb+srv://mameposts:MamePass1234@cluster0.j3409sl.mongodb.net/?appName=Cluster0"
 
-def load_data():
-    if os.path.exists(DATA_FILE):
-        try:
-            with open(DATA_FILE, "r") as f:
-                return json.load(f)
-        except Exception:
-            return {}
-    return {}
-
-def save_data(data):
-    try:
-        with open(DATA_FILE, "w") as f:
-            json.dump(data, f)
-    except Exception as e:
-        print("Save Error:", e)
+try:
+    client = MongoClient(MONGO_URI)
+    db = client["mame_posts_bot_db"]
+    users_collection = db["users"]
+    print("✅ MongoDB Connected Successfully!")
+except Exception as e:
+    print("❌ MongoDB Connection Error:", e)
 
 def record_user_activity(user_id):
-    data = load_data()
-    uid_str = str(user_id)
-    if uid_str not in data:
-        data[uid_str] = {"msg_count": 0}
-    
-    data[uid_str]["msg_count"] = data[uid_str].get("msg_count", 0) + 1
-    save_data(data)
+    try:
+        users_collection.update_one(
+            {"_id": str(user_id)},
+            {"$inc": {"msg_count": 1}},
+            upsert=True
+        )
+    except Exception as e:
+        print("DB Record Error:", e)
 
 def get_user_stats(user_id):
-    data = load_data()
-    uid_str = str(user_id)
-    total_users = len(data)
-    user_msg_count = data.get(uid_str, {}).get("msg_count", 0)
-    return total_users, user_msg_count
+    try:
+        total_users = users_collection.count_documents({})
+        user_data = users_collection.find_one({"_id": str(user_id)})
+        user_msg_count = user_data.get("msg_count", 0) if user_data else 0
+        return total_users, user_msg_count
+    except Exception as e:
+        print("DB Stats Error:", e)
+        return 0, 0
+
+def get_all_users():
+    try:
+        return [user["_id"] for user in users_collection.find({}, {"_id": 1})]
+    except Exception as e:
+        print("DB Get All Users Error:", e)
+        return []
 
 # ==================================================
 # MAIN MENU KEYBOARD
@@ -253,6 +256,7 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f'• <b>የላኳቸው አጠቃላይ መልዕክቶች:</b> <code>{user_msg_count}</code>\n\n'
         
         f'<tg-emoji emoji-id="5307979128543158051">🤖</tg-emoji> <b>የቦቱ አጠቃላይ መረጃ፦</b>\n'
+        f'• <b>አጠቃላይ የተመዘገቡ ተጠቃሚዎች:</b> <code>{total_users}</code>\n'
         f'• <b>ሁኔታ:</b> Active <tg-emoji emoji-id="5307976826440687996">🔥</tg-emoji>'
     )
 
@@ -260,7 +264,7 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==================================================
-# BROADCAST COMMAND (UPDATED FOR MEDIA & STICKERS)
+# BROADCAST COMMAND (MONGODB INTEGRATED)
 # ==================================================
 
 async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -277,17 +281,16 @@ async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    data = load_data()
+    all_users = get_all_users()
     success_count = 0
     fail_count = 0
 
     status_msg = await update.message.reply_text("🚀 መልዕክቱን ለተጠቃሚዎች በመላክ ላይ ይገኛል...")
 
-    for uid_str in data.keys():
+    for uid_str in all_users:
         try:
             chat_id = int(uid_str)
             if reply_msg:
-                # ፕሪሚየም ስቲከሮችን፣ ፎቶዎችን፣ ቪዲዮዎችን እና ማንኛውንም ሚዲያ በጥራቱ ይልካል
                 await reply_msg.copy(chat_id=chat_id)
             else:
                 text_to_send = " ".join(context.args)
@@ -514,6 +517,7 @@ async def button_callback(
             f'• <b>የላኳቸው አጠቃላይ መልዕክቶች:</b> <code>{user_msg_count}</code>\n\n'
             
             f'<tg-emoji emoji-id="5307979128543158051">🤖</tg-emoji> <b>የቦቱ አጠቃላይ መረጃ፦</b>\n'
+            f'• <b>አጠቃላይ የተመዘገቡ ተጠቃሚዎች:</b> <code>{total_users}</code>\n'
             f'• <b>ሁኔታ:</b> Active <tg-emoji emoji-id="5307976826440687996">🔥</tg-emoji>'
         )
         await query.edit_message_text(
@@ -741,7 +745,7 @@ def main():
     
     app.add_error_handler(error_handler)
 
-    print("🤖 Mame Posts Bot is running...")
+    print("🤖 Mame Posts Bot is running with MongoDB...")
     app.run_polling()
 
 if __name__ == '__main__':
