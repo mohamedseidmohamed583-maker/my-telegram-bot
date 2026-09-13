@@ -74,17 +74,26 @@ def save_data(data):
 def record_user_activity(user_id):
     data = load_data()
     uid_str = str(user_id)
+
     if uid_str not in data:
-        data[uid_str] = {"msg_count": 0}
-    
+        data[uid_str] = {
+            "msg_count": 0,
+            "started": True
+        }
+
     data[uid_str]["msg_count"] = data[uid_str].get("msg_count", 0) + 1
+    data[uid_str]["started"] = True
+
     save_data(data)
+
 
 def get_user_stats(user_id):
     data = load_data()
     uid_str = str(user_id)
+
     total_users = len(data)
     user_msg_count = data.get(uid_str, {}).get("msg_count", 0)
+
     return total_users, user_msg_count
 
 # ==================================================
@@ -253,7 +262,8 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f'• <b>የላኳቸው አጠቃላይ መልዕክቶች:</b> <code>{user_msg_count}</code>\n\n'
         
         f'<tg-emoji emoji-id="5307979128543158051">🤖</tg-emoji> <b>የቦቱ አጠቃላይ መረጃ፦</b>\n'
-        f'• <b>ሁኔታ:</b> Active <tg-emoji emoji-id="5307976826440687996">🔥</tg-emoji>'
+        f'• <b>ሁኔታ:</b> Active <tg-emoji emoji-id="5307976826440687996">🔥</tg-emoji>\n'
+f'• <b>ጠቅላላ Users:</b> <code>{total_users}</code> 👥'
     )
 
     await update.message.reply_text(msg, parse_mode="HTML")
@@ -514,8 +524,10 @@ async def button_callback(
             f'• <b>የላኳቸው አጠቃላይ መልዕክቶች:</b> <code>{user_msg_count}</code>\n\n'
             
             f'<tg-emoji emoji-id="5307979128543158051">🤖</tg-emoji> <b>የቦቱ አጠቃላይ መረጃ፦</b>\n'
-            f'• <b>ሁኔታ:</b> Active <tg-emoji emoji-id="5307976826440687996">🔥</tg-emoji>'
+            f'• <b>ሁኔታ:</b> Active <tg-emoji emoji-id="5307976826440687996">🔥</tg-emoji>\n'
+            f'• <b>ጠቅላላ Users:</b> <code>{total_users}</code> 👥'
         )
+        
         await query.edit_message_text(
             msg, 
             reply_markup=get_back_keyboard(),
