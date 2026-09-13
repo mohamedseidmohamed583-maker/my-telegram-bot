@@ -317,7 +317,7 @@ async def rates_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 12 Hours — <b>በስምምነት ETB</b>\n'
         f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 24 Hours — <b>500 ETB</b>\n'
         f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 48 Hours — <b>700 ETB</b>\n\n'
-        f'የማስታወቂያውን አይነት አይተን አስተያየት እናደርጋለን! <tg-emoji emoji-id="5463249828450424568">🤝</tg-emoji>',
+        f'የፈለጉትን ምርጫ አሳውቀው የክፍያ አማራጮችን (payment method) ይጎብኙ! <tg-emoji emoji-id="5463249828450424568">🤝</tg-emoji>',
         parse_mode="HTML"
     )
 
@@ -482,7 +482,7 @@ async def button_callback(
             f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 12 Hours — <b>በስምምነት ETB</b>\n'
             f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 24 Hours — <b>500 ETB</b>\n'
             f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 48 Hours — <b>700 ETB</b>\n\n'
-            f'የማስታወቂያውን አይነት አይተን አስተያየት እናደርጋለን! 🤝',
+            f'የፈለጉትን ምርጫ አሳውቀው የክፍያ አማራጮችን (payment method) ይጎብኙ <tg-emoji emoji-id="5463249828450424568">🤝</tg-emoji>',
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
