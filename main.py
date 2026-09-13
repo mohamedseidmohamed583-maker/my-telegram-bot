@@ -260,21 +260,21 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==================================================
-# BROADCAST COMMAND
+# BROADCAST COMMAND (UPDATED FOR MEDIA & STICKERS)
 # ==================================================
 
 async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID:
         return
 
-    message_to_send = None
-    if context.args:
-        message_to_send = " ".join(context.args)
-    elif update.message.reply_to_message:
-        message_to_send = update.message.reply_to_message.text or update.message.reply_to_message.caption
+    reply_msg = update.message.reply_to_message
+    has_args = bool(context.args)
 
-    if not message_to_send:
-        await update.message.reply_text("⚠️ እባክዎ የሚተላለፈውን መልዕክት ከኮማንድ ጋር ይጻፉ (ለምሳሌ: `/broadcast ሰላም ለሁላችሁም`) ወይም መልዕክት ሬፕላይ ያድርጉ።")
+    if not reply_msg and not has_args:
+        await update.message.reply_text(
+            "⚠️ እባክዎ የሚተላለፈውን መልዕክት (ፕሪሚየም ስቲከር፣ ፎቶ፣ ቪዲዮ፣ ቮይስ ወይም ጽሁፍ) ሬፕላይ ያድርጉ "
+            "ወይም ከኮማንድ ጋር ጽሁፍ ይጻፉ (ለምሳሌ: `/broadcast ሰላም`)።"
+        )
         return
 
     data = load_data()
@@ -285,11 +285,17 @@ async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     for uid_str in data.keys():
         try:
-            await context.bot.send_message(
-                chat_id=int(uid_str),
-                text=message_to_send,
-                parse_mode="HTML"
-            )
+            chat_id = int(uid_str)
+            if reply_msg:
+                # ፕሪሚየም ስቲከሮችን፣ ፎቶዎችን፣ ቪዲዮዎችን እና ማንኛውንም ሚዲያ በጥራቱ ይልካል
+                await reply_msg.copy(chat_id=chat_id)
+            else:
+                text_to_send = " ".join(context.args)
+                await context.bot.send_message(
+                    chat_id=chat_id,
+                    text=text_to_send,
+                    parse_mode="HTML"
+                )
             success_count += 1
             await asyncio.sleep(0.05)
         except Exception:
@@ -639,12 +645,12 @@ async def admin_reply(
         if target_user_id:
             try:
                 await update.message.copy(chat_id=target_user_id)
-                await update.message.reply_text("✅ መልሱ (ፎቶ/ቪዲዮ/ቮይስ/ጽሁፍ) ለተጠቃሚው ተልኳል!")
+                await update.message.reply_text("✅ መልሱ (ፎቶ/ቪዲዮ/ስቲከር/ጽሁፍ) ለተጠቃሚው ተልኳል!")
             except Exception as e:
                 print("Reply Error:", e)
                 await update.message.reply_text("😭 መልሱን መላክ አልተቻለም። ተጠቃሚው ቦቱን ዘግቶት ሊሆን ይችላል።")
         else:
-            await update.message.reply_text("⚠️ እባክዎ ከቀረቡት መልእክቶች (ወይ ከጽሁፍ መረጃው ወይንም ከፎርዋርድ የተደረገው ፋይል ላይ) Reply ያድርጉ።")
+            await update.message.reply_text("⚠️ እባክዎ ከቀረቡት መልእክቶች Reply ያድርጉ።")
 
 
 # ==================================================
