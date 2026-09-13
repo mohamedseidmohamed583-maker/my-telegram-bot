@@ -1,5 +1,6 @@
 import os
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from threading import Thread
 from flask import Flask
 from telegram import (
@@ -20,13 +21,18 @@ import yt_dlp
 from pymongo import MongoClient
 
 # ==================================================
+# THREAD POOL FOR NON-BLOCKING HEAVY TASKS
+# ==================================================
+executor = ThreadPoolExecutor(max_workers=10)
+
+# ==================================================
 # FLASK WEB SERVER (Render Port Binding)
 # ==================================================
 app_web = Flask('')
 
 @app_web.route('/')
 def home():
-    return "Bot is Alive!"
+    return "Bot is Alive and Fast!"
 
 def run_web():
     port = int(os.environ.get("PORT", 10000))
@@ -37,33 +43,29 @@ def keep_alive():
     t.daemon = True
     t.start()
 
-
 # ==================================================
 # CONFIGURATION
 # ==================================================
-
 TOKEN = "8795814797:AAG-d-XOtl-yQfsTnuSSNeErY4b-qesRIhY"
 ADMIN_ID = 6753546651
 
-# Force Join Channel
 FORCE_CHANNEL = "@mame_posts"
 FORCE_CHANNEL_LINK = "https://t.me/mame_posts"
 
 # ==================================================
 # MONGODB PERMANENT DATABASE CONNECTION
 # ==================================================
-
 MONGO_URI = "mongodb+srv://mameposts:MamePass1234@cluster0.j3409sl.mongodb.net/?appName=Cluster0"
 
 try:
-    client = MongoClient(MONGO_URI)
+    client = MongoClient(MONGO_URI, connect=False)
     db = client["mame_posts_bot_db"]
     users_collection = db["users"]
     print("✅ MongoDB Connected Successfully!")
 except Exception as e:
     print("❌ MongoDB Connection Error:", e)
 
-def record_user_activity(user_id):
+def _record_user_activity_sync(user_id):
     try:
         users_collection.update_one(
             {"_id": str(user_id)},
@@ -73,7 +75,11 @@ def record_user_activity(user_id):
     except Exception as e:
         print("DB Record Error:", e)
 
-def get_user_stats(user_id):
+async def record_user_activity(user_id):
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(executor, _record_user_activity_sync, user_id)
+
+def _get_user_stats_sync(user_id):
     try:
         total_users = users_collection.count_documents({})
         user_data = users_collection.find_one({"_id": str(user_id)})
@@ -83,17 +89,24 @@ def get_user_stats(user_id):
         print("DB Stats Error:", e)
         return 0, 0
 
-def get_all_users():
+async def get_user_stats(user_id):
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(executor, _get_user_stats_sync, user_id)
+
+def _get_all_users_sync():
     try:
         return [user["_id"] for user in users_collection.find({}, {"_id": 1})]
     except Exception as e:
         print("DB Get All Users Error:", e)
         return []
 
-# ==================================================
-# MAIN MENU KEYBOARD
-# ==================================================
+async def get_all_users():
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(executor, _get_all_users_sync)
 
+# ==================================================
+# KEYBOARDS
+# ==================================================
 def get_main_menu_keyboard(bot_username):
     keyboard = [
         [
@@ -126,7 +139,6 @@ def get_back_keyboard():
 # ==================================================
 # AUTO SET BOT COMMANDS
 # ==================================================
-
 async def post_init(application):
     commands = [
         BotCommand("start", "ቦቱን ለመጀመር"),
@@ -138,11 +150,9 @@ async def post_init(application):
     ]
     await application.bot.set_my_commands(commands)
 
-
 # ==================================================
-# CHECK IF USER JOINED CHANNEL
+# FORCE JOIN CHECK
 # ==================================================
-
 async def is_joined(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     try:
@@ -150,39 +160,16 @@ async def is_joined(update: Update, context: ContextTypes.DEFAULT_TYPE):
             chat_id=FORCE_CHANNEL,
             user_id=user_id
         )
-        return member.status in [
-            "member",
-            "administrator",
-            "creator"
-        ]
+        return member.status in ["member", "administrator", "creator"]
     except Exception as e:
         print("Force Join Error:", e)
         return True
 
-
-# ==================================================
-# FORCE JOIN MESSAGE
-# ==================================================
-
-async def show_force_join(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
+async def show_force_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
-        [
-            InlineKeyboardButton(
-                "📢 Join Channel",
-                url=FORCE_CHANNEL_LINK
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                "✅ I've Joined",
-                callback_data="check_join"
-            )
-        ]
+        [InlineKeyboardButton("📢 Join Channel", url=FORCE_CHANNEL_LINK)],
+        [InlineKeyboardButton("✅ I've Joined", callback_data="check_join")]
     ]
-
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     if update.message:
@@ -194,15 +181,12 @@ async def show_force_join(
             parse_mode="HTML"
         )
 
-
 # ==================================================
 # START & MENU COMMAND
 # ==================================================
-
 def get_welcome_text():
     return (
         f'Hello <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
-        
         f'<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>My options (ከሁሉም Social Media ላይ video ያለ watermark ማውረድ ይችላሉ!) :</b>\n\n'
         f'<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | <b>Tiktok: videos & photos</b>\n'
         f'<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | <b>Instagram: reels, posts & stories</b>\n'
@@ -212,13 +196,9 @@ def get_welcome_text():
         f'<b>And others Social Media:</b> <tg-emoji emoji-id="5305749202997911340">📥</tg-emoji>'
     )
 
-
-async def start(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
-    record_user_activity(user_id)
+    asyncio.create_task(record_user_activity(user_id))
 
     if not await is_joined(update, context):
         await show_force_join(update, context)
@@ -231,20 +211,18 @@ async def start(
         parse_mode="HTML"
     )
 
-
 # ==================================================
-# STATUS COMMAND (/status)
+# STATUS COMMAND
 # ==================================================
-
 async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-    record_user_activity(user.id)
+    asyncio.create_task(record_user_activity(user.id))
 
     if not await is_joined(update, context):
         await show_force_join(update, context)
         return
 
-    total_users, user_msg_count = get_user_stats(user.id)
+    total_users, user_msg_count = await get_user_stats(user.id)
     username_text = f"@{user.username}" if user.username else "የለውም"
 
     msg = (
@@ -254,19 +232,15 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f'• <b>Username:</b> {username_text}\n'
         f'• <b>Telegram ID:</b> <code>{user.id}</code>\n'
         f'• <b>የላኳቸው አጠቃላይ መልዕክቶች:</b> <code>{user_msg_count}</code>\n\n'
-        
         f'<tg-emoji emoji-id="5307979128543158051">🤖</tg-emoji> <b>የቦቱ አጠቃላይ መረጃ፦</b>\n'
         f'• <b>አጠቃላይ የተመዘገቡ ተጠቃሚዎች:</b> <code>{total_users}</code>\n'
         f'• <b>ሁኔታ:</b> Active <tg-emoji emoji-id="5307976826440687996">🔥</tg-emoji>'
     )
-
     await update.message.reply_text(msg, parse_mode="HTML")
 
-
 # ==================================================
-# BROADCAST COMMAND (MONGODB INTEGRATED)
+# BROADCAST COMMAND
 # ==================================================
-
 async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID:
         return
@@ -275,13 +249,10 @@ async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     has_args = bool(context.args)
 
     if not reply_msg and not has_args:
-        await update.message.reply_text(
-            "⚠️ እባክዎ የሚተላለፈውን መልዕክት (ፕሪሚየም ስቲከር፣ ፎቶ፣ ቪዲዮ፣ ቮይስ ወይም ጽሁፍ) ሬፕላይ ያድርጉ "
-            "ወይም ከኮማንድ ጋር ጽሁፍ ይጻፉ (ለምሳሌ: `/broadcast ሰላም`)።"
-        )
+        await update.message.reply_text("⚠️ እባክዎ የሚተላለፈውን መልዕክት Reply ያድርጉ ወይም `/broadcast መልዕክት` ይጻፉ።")
         return
 
-    all_users = get_all_users()
+    all_users = await get_all_users()
     success_count = 0
     fail_count = 0
 
@@ -294,30 +265,24 @@ async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await reply_msg.copy(chat_id=chat_id)
             else:
                 text_to_send = " ".join(context.args)
-                await context.bot.send_message(
-                    chat_id=chat_id,
-                    text=text_to_send,
-                    parse_mode="HTML"
-                )
+                await context.bot.send_message(chat_id=chat_id, text=text_to_send, parse_mode="HTML")
             success_count += 1
-            await asyncio.sleep(0.05)
+            await asyncio.sleep(0.03)
         except Exception:
             fail_count += 1
 
     await status_msg.edit_text(
         f"✅ <b>ብሮድካስት ተጠናቋል!</b>\n\n"
         f"• የተሳካ: <code>{success_count}</code>\n"
-        f"• ያልተሳካ (ቦቱን የዘጉ): <code>{fail_count}</code>",
+        f"• ያልተሳካ: <code>{fail_count}</code>",
         parse_mode="HTML"
     )
-
 
 # ==================================================
 # EXTRA COMMAND HANDLERS
 # ==================================================
-
 async def rates_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    record_user_activity(update.effective_user.id)
+    asyncio.create_task(record_user_activity(update.effective_user.id))
     if not await is_joined(update, context):
         await show_force_join(update, context)
         return
@@ -330,9 +295,8 @@ async def rates_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="HTML"
     )
 
-
 async def payment_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    record_user_activity(update.effective_user.id)
+    asyncio.create_task(record_user_activity(update.effective_user.id))
     if not await is_joined(update, context):
         await show_force_join(update, context)
         return
@@ -348,22 +312,20 @@ async def payment_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    record_user_activity(update.effective_user.id)
+    asyncio.create_task(record_user_activity(update.effective_user.id))
     if not await is_joined(update, context):
         await show_force_join(update, context)
         return
     await update.message.reply_text(
         f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
         f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ YouTube, Instagram, TikTok, Facebook, Pinterest እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
-        f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji>  ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
+        f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
         parse_mode="HTML"
     )
 
-
 # ==================================================
-# ULTIMATE FIXED YOUTUBE & DOWNLOADER ENGINE
+# YOUTUBE & DOWNLOADER ENGINE
 # ==================================================
-
 def get_ydl_options(output_template=None):
     opts = {
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
@@ -384,19 +346,15 @@ def get_ydl_options(output_template=None):
             'Accept-Language': 'en-US,en;q=0.5',
         }
     }
-    
     if os.path.exists('cookies.txt'):
         opts['cookiefile'] = 'cookies.txt'
-
     if output_template:
         opts['outtmpl'] = output_template
-
     return opts
 
 def download_video(url: str, output_template: str):
     with yt_dlp.YoutubeDL(get_ydl_options(output_template)) as ydl:
         ydl.download([url])
-
 
 async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE, url: str):
     status_msg = await update.message.reply_text("🚀 <b>ቪዲዮውን በማውረድ ላይ ይገኛል፣ እባክዎ ይጠብቁ...</b> 📥", parse_mode="HTML")
@@ -408,8 +366,10 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     output_template = f"{file_base}.%(ext)s"
     expected_file = f"{file_base}.mp4"
 
+    loop = asyncio.get_running_loop()
+
     try:
-        await asyncio.to_thread(download_video, url, output_template)
+        await loop.run_in_executor(executor, download_video, url, output_template)
 
         actual_file = expected_file
         if not os.path.exists(actual_file):
@@ -462,15 +422,10 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
             parse_mode="HTML"
         )
 
-
 # ==================================================
 # BUTTON CLICK HANDLER
 # ==================================================
-
-async def button_callback(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
+async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
@@ -505,7 +460,7 @@ async def button_callback(
         )
 
     elif data == "cmd_status":
-        total_users, user_msg_count = get_user_stats(user.id)
+        total_users, user_msg_count = await get_user_stats(user.id)
         username_text = f"@{user.username}" if user.username else "የለውም"
 
         msg = (
@@ -515,16 +470,11 @@ async def button_callback(
             f'• <b>Username:</b> {username_text}\n'
             f'• <b>Telegram ID:</b> <code>{user.id}</code>\n'
             f'• <b>የላኳቸው አጠቃላይ መልዕክቶች:</b> <code>{user_msg_count}</code>\n\n'
-            
             f'<tg-emoji emoji-id="5307979128543158051">🤖</tg-emoji> <b>የቦቱ አጠቃላይ መረጃ፦</b>\n'
             f'• <b>አጠቃላይ የተመዘገቡ ተጠቃሚዎች:</b> <code>{total_users}</code>\n'
             f'• <b>ሁኔታ:</b> Active <tg-emoji emoji-id="5307976826440687996">🔥</tg-emoji>'
         )
-        await query.edit_message_text(
-            msg, 
-            reply_markup=get_back_keyboard(),
-            parse_mode="HTML"
-        )
+        await query.edit_message_text(msg, reply_markup=get_back_keyboard(), parse_mode="HTML")
 
     elif data == "cmd_payment":
         await query.edit_message_text(
@@ -548,20 +498,15 @@ async def button_callback(
             parse_mode="HTML"
         )
 
-
 # ==================================================
 # USER MESSAGES HANDLER
 # ==================================================
-
-async def handle_user_messages(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
+async def handle_user_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message:
         return
 
     user_id = update.effective_user.id
-    record_user_activity(user_id)
+    asyncio.create_task(record_user_activity(user_id))
 
     if not await is_joined(update, context):
         await show_force_join(update, context)
@@ -608,15 +553,10 @@ async def handle_user_messages(
         "📩 በቅርቡ እንመልስልዎታለን። ❤️"
     )
 
-
 # ==================================================
 # ADMIN REPLY HANDLER
 # ==================================================
-
-async def admin_reply(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
+async def admin_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID:
         return
 
@@ -649,22 +589,17 @@ async def admin_reply(
         if target_user_id:
             try:
                 await update.message.copy(chat_id=target_user_id)
-                await update.message.reply_text("✅ መልሱ (ፎቶ/ቪዲዮ/ስቲከር/ጽሁፍ) ለተጠቃሚው ተልኳል!")
+                await update.message.reply_text("✅ መልሱ ለተጠቃሚው ተልኳል!")
             except Exception as e:
                 print("Reply Error:", e)
                 await update.message.reply_text("😭 መልሱን መላክ አልተቻለም። ተጠቃሚው ቦቱን ዘግቶት ሊሆን ይችላል።")
         else:
             await update.message.reply_text("⚠️ እባክዎ ከቀረቡት መልእክቶች Reply ያድርጉ።")
 
-
 # ==================================================
 # CHECK JOIN BUTTON
 # ==================================================
-
-async def check_join(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
+async def check_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
@@ -676,51 +611,33 @@ async def check_join(
             user_id=user_id
         )
 
-        if member.status in [
-            "member",
-            "administrator",
-            "creator"
-        ]:
+        if member.status in ["member", "administrator", "creator"]:
             await query.edit_message_text(
                 "✅ <b>ቻናሉን ተቀላቅለዋል!</b>\n\n"
                 "🤖 አሁን /start የሚለውን ተጭነው ቦቱን ይጠቀሙ።",
                 parse_mode="HTML"
             )
         else:
-            await query.answer(
-                "እባክዎ መጀመሪያ Channel ይቀላቀሉ! 🙂",
-                show_alert=True
-            )
+            await query.answer("እባክዎ መጀመሪያ Channel ይቀላቀሉ! 🙂", show_alert=True)
 
     except Exception as e:
         print("Check Join Error:", e)
-        await query.answer(
-            "⚠️ አባልነትዎን ማረጋገጥ አልተቻለም። 🙂",
-            show_alert=True
-        )
-
+        await query.answer("⚠️ አባልነትዎን ማረጋገጥ አልተቻለም። 🙂", show_alert=True)
 
 # ==================================================
 # ERROR HANDLER
 # ==================================================
-
-async def error_handler(
-    update: object,
-    context: ContextTypes.DEFAULT_TYPE
-):
+async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
     print("❌ ERROR:", context.error)
-
 
 # ==================================================
 # MAIN EXECUTION
 # ==================================================
-
 def main():
     keep_alive()
 
     app = ApplicationBuilder().token(TOKEN).post_init(post_init).build()
 
-    # Commands Handlers
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("menu", start))
     app.add_handler(CommandHandler("status", status_command))
@@ -745,7 +662,7 @@ def main():
     
     app.add_error_handler(error_handler)
 
-    print("🤖 Mame Posts Bot is running with MongoDB...")
+    print("🤖 Mame Posts Bot is running Fast with Optimized MongoDB...")
     app.run_polling()
 
 if __name__ == '__main__':
