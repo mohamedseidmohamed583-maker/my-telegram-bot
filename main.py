@@ -595,10 +595,10 @@ async def handle_user_messages(
     header_msg = await context.bot.send_message(
         chat_id=ADMIN_ID,
         text=(
-            f"<tg-emoji emoji-id="5861539269843095770">📩</tg-emoji><b>አዲስ መልዕክት!</b>\n\n"
-            f"<tg-emoji emoji-id="5875078913725571378">👤</tg-emoji> User: {update.effective_user.full_name}\n"
-            f"<tg-emoji emoji-id="5359708582239578213">🌐</tg-emoji> Username: {username_text}\n"
-            f"<tg-emoji emoji-id="5970053985103516666">🆔</tg-emoji> ID: <code>{user_id}</code>"
+            f"📩<b>አዲስ መልዕክት!</b>\n\n"
+            f"👤 User: {update.effective_user.full_name}\n"
+            f"🌐 Username: {username_text}\n"
+            f"🆔ID: <code>{user_id}</code>"
         ),
         parse_mode="HTML"
     )
