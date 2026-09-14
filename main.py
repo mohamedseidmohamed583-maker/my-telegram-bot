@@ -367,41 +367,34 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==================================================
-# HIGH-SPEED API DOWNLOAD ENGINE (NO COOKIES/IP BLOCKS)
+# COBALT DOWNLOAD ENGINE (NO COOKIES / NO IP BLOCK)
 # ==================================================
 
 def fetch_video_download_link(video_url: str):
-    """ Multi-API Engine for fast fetching withoutyt-dlp """
-    # 1. Try Cobalt Engine
+    """ Direct Cobalt API Integration """
+    api_url = "https://api.cobalt.tools/api/json"
+    
+    headers = {
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "url": video_url,
+        "videoQuality": "720"
+    }
+    
     try:
-        api_endpoint = "https://api.cobalt.tools/api/json"
-        headers = {
-            "Accept": "application/json",
-            "Content-Type": "application/json"
-        }
-        payload = {"url": video_url}
-        res = requests.post(api_endpoint, json=payload, headers=headers, timeout=10)
-        data = res.json()
-
-        if "url" in data:
-            return data["url"]
-        elif "picker" in data and len(data["picker"]) > 0:
-            return data["picker"][0]["url"]
+        response = requests.post(api_url, json=payload, headers=headers, timeout=15)
+        if response.status_code == 200:
+            data = response.json()
+            if "url" in data:
+                return data["url"]
+            elif "picker" in data and len(data["picker"]) > 0:
+                return data["picker"][0]["url"]
     except Exception as e:
-        print("Cobalt API failed:", e)
-
-    # 2. Try Rapid Universal Downloader Engine
-    try:
-        api_endpoint_2 = f"https://api.vkrdown.com/v1/download?url={video_url}"
-        res2 = requests.get(api_endpoint_2, timeout=10)
-        data2 = res2.json()
-        if "data" in data2 and "downloadUrl" in data2["data"]:
-            return data2["data"]["downloadUrl"]
-        elif "downloadUrl" in data2:
-            return data2["downloadUrl"]
-    except Exception as e:
-        print("Secondary API failed:", e)
-
+        print("Cobalt API Error:", e)
+        
     return None
 
 
@@ -409,31 +402,41 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     status_msg = await update.message.reply_text("🚀 <b>ቪዲዮውን በማውረድ ላይ ይገኛል፣ እባክዎ ይጠብቁ...</b> 📥", parse_mode="HTML")
 
     bot_username = context.bot.username or "mame_posts_bot"
-    share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Video%20Downloader%20Bot!🔥"
 
-    keyboard_share = [[InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)]]
-    reply_markup_share = InlineKeyboardMarkup(keyboard_share)
-
-    # Fetch Direct Download Link
+    # Fetch Direct Download Link via Cobalt
     direct_link = await asyncio.to_thread(fetch_video_download_link, url)
 
     if direct_link:
+        keyboard = [
+            [InlineKeyboardButton("📥 Direct Download ቪዲዮውን አውርድ", url=direct_link)],
+            [InlineKeyboardButton("🔗 Share Bot 🚀", url=f"https://t.me/share/url?url=https://t.me/{bot_username}")]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
         try:
             await status_msg.edit_text("📤 <b>ቪዲዮውን በመላክ ላይ ይገኛል...</b>", parse_mode="HTML")
             await update.message.reply_video(
                 video=direct_link,
-                caption=f'<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts\n\n <tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy! Don\'t forget to share it with your friends.</b>',
-                reply_markup=reply_markup_share,
+                caption=f'🚀 <b>Downloaded with</b> @{bot_username} & @mame_posts\n\n✅ <b>Enjoy!</b>',
+                reply_markup=reply_markup,
                 parse_mode="HTML"
             )
             await status_msg.delete()
             return
         except Exception as err:
-            print("Direct send failed:", err)
+            # ቪዲዮው ከ 50MB በላይ ከሆነ Telegram በቀጥታ አይልከውም፣ በምትኩ Direct Link Button ይልካል
+            print("Direct send fallback to button:", err)
+            await status_msg.edit_text(
+                "✅ <b>ቪዲዮው ዝግጁ ነው!</b>\n\n"
+                "ከታች ያለውን <b>Direct Download</b> የሚለውን ተጭነው ማውረድ ይችላሉ፦",
+                reply_markup=reply_markup,
+                parse_mode="HTML"
+            )
+            return
 
     await status_msg.edit_text(
         "😭 <b>ቪዲዮውን ማውረድ አልተቻለም!</b>\n\n"
-        "እባክዎ የላኩት ሊንክ ትክክለኛ መሆኑን አረጋግጠው እንደገና ይሞክሩ። በጣም ይቅርታ 👐",
+        "የላኩት ሊንክ ትክክል መሆኑን ወይም የቪዲዮው አካውንት Private አለመሆኑን ያረጋግጡ።",
         parse_mode="HTML"
     )
 
