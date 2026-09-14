@@ -367,34 +367,68 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==================================================
-# COBALT DOWNLOAD ENGINE (NO COOKIES / NO IP BLOCK)
+# MULTI-API FAILOVER ENGINE (4 ENGINE BACKUP)
 # ==================================================
 
 def fetch_video_download_link(video_url: str):
-    """ Direct Cobalt API Integration """
-    api_url = "https://api.cobalt.tools/api/json"
+    """ 4 የተለያዩ APIዎችን በቅደም ተከተል በመሞከር የማያቋርጥ ማወረጃ """
     
-    headers = {
-        "Accept": "application/json",
-        "Content-Type": "application/json"
-    }
-    
-    payload = {
-        "url": video_url,
-        "videoQuality": "720"
-    }
-    
+    # 1. API 1: Auto Social Downloader (VKR)
     try:
-        response = requests.post(api_url, json=payload, headers=headers, timeout=15)
-        if response.status_code == 200:
-            data = response.json()
-            if "url" in data:
+        api_url = f"https://api.vkrdown.com/v1/download?url={video_url}"
+        res = requests.get(api_url, timeout=10)
+        if res.status_code == 200:
+            data = res.json()
+            if "data" in data and "downloadUrl" in data["data"]:
+                return data["data"]["downloadUrl"]
+            elif "downloadUrl" in data:
+                return data["downloadUrl"]
+            elif "url" in data:
                 return data["url"]
-            elif "picker" in data and len(data["picker"]) > 0:
-                return data["picker"][0]["url"]
     except Exception as e:
-        print("Cobalt API Error:", e)
-        
+        print("API 1 Fail:", e)
+
+    # 2. API 2: Cobalt Engine
+    try:
+        cobalt_url = "https://api.cobalt.tools/api/json"
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0"
+        }
+        payload = {"url": video_url, "videoQuality": "720"}
+        res2 = requests.post(cobalt_url, json=payload, headers=headers, timeout=10)
+        if res2.status_code == 200:
+            data2 = res2.json()
+            if "url" in data2:
+                return data2["url"]
+            elif "picker" in data2 and len(data2["picker"]) > 0:
+                return data2["picker"][0]["url"]
+    except Exception as e:
+        print("API 2 (Cobalt) Fail:", e)
+
+    # 3. API 3: Loader Engine
+    try:
+        res3 = requests.get(f"https://loader.to/ajax/download.php?start=1&end=20&format=720&url={video_url}", timeout=10)
+        if res3.status_code == 200:
+            data3 = res3.json()
+            if data3.get("download_url"):
+                return data3.get("download_url")
+    except Exception as e:
+        print("API 3 Fail:", e)
+
+    # 4. API 4: TiklyDown Fallback
+    try:
+        res4 = requests.get(f"https://api.tiklydown.eu.org/api/download?url={video_url}", timeout=10)
+        if res4.status_code == 200:
+            data4 = res4.json()
+            if "video" in data4 and "noWatermark" in data4["video"]:
+                return data4["video"]["noWatermark"]
+            elif "url" in data4:
+                return data4["url"]
+    except Exception as e:
+        print("API 4 Fail:", e)
+
     return None
 
 
@@ -403,7 +437,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     bot_username = context.bot.username or "mame_posts_bot"
 
-    # Fetch Direct Download Link via Cobalt
+    # Fetch Direct Download Link via Multi-API Engine
     direct_link = await asyncio.to_thread(fetch_video_download_link, url)
 
     if direct_link:
