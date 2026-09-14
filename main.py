@@ -406,7 +406,7 @@ def download_video(url: str, output_template: str):
 
 
 async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE, url: str):
-    status_msg = await update.message.reply_text("<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>ቪዲዮውን በማውረድ ላይ ይገኛል፣ እባክዎ ይጠብቁ...</b> 📥", parse_mode="HTML")
+    status_msg = await update.message.reply_text("🚀 <b>ቪዲዮውን በማውረድ ላይ ይገኛል፣ እባክዎ ይጠብቁ...</b> 📥", parse_mode="HTML")
 
     bot_username = context.bot.username or "mame_posts_bot"
     share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Video%20Downloader%20Bot!🔥"
