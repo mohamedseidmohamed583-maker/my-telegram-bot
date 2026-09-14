@@ -18,7 +18,6 @@ from telegram.ext import (
     CallbackQueryHandler,
     filters
 )
-import yt_dlp
 
 # ==================================================
 # FLASK WEB SERVER (Render Port Binding)
@@ -271,7 +270,7 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==================================================
-# BROADCAST COMMAND (UPDATED FOR MEDIA & STICKERS)
+# BROADCAST COMMAND
 # ==================================================
 
 async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -283,7 +282,7 @@ async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if not reply_msg and not has_args:
         await update.message.reply_text(
-            "⚠️ እባክዎ የሚተላለፈውን መልዕክት (ፕሪሚየም ስቲከር፣ ፎቶ፣ ቪዲዮ፣ ቮይስ ወይም ጽሁፍ) ሬፕላይ ያድርጉ "
+            "⚠️ እባክዎ የሚተላለፈውን መልዕክት ሬፕላይ ያድርጉ "
             "ወይም ከኮማንድ ጋር ጽሁፍ ይጻፉ (ለምሳሌ: `/broadcast ሰላም`)።"
         )
         return
@@ -298,7 +297,6 @@ async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             chat_id = int(uid_str)
             if reply_msg:
-                # ፕሪሚየም ስቲከሮችን፣ ፎቶዎችን፣ ቪዲዮዎችን እና ማንኛውንም ሚዲያ በጥራቱ ይልካል
                 await reply_msg.copy(chat_id=chat_id)
             else:
                 text_to_send = " ".join(context.args)
@@ -363,17 +361,18 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
         f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ YouTube, Instagram, TikTok, Facebook, Pinterest እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
-        f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji>  ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
+        f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
         parse_mode="HTML"
     )
 
 
 # ==================================================
-# ULTIMATE FIXED YOUTUBE & DOWNLOADER ENGINE
+# HIGH-SPEED API DOWNLOAD ENGINE (NO COOKIES/IP BLOCKS)
 # ==================================================
 
-def fetch_cobalt_url(video_url: str):
-    """Fast External API Engine (Bypasses YouTube Restrictions)"""
+def fetch_video_download_link(video_url: str):
+    """ Multi-API Engine for fast fetching withoutyt-dlp """
+    # 1. Try Cobalt Engine
     try:
         api_endpoint = "https://api.cobalt.tools/api/json"
         headers = {
@@ -381,7 +380,7 @@ def fetch_cobalt_url(video_url: str):
             "Content-Type": "application/json"
         }
         payload = {"url": video_url}
-        res = requests.post(api_endpoint, json=payload, headers=headers, timeout=12)
+        res = requests.post(api_endpoint, json=payload, headers=headers, timeout=10)
         data = res.json()
 
         if "url" in data:
@@ -389,41 +388,21 @@ def fetch_cobalt_url(video_url: str):
         elif "picker" in data and len(data["picker"]) > 0:
             return data["picker"][0]["url"]
     except Exception as e:
-        print("Cobalt API Error:", e)
+        print("Cobalt API failed:", e)
+
+    # 2. Try Rapid Universal Downloader Engine
+    try:
+        api_endpoint_2 = f"https://api.vkrdown.com/v1/download?url={video_url}"
+        res2 = requests.get(api_endpoint_2, timeout=10)
+        data2 = res2.json()
+        if "data" in data2 and "downloadUrl" in data2["data"]:
+            return data2["data"]["downloadUrl"]
+        elif "downloadUrl" in data2:
+            return data2["downloadUrl"]
+    except Exception as e:
+        print("Secondary API failed:", e)
+
     return None
-
-def get_ydl_options(output_template=None):
-    opts = {
-        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-        'merge_output_format': 'mp4',
-        'quiet': True,
-        'no_warnings': True,
-        'nocheckcertificate': True,
-        'ignoreerrors': False,
-        'geo_bypass': True,
-        'extractor_args': {
-            'youtube': {
-                'player_client': ['android', 'web', 'mweb'],
-            }
-        },
-        'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
-        }
-    }
-    
-    if os.path.exists('cookies.txt'):
-        opts['cookiefile'] = 'cookies.txt'
-
-    if output_template:
-        opts['outtmpl'] = output_template
-
-    return opts
-
-def download_video(url: str, output_template: str):
-    with yt_dlp.YoutubeDL(get_ydl_options(output_template)) as ydl:
-        ydl.download([url])
 
 
 async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE, url: str):
@@ -435,78 +414,28 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     keyboard_share = [[InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)]]
     reply_markup_share = InlineKeyboardMarkup(keyboard_share)
 
-    # 1. TRY FAST EXTERNAL API (NO IP BLOCK)
-    direct_stream_url = await asyncio.to_thread(fetch_cobalt_url, url)
+    # Fetch Direct Download Link
+    direct_link = await asyncio.to_thread(fetch_video_download_link, url)
 
-    if direct_stream_url:
+    if direct_link:
         try:
             await status_msg.edit_text("📤 <b>ቪዲዮውን በመላክ ላይ ይገኛል...</b>", parse_mode="HTML")
             await update.message.reply_video(
-                video=direct_stream_url,
+                video=direct_link,
                 caption=f'<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts\n\n <tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy! Don\'t forget to share it with your friends.</b>',
                 reply_markup=reply_markup_share,
                 parse_mode="HTML"
             )
             await status_msg.delete()
             return
-        except Exception as api_err:
-            print("API Direct Send Failed, falling back to yt_dlp:", api_err)
+        except Exception as err:
+            print("Direct send failed:", err)
 
-    # 2. FALLBACK TO YT_DLP IF API FAILS
-    file_base = f"video_{update.effective_user.id}_{update.message.message_id}"
-    output_template = f"{file_base}.%(ext)s"
-    expected_file = f"{file_base}.mp4"
-
-    try:
-        await asyncio.to_thread(download_video, url, output_template)
-
-        actual_file = expected_file
-        if not os.path.exists(actual_file):
-            for f in os.listdir('.'):
-                if f.startswith(file_base):
-                    actual_file = f
-                    break
-
-        if os.path.exists(actual_file):
-            file_size = os.path.getsize(actual_file)
-
-            await status_msg.edit_text("📤 <b>ቪዲዮውን በመላክ ላይ ይገኛል...</b>", parse_mode="HTML")
-            
-            with open(actual_file, 'rb') as f_obj:
-                if file_size > 50 * 1024 * 1024:
-                    await update.message.reply_document(
-                        document=f_obj,
-                        caption=f'<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts\n\n <tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy! Large file downloaded successfully.</b>',
-                        reply_markup=reply_markup_share,
-                        parse_mode="HTML"
-                    )
-                else:
-                    await update.message.reply_video(
-                        video=f_obj,
-                        caption=f'<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts\n\n <tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy! Don\'t forget to share it with your friends.</b>',
-                        reply_markup=reply_markup_share,
-                        parse_mode="HTML"
-                    )
-
-            await status_msg.delete()
-            os.remove(actual_file)
-        else:
-            await status_msg.edit_text("💔 <b>ቪዲዮውን ማግኘት አልተቻለም።</b>", parse_mode="HTML")
-
-    except Exception as e:
-        print("Download Error:", e)
-        for f in os.listdir('.'):
-            if f.startswith(file_base):
-                try:
-                    os.remove(f)
-                except:
-                    pass
-                    
-        await status_msg.edit_text(
-            "😭 <b>ቪዲዮውን ማውረድ አልተቻለም!</b>\n\n"
-            "እባክዎ የላኩት ሊንክ ትክክለኛ መሆኑን አረጋግጠው እንደገና ይሞክሩ። በጣም ይቅርታ 👐",
-            parse_mode="HTML"
-        )
+    await status_msg.edit_text(
+        "😭 <b>ቪዲዮውን ማውረድ አልተቻለም!</b>\n\n"
+        "እባክዎ የላኩት ሊንክ ትክክለኛ መሆኑን አረጋግጠው እንደገና ይሞክሩ። በጣም ይቅርታ 👐",
+        parse_mode="HTML"
+    )
 
 
 # ==================================================
@@ -696,7 +625,7 @@ async def admin_reply(
         if target_user_id:
             try:
                 await update.message.copy(chat_id=target_user_id)
-                await update.message.reply_text("✅ መልሱ (ፎቶ/ቪዲዮ/ስቲከር/ጽሁፍ) ለተጠቃሚው ተልኳል!")
+                await update.message.reply_text("✅ መልሱ ለተጠቃሚው ተልኳል!")
             except Exception as e:
                 print("Reply Error:", e)
                 await update.message.reply_text("😭 መልሱን መላክ አልተቻለም። ተጠቃሚው ቦቱን ዘግቶት ሊሆን ይችላል።")
