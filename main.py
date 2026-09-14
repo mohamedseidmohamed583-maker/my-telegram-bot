@@ -1,6 +1,7 @@
 import os
 import json
 import asyncio
+import requests
 from threading import Thread
 from flask import Flask
 from telegram import (
@@ -263,7 +264,7 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         f'<tg-emoji emoji-id="5307979128543158051">🤖</tg-emoji> <b>የቦቱ አጠቃላይ መረጃ፦</b>\n'
         f'• <b>ሁኔታ:</b> Active <tg-emoji emoji-id="5307976826440687996">🔥</tg-emoji>\n'
-f'• <b>ጠቅላላ Users:</b> <code>{total_users}</code> 👥'
+        f'• <b>ጠቅላላ Users:</b> <code>{total_users}</code> 👥'
     )
 
     await update.message.reply_text(msg, parse_mode="HTML")
@@ -371,6 +372,26 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ULTIMATE FIXED YOUTUBE & DOWNLOADER ENGINE
 # ==================================================
 
+def fetch_cobalt_url(video_url: str):
+    """Fast External API Engine (Bypasses YouTube Restrictions)"""
+    try:
+        api_endpoint = "https://api.cobalt.tools/api/json"
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+        }
+        payload = {"url": video_url}
+        res = requests.post(api_endpoint, json=payload, headers=headers, timeout=12)
+        data = res.json()
+
+        if "url" in data:
+            return data["url"]
+        elif "picker" in data and len(data["picker"]) > 0:
+            return data["picker"][0]["url"]
+    except Exception as e:
+        print("Cobalt API Error:", e)
+    return None
+
 def get_ydl_options(output_template=None):
     opts = {
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
@@ -411,6 +432,27 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     bot_username = context.bot.username or "mame_posts_bot"
     share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Video%20Downloader%20Bot!🔥"
 
+    keyboard_share = [[InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)]]
+    reply_markup_share = InlineKeyboardMarkup(keyboard_share)
+
+    # 1. TRY FAST EXTERNAL API (NO IP BLOCK)
+    direct_stream_url = await asyncio.to_thread(fetch_cobalt_url, url)
+
+    if direct_stream_url:
+        try:
+            await status_msg.edit_text("📤 <b>ቪዲዮውን በመላክ ላይ ይገኛል...</b>", parse_mode="HTML")
+            await update.message.reply_video(
+                video=direct_stream_url,
+                caption=f'<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts\n\n <tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy! Don\'t forget to share it with your friends.</b>',
+                reply_markup=reply_markup_share,
+                parse_mode="HTML"
+            )
+            await status_msg.delete()
+            return
+        except Exception as api_err:
+            print("API Direct Send Failed, falling back to yt_dlp:", api_err)
+
+    # 2. FALLBACK TO YT_DLP IF API FAILS
     file_base = f"video_{update.effective_user.id}_{update.message.message_id}"
     output_template = f"{file_base}.%(ext)s"
     expected_file = f"{file_base}.mp4"
@@ -427,9 +469,6 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
 
         if os.path.exists(actual_file):
             file_size = os.path.getsize(actual_file)
-            
-            keyboard_share = [[InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)]]
-            reply_markup_share = InlineKeyboardMarkup(keyboard_share)
 
             await status_msg.edit_text("📤 <b>ቪዲዮውን በመላክ ላይ ይገኛል...</b>", parse_mode="HTML")
             
