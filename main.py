@@ -312,7 +312,7 @@ async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             fail_count += 1
 
     await status_msg.edit_text(
-        f"<tg-emoji emoji-id="5305749202997911340">✔️</tg-emoji> <b>ብሮድካስት ተጠናቋል!</b>\n\n"
+        f"✔️<b>ብሮድካስት ተጠናቋል!</b>\n\n"
         f"• የተሳካ: <code>{success_count}</code>\n"
         f"• ያልተሳካ (ቦቱን የዘጉ): <code>{fail_count}</code>",
         parse_mode="HTML"
