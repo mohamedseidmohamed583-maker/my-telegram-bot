@@ -379,22 +379,19 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def get_ydl_options(output_template=None):
     opts = {
-        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-        'merge_output_format': 'mp4',
+        'format': 'best',
         'quiet': True,
         'no_warnings': True,
         'nocheckcertificate': True,
-        'ignoreerrors': False,
         'geo_bypass': True,
         'extractor_args': {
             'youtube': {
-                'player_client': ['android', 'ios', 'web', 'mweb']
+                'player_client': ['android', 'ios'],
+                'skip': ['hls', 'dash']
             }
         },
         'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
         }
     }
     
