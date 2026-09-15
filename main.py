@@ -374,27 +374,33 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==================================================
-# OPTIMIZED DOWNLOAD ENGINE FOR YOUTUBE & INSTAGRAM
+# DYNAMIC & OPTIMIZED DOWNLOAD ENGINE
 # ==================================================
 
-def get_ydl_options(output_template=None):
+def get_ydl_options(url: str, output_template=None):
     opts = {
-        'format': 'best',
         'quiet': True,
         'no_warnings': True,
         'nocheckcertificate': True,
         'geo_bypass': True,
-        'extractor_args': {
+        'http_headers': {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+    }
+
+    # YouTube ከሆነ ብቻ ልዩ የቪዲዮ መያዣ አሰራር እንዲጠቀም
+    if "youtube.com" in url or "youtu.be" in url:
+        opts['format'] = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
+        opts['extractor_args'] = {
             'youtube': {
                 'player_client': ['ios', 'mweb', 'android'],
                 'skip': ['hls', 'dash']
             }
-        },
-        'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1'
         }
-    }
-    
+    else:
+        # ለ Instagram, TikTok, Facebook እና ሌሎች Social Media-ዎች
+        opts['format'] = 'best'
+
     if os.path.exists('cookies.txt'):
         opts['cookiefile'] = 'cookies.txt'
 
@@ -404,7 +410,7 @@ def get_ydl_options(output_template=None):
     return opts
 
 def download_video(url: str, output_template: str):
-    with yt_dlp.YoutubeDL(get_ydl_options(output_template)) as ydl:
+    with yt_dlp.YoutubeDL(get_ydl_options(url, output_template)) as ydl:
         ydl.download([url])
 
 
