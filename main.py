@@ -20,6 +20,15 @@ from telegram.ext import (
 import yt_dlp
 
 # ==================================================
+# CREATE COOKIES FILE FROM RENDER ENVIRONMENT VARIABLE
+# ==================================================
+COOKIES_ENV = os.environ.get("YOUTUBE_COOKIES")
+if COOKIES_ENV:
+    with open("cookies.txt", "w") as f:
+        f.write(COOKIES_ENV)
+    print("✅ cookies.txt file created successfully from Environment Variable!")
+
+# ==================================================
 # FLASK WEB SERVER (Render Port Binding)
 # ==================================================
 app_web = Flask('')
@@ -269,7 +278,7 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==================================================
-# BROADCAST COMMAND (UPDATED FOR MEDIA & STICKERS)
+# BROADCAST COMMAND
 # ==================================================
 
 async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -281,8 +290,7 @@ async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if not reply_msg and not has_args:
         await update.message.reply_text(
-            "⚠️ እባክዎ የሚተላለፈውን መልዕክት (ፕሪሚየም ስቲከር፣ ፎቶ፣ ቪዲዮ፣ ቮይስ ወይም ጽሁፍ) ሬፕላይ ያድርጉ "
-            "ወይም ከኮማንድ ጋር ጽሁፍ ይጻፉ (ለምሳሌ: `/broadcast ሰላም`)።"
+            "⚠️ እባክዎ የሚተላለፈውን መልዕክት ሬፕላይ ያድርጉ ወይም ከኮማንድ ጋር ጽሁፍ ይጻፉ።"
         )
         return
 
@@ -360,13 +368,13 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
         f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ YouTube, Instagram, TikTok, Facebook, Pinterest እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
-        f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji>  ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
+        f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
         parse_mode="HTML"
     )
 
 
 # ==================================================
-# ULTIMATE FIXED YOUTUBE & INSTAGRAM DOWNLOADER ENGINE
+# OPTIMIZED DOWNLOAD ENGINE FOR YOUTUBE & INSTAGRAM
 # ==================================================
 
 def get_ydl_options(output_template=None):
@@ -380,18 +388,13 @@ def get_ydl_options(output_template=None):
         'geo_bypass': True,
         'extractor_args': {
             'youtube': {
-                'player_client': ['ios', 'android', 'mweb'],
-                'skip': ['hls', 'dash']
-            },
-            'instagram': {
-                'rhmain': True
+                'player_client': ['android', 'ios', 'web', 'mweb']
             }
         },
         'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.5',
-            'Sec-Fetch-Mode': 'navigate',
         }
     }
     
