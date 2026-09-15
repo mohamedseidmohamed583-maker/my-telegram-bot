@@ -223,7 +223,7 @@ def get_welcome_text():
         f'<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | <b>Instagram: reels, posts & stories</b>\n'
         f'<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | <b>YouTube: videos & music (Full & Shorts)</b>\n'
         f'<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | <b>Twitter (X): videos & voice</b>\n'
-        f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>Facebook & Pinterest: video</b>\n\n'
+        f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>Facebook, Reddit, Twitch, Vimeo & Others</b>\n\n'
         f'<b>And others Social Media:</b> <tg-emoji emoji-id="5305749202997911340">📥</tg-emoji>'
     )
 
@@ -367,7 +367,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     await update.message.reply_text(
         f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
-        f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ YouTube, Instagram, TikTok, Facebook, Pinterest እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
+        f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ YouTube, Instagram, TikTok, Facebook, Reddit, Twitch, Vimeo, SoundCloud, Threads እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
         f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
         parse_mode="HTML"
     )
@@ -388,17 +388,16 @@ def get_ydl_options(url: str, output_template=None):
         }
     }
 
-    # YouTube ከሆነ ብቻ ልዩ የቪዲዮ መያዣ አሰራር እንዲጠቀም
+    # YouTube ከሆነ ልዩ የቪዲዮ/ኦዲዮ አሰራር
     if "youtube.com" in url or "youtu.be" in url:
         opts['format'] = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
         opts['extractor_args'] = {
             'youtube': {
-                'player_client': ['ios', 'mweb', 'android'],
-                'skip': ['hls', 'dash']
+                'player_client': ['android', 'web', 'mweb', 'ios']
             }
         }
     else:
-        # ለ Instagram, TikTok, Facebook እና ሌሎች Social Media-ዎች
+        # ለ Instagram, TikTok, Reddit, Twitch, Tumblr, Vimeo, Threads, SoundCloud ወዘተ
         opts['format'] = 'best'
 
     if os.path.exists('cookies.txt'):
@@ -558,8 +557,8 @@ async def button_callback(
 
     elif data == "cmd_support":
         await query.edit_message_text(
-            f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
-            f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ YouTube, Instagram, TikTok, Facebook, Pinterest እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
+            f'<tg-emoji emoji-id="5305479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
+            f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ YouTube, Instagram, TikTok, Facebook, Reddit, Twitch, Vimeo, SoundCloud, Threads እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
             f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
@@ -586,9 +585,12 @@ async def handle_user_messages(
 
     text = update.message.text or ""
 
+    # በፎቶው ላይ ያሉትን እና ሌሎችንም አፕሊኬሽኖች ማውረድ እንዲችል ሙሉ የዶሜይን ዝርዝር
     valid_domains = [
         "instagram.com", "tiktok.com", "youtube.com", "youtu.be", 
-        "facebook.com", "fb.watch", "twitter.com", "x.com", "pinterest.com", "pin.it"
+        "facebook.com", "fb.watch", "twitter.com", "x.com", "pinterest.com", "pin.it",
+        "reddit.com", "redd.it", "twitch.tv", "tumblr.com", "vimeo.com", 
+        "spotify.com", "threads.net", "soundcloud.com"
     ]
     is_supported_link = any(domain in text.lower() for domain in valid_domains)
 
