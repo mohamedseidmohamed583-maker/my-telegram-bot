@@ -383,22 +383,19 @@ def get_ydl_options(url: str, output_template=None):
         'no_warnings': True,
         'nocheckcertificate': True,
         'geo_bypass': True,
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
         }
     }
 
-    # YouTube ከሆነ ልዩ የቪዲዮ/ኦዲዮ አሰራር
+    # YouTube ከሆነ ልዩ የExtractor መፍትሔ
     if "youtube.com" in url or "youtu.be" in url:
-        opts['format'] = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
         opts['extractor_args'] = {
             'youtube': {
-                'player_client': ['android', 'web', 'mweb', 'ios']
+                'player_client': ['android', 'web']
             }
         }
-    else:
-        # ለ Instagram, TikTok, Reddit, Twitch, Tumblr, Vimeo, Threads, SoundCloud ወዘተ
-        opts['format'] = 'best'
 
     if os.path.exists('cookies.txt'):
         opts['cookiefile'] = 'cookies.txt'
@@ -421,19 +418,18 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     file_base = f"video_{update.effective_user.id}_{update.message.message_id}"
     output_template = f"{file_base}.%(ext)s"
-    expected_file = f"{file_base}.mp4"
 
     try:
         await asyncio.to_thread(download_video, url, output_template)
 
-        actual_file = expected_file
-        if not os.path.exists(actual_file):
-            for f in os.listdir('.'):
-                if f.startswith(file_base):
-                    actual_file = f
-                    break
+        # የወረደውን ፋይል መፈለግ (ማንኛውም ኤክስቴንሽን ቢኖረው)
+        actual_file = None
+        for f in os.listdir('.'):
+            if f.startswith(file_base):
+                actual_file = f
+                break
 
-        if os.path.exists(actual_file):
+        if actual_file and os.path.exists(actual_file):
             file_size = os.path.getsize(actual_file)
             
             keyboard_share = [[InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)]]
@@ -557,7 +553,7 @@ async def button_callback(
 
     elif data == "cmd_support":
         await query.edit_message_text(
-            f'<tg-emoji emoji-id="5305479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
+            f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
             f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ YouTube, Instagram, TikTok, Facebook, Reddit, Twitch, Vimeo, SoundCloud, Threads እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
             f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
             reply_markup=get_back_keyboard(),
@@ -585,12 +581,11 @@ async def handle_user_messages(
 
     text = update.message.text or ""
 
-    # በፎቶው ላይ ያሉትን እና ሌሎችንም አፕሊኬሽኖች ማውረድ እንዲችል ሙሉ የዶሜይን ዝርዝር
     valid_domains = [
         "instagram.com", "tiktok.com", "youtube.com", "youtu.be", 
         "facebook.com", "fb.watch", "twitter.com", "x.com", "pinterest.com", "pin.it",
         "reddit.com", "redd.it", "twitch.tv", "tumblr.com", "vimeo.com", 
-        "spotify.com", "threads.net", "soundcloud.com"
+        "threads.net", "soundcloud.com"
     ]
     is_supported_link = any(domain in text.lower() for domain in valid_domains)
 
