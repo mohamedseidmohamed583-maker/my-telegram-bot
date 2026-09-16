@@ -227,8 +227,8 @@ def get_welcome_text():
         f'<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | <b>YouTube: videos & music (Full & Shorts)</b>\n'
         f'<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | <b>Twitter (X): videos & voice</b>\n'
         f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>Facebook, Reddit, Twitch, Vimeo & Others</b>\n'
-        f'🎬 <b>Video to Audio Converter: ቪዲዮ ሲልኩ ወደ MP3 ይወጣል!</b>\n\n'
-        f'<b>And others Social Media:</b> <tg-emoji emoji-id="5305466057278923962">📥</tg-emoji>'
+        f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Video to Audio Converter: ቪዲዮ ሲልኩ ወደ MP3 ይወጣል!</b>\n\n'
+        f'<b>And others Social Media | ሌሎችንም ሶሻል ሚድያ ማውረድ ይችላሉ!:</b> <tg-emoji emoji-id="5305466057278923962">📥</tg-emoji>'
     )
 
 
