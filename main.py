@@ -377,16 +377,21 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # DYNAMIC DOWNLOAD ENGINE (FIXED FOR YOUTUBE, REDDIT & LIKEE)
 # ==================================================
 
+import os
+
 def get_ydl_options(url: str, output_template=None):
+    # ለእያንዳንዱ ሶሻል ሚዲያ አጠቃላይ የጋራ ቅንብር
     opts = {
         'quiet': True,
         'no_warnings': True,
         'nocheckcertificate': True,
         'geo_bypass': True,
-        # Reddit እና Likee ቪዲዮዎችን ከድምፃቸው ጋር ጥራት ባለው MP4 አዋህዶ ለማውረድ
+        'concurrent_fragment_downloads': 5,
+        # Render ላይ FFmpeg ባይኖር እንኳ እንዳይበላሽ የተዘጋጀ ጥራት
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.9',
         }
     }
@@ -394,15 +399,33 @@ def get_ydl_options(url: str, output_template=None):
     if output_template:
         opts['outtmpl'] = output_template
 
-    # 1. ዩቲዩብ Render IP ላይ እንዳይዘጋ በ Android/iOS Client ማስመሰል
+    # 1. YOUTUBE FIX (የ Render IP እገዳን ለማለፍ)
     if "youtube.com" in url or "youtu.be" in url:
         opts['extractor_args'] = {
             'youtube': {
-                'player_client': ['android', 'ios', 'mweb']
+                'player_client': ['mweb', 'android', 'ios'],
+                'skip': ['hls', 'dash']
             }
         }
+        # ዩቲዩብ ላይ ድምፅና ቪዲዮው ተቀላቅሎ የወረደውን እንዲመርጥ
+        opts['format'] = 'best[ext=mp4]/bestvideo+bestaudio/best'
 
-    # 2. Render Environment ላይ cookies ከተቀመጠ ማንበብ
+    # 2. LIKEE FIX (ልዩ Referer Header ይፈልጋል)
+    elif "likee" in url or "likee.video" in url:
+        opts['http_headers']['Referer'] = 'https://likee.video/'
+        opts['format'] = 'best'
+
+    # 3. VIMEO FIX (ቪሜኦ እንዳይዘጋው)
+    elif "vimeo.com" in url:
+        opts['http_headers']['Referer'] = 'https://vimeo.com/'
+        opts['format'] = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best'
+
+    # 4. TUMBLR FIX
+    elif "tumblr.com" in url:
+        opts['http_headers']['Referer'] = 'https://www.tumblr.com/'
+        opts['format'] = 'best'
+
+    # 5. Render ላይ cookies.txt ካለ እንዲጠቀምበት
     if os.path.exists('cookies.txt'):
         opts['cookiefile'] = 'cookies.txt'
 
