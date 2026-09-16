@@ -2,6 +2,7 @@ import os
 import re
 import json
 import asyncio
+import subprocess
 import static_ffmpeg
 static_ffmpeg.add_paths()
 from threading import Thread
@@ -54,7 +55,7 @@ def keep_alive():
 # CONFIGURATION
 # ==================================================
 
-TOKEN = "8795814797:AAFTJVwEkMJLAY8IK_5o00oZvhaIkn003Qg"
+TOKEN = "8795814797:AAG1zLvIR3sBDqfZwK4M4uNQ7pnxok0-Wks"
 ADMIN_ID = 6753546651
 
 # Force Join Channel
@@ -220,12 +221,13 @@ async def show_force_join(
 def get_welcome_text():
     return (
         f'Hello <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
-        f'<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>My options (ከሁሉም Social Media ላይ video ያለ watermark ማውረድ ይችላሉ!) :</b>\n\n'
+        f'<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>My options (ከሁሉም Social Media ላይ video እና audio ማውረድና መቀየር ይችላሉ!) :</b>\n\n'
         f'<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | <b>Tiktok & Likee: videos & photos</b>\n'
         f'<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | <b>Instagram: reels, posts & stories</b>\n'
         f'<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | <b>YouTube: videos & music (Full & Shorts)</b>\n'
         f'<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | <b>Twitter (X): videos & voice</b>\n'
-        f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>Facebook, Reddit, Twitch, Vimeo & Others</b>\n\n'
+        f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>Facebook, Reddit, Twitch, Vimeo & Others</b>\n'
+        f'🎬 <b>Video to Audio Converter: ቪዲዮ ሲልኩ ወደ MP3 ይወጣል!</b>\n\n'
         f'<b>And others Social Media:</b> <tg-emoji emoji-id="5305466057278923962">📥</tg-emoji>'
     )
 
@@ -370,9 +372,81 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
         f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ YouTube, Instagram, TikTok, Likee, Facebook, Reddit, Twitch, Vimeo, SoundCloud, Threads እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
+        f'🎬 <b>Video to Audio:</b> ማናቸውንም ቪዲዮ ከስልክዎ ይላኩ፣ ወደ MP3 Audio ቀይሮ ይልክልዎታል።\n\n'
         f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
         parse_mode="HTML"
     )
+
+
+# ==================================================
+# VIDEO TO AUDIO CONVERTER HANDLER
+# ==================================================
+
+async def convert_video_to_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    record_user_activity(user_id)
+
+    if not await is_joined(update, context):
+        await show_force_join(update, context)
+        return
+
+    video = update.message.video or update.message.video_note or (
+        update.message.document if update.message.document and update.message.document.mime_type and update.message.document.mime_type.startswith('video/') else None
+    )
+
+    if not video:
+        return
+
+    status_msg = await update.message.reply_text("⏳ <b>ቪዲዮውን ወደ ኦዲዮ (Audio) በመቀየር ላይ ነው... እባክዎ ይጠብቁ!</b> 🎵", parse_mode="HTML")
+
+    file_id = update.message.message_id
+    input_path = f"input_vid_{user_id}_{file_id}.mp4"
+    output_path = f"output_aud_{user_id}_{file_id}.mp3"
+
+    try:
+        tg_file = await video.get_file()
+        await tg_file.download_to_drive(input_path)
+
+        # Convert Video to MP3 using FFmpeg
+        cmd = [
+            "ffmpeg", "-y",
+            "-i", input_path,
+            "-vn",
+            "-acodec", "libmp3lame",
+            "-q:a", "2",
+            output_path
+        ]
+        
+        await asyncio.to_thread(subprocess.run, cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        if os.path.exists(output_path):
+            bot_username = context.bot.username or "mame_posts_bot"
+            share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Video%20to%20Audio%20Converter%20Bot!🔥"
+            keyboard_share = [[InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)]]
+            reply_markup_share = InlineKeyboardMarkup(keyboard_share)
+
+            with open(output_path, 'rb') as audio_file:
+                await update.message.reply_audio(
+                    audio=audio_file,
+                    caption=f'🎵 <b>ከቪዲዮ የተቀየረ (Extracted Audio)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Converted with</b> @{bot_username} & @mame_posts',
+                    reply_markup=reply_markup_share,
+                    parse_mode="HTML"
+                )
+            await status_msg.delete()
+        else:
+            await status_msg.edit_text("❌ <b>ቪዲዮውን ወደ ኦዲዮ መቀየር አልተቻለም!</b>")
+
+    except Exception as e:
+        print("Video to Audio Error:", e)
+        await status_msg.edit_text("❌ <b>ቪዲዮው ከ 20MB በላይ ስለሆነ በቴሌግራም ህግ ማውረድ አልተቻለም!</b>")
+
+    finally:
+        for path in [input_path, output_path]:
+            if os.path.exists(path):
+                try:
+                    os.remove(path)
+                except Exception:
+                    pass
 
 
 # ==================================================
@@ -380,7 +454,6 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ==================================================
 
 def clean_url(url: str) -> str:
-    # ዩቲዩብ Shorts እና ጥቃቅን ሊንኮችን ወደ Standard YouTube Watch Format መቀየር
     if "youtube.com/shorts/" in url:
         match = re.search(r'youtube\.com/shorts/([a-zA-Z0-9_-]+)', url)
         if match:
@@ -497,7 +570,6 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     keyboard_share = [[InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)]]
     reply_markup_share = InlineKeyboardMarkup(keyboard_share)
 
-    # ሊንኩን ማፅዳትና ለዩቲዩብ ዝግጁ ማድረግ
     url = clean_url(raw_url)
 
     video_prefix = f"video_{update.effective_user.id}_{update.message.message_id}"
@@ -514,7 +586,6 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
         try:
             await asyncio.to_thread(download_video_func, url, video_template, False)
         except Exception:
-            # Fallback client attempt for YouTube
             await asyncio.to_thread(download_video_func, url, video_template, True)
 
         actual_video = find_downloaded_file(video_prefix)
@@ -532,17 +603,14 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     except Exception as e:
         print("Video Download Error:", e)
 
-    # 2. DOWNLOAD & SEND AUDIO (MULTI-STAGE FALLBACK)
+    # 2. DOWNLOAD & SEND AUDIO
     try:
-        # Attempt A: MP3 conversion via standard client
         try:
             await asyncio.to_thread(download_audio_func, url, audio_template, True, False)
         except Exception:
-            # Attempt B: MP3 conversion via fallback client (Android/TV)
             try:
                 await asyncio.to_thread(download_audio_func, url, audio_template, True, True)
             except Exception:
-                # Attempt C: Raw Audio download without FFmpeg conversion
                 await asyncio.to_thread(download_audio_func, url, audio_template, False, True)
 
         actual_audio = find_downloaded_file(audio_prefix)
@@ -664,6 +732,7 @@ async def button_callback(
         await query.edit_message_text(
             f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
             f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ YouTube, Instagram, TikTok, Likee, Facebook, Reddit, Twitch, Vimeo, SoundCloud, Threads እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
+            f'🎬 <b>Video to Audio:</b> ማናቸውንም ቪዲዮ ከስልክዎ ይላኩ፣ ወደ MP3 Audio ቀይሮ ይልክልዎታል።\n\n'
             f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
@@ -699,7 +768,6 @@ async def handle_user_messages(
     is_supported_link = any(domain in text.lower() for domain in valid_domains)
 
     if is_supported_link:
-        # Regex በመጠቀም ሊንኩን ብቻ ለይቶ ማውጣት
         url_match = re.search(r'https?://[^\s]+', text)
         target_url = url_match.group(0) if url_match else text
         await handle_url_download(update, context, target_url)
@@ -860,8 +928,11 @@ def main():
     admin_filter = filters.User(user_id=ADMIN_ID) & filters.REPLY & ~filters.COMMAND
     app.add_handler(MessageHandler(admin_filter, admin_reply))
     
+    # Direct Video to Audio Extractor Handler
+    app.add_handler(MessageHandler(filters.VIDEO | filters.VIDEO_NOTE, convert_video_to_audio))
+
     type_filter = (
-        filters.TEXT | filters.PHOTO | filters.VIDEO | 
+        filters.TEXT | filters.PHOTO | 
         filters.Document.ALL | filters.VOICE | filters.AUDIO | filters.Sticker.ALL
     ) & ~filters.COMMAND
     
@@ -869,7 +940,7 @@ def main():
     
     app.add_error_handler(error_handler)
 
-    print("🤖 Mame Posts Bot is running with Enhanced YouTube Downloader...")
+    print("🤖 Mame Posts Bot is running with Video to Audio Extractor...")
     app.run_polling()
 
 if __name__ == '__main__':
