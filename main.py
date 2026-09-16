@@ -374,7 +374,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==================================================
-# DYNAMIC & OPTIMIZED DOWNLOAD ENGINE
+# DYNAMIC DOWNLOAD ENGINE (FIXED FOR YOUTUBE, REDDIT & LIKEE)
 # ==================================================
 
 def get_ydl_options(url: str, output_template=None):
@@ -383,28 +383,31 @@ def get_ydl_options(url: str, output_template=None):
         'no_warnings': True,
         'nocheckcertificate': True,
         'geo_bypass': True,
-        # ቴሌግራም ከ 50MB በላይ መላክ ስለማይችል ከ 48MB ያላነሰ/ያልበለጠ ምርጥ ጥራት እንዲመርጥ ማድረግ
-        'format': 'bestvideo[filesize<=48M]+bestaudio/best[filesize<=48M]/best[filesize_approx<=48M]/best',
+        # Reddit እና Likee ቪዲዮዎችን ከድምፃቸው ጋር ጥራት ባለው MP4 አዋህዶ ለማውረድ
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+            'Accept-Language': 'en-US,en;q=0.9',
         }
     }
-
-    # የ Render IP በ YouTube እንዳይቀጣ ልዩ የመተላለፊያ Client አደረጃጀት
-    if "youtube.com" in url or "youtu.be" in url:
-        opts['extractor_args'] = {
-            'youtube': {
-                'player_client': ['android', 'ios', 'mweb', 'web']
-            }
-        }
-
-    if os.path.exists('cookies.txt'):
-        opts['cookiefile'] = 'cookies.txt'
 
     if output_template:
         opts['outtmpl'] = output_template
 
+    # 1. ዩቲዩብ Render IP ላይ እንዳይዘጋ በ Android/iOS Client ማስመሰል
+    if "youtube.com" in url or "youtu.be" in url:
+        opts['extractor_args'] = {
+            'youtube': {
+                'player_client': ['android', 'ios', 'mweb']
+            }
+        }
+
+    # 2. Render Environment ላይ cookies ከተቀመጠ ማንበብ
+    if os.path.exists('cookies.txt'):
+        opts['cookiefile'] = 'cookies.txt'
+
     return opts
+
 
 def download_video(url: str, output_template: str):
     with yt_dlp.YoutubeDL(get_ydl_options(url, output_template)) as ydl:
