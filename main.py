@@ -376,21 +376,18 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==================================================
-# DYNAMIC DOWNLOAD ENGINE (FIXED FOR YOUTUBE, REDDIT & LIKEE)
+# DYNAMIC DOWNLOAD ENGINE (VIDEO + AUDIO EXTRACTION)
 # ==================================================
 
-import os
-
-def get_ydl_options(url: str, output_template=None):
-    # ለእያንዳንዱ ሶሻል ሚዲያ አጠቃላይ የጋራ ቅንብር
+def get_video_options(url: str, output_template: str):
     opts = {
         'quiet': True,
         'no_warnings': True,
         'nocheckcertificate': True,
         'geo_bypass': True,
         'concurrent_fragment_downloads': 5,
-        # Render ላይ FFmpeg ባይኖር እንኳ እንዳይበላሽ የተዘጋጀ ጥራት
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        'outtmpl': output_template,
         'http_headers': {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -398,10 +395,6 @@ def get_ydl_options(url: str, output_template=None):
         }
     }
 
-    if output_template:
-        opts['outtmpl'] = output_template
-
-    # 1. YOUTUBE FIX (የ Render IP እገዳን ለማለፍ)
     if "youtube.com" in url or "youtu.be" in url:
         opts['extractor_args'] = {
             'youtube': {
@@ -409,92 +402,149 @@ def get_ydl_options(url: str, output_template=None):
                 'skip': ['hls', 'dash']
             }
         }
-        # ዩቲዩብ ላይ ድምፅና ቪዲዮው ተቀላቅሎ የወረደውን እንዲመርጥ
         opts['format'] = 'best[ext=mp4]/bestvideo+bestaudio/best'
-
-    # 2. LIKEE FIX (ልዩ Referer Header ይፈልጋል)
     elif "likee" in url or "likee.video" in url:
         opts['http_headers']['Referer'] = 'https://likee.video/'
         opts['format'] = 'best'
-
-    # 3. VIMEO FIX (ቪሜኦ እንዳይዘጋው)
     elif "vimeo.com" in url:
         opts['http_headers']['Referer'] = 'https://vimeo.com/'
         opts['format'] = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best'
-
-    # 4. TUMBLR FIX
     elif "tumblr.com" in url:
         opts['http_headers']['Referer'] = 'https://www.tumblr.com/'
         opts['format'] = 'best'
 
-    # 5. Render ላይ cookies.txt ካለ እንዲጠቀምበት
     if os.path.exists('cookies.txt'):
         opts['cookiefile'] = 'cookies.txt'
 
     return opts
 
 
-def download_video(url: str, output_template: str):
-    with yt_dlp.YoutubeDL(get_ydl_options(url, output_template)) as ydl:
+def get_audio_options(url: str, output_template: str):
+    opts = {
+        'quiet': True,
+        'no_warnings': True,
+        'nocheckcertificate': True,
+        'geo_bypass': True,
+        'format': 'bestaudio/best',
+        'outtmpl': output_template,
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        }],
+        'http_headers': {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+        }
+    }
+
+    if "youtube.com" in url or "youtu.be" in url:
+        opts['extractor_args'] = {
+            'youtube': {
+                'player_client': ['mweb', 'android', 'ios'],
+                'skip': ['hls', 'dash']
+            }
+        }
+    elif "likee" in url or "likee.video" in url:
+        opts['http_headers']['Referer'] = 'https://likee.video/'
+    elif "vimeo.com" in url:
+        opts['http_headers']['Referer'] = 'https://vimeo.com/'
+    elif "tumblr.com" in url:
+        opts['http_headers']['Referer'] = 'https://www.tumblr.com/'
+
+    if os.path.exists('cookies.txt'):
+        opts['cookiefile'] = 'cookies.txt'
+
+    return opts
+
+
+def download_video_func(url: str, output_template: str):
+    with yt_dlp.YoutubeDL(get_video_options(url, output_template)) as ydl:
         ydl.download([url])
 
 
+def download_audio_func(url: str, output_template: str):
+    with yt_dlp.YoutubeDL(get_audio_options(url, output_template)) as ydl:
+        ydl.download([url])
+
+
+def find_downloaded_file(prefix: str):
+    for f in os.listdir('.'):
+        if f.startswith(prefix):
+            return f
+    return None
+
+
 async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE, url: str):
-    status_msg = await update.message.reply_text("🚀 <b>ቪዲዮውን በማውረድ ላይ ይገኛል፣ እባክዎ ይጠብቁ...</b> 📥", parse_mode="HTML")
+    status_msg = await update.message.reply_text("🚀 <b>ቪዲዮውን እና ኦዲዮውን በማውረድ ላይ ይገኛል፣ እባክዎ ይጠብቁ...</b> 📥", parse_mode="HTML")
 
     bot_username = context.bot.username or "mame_posts_bot"
     share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Video%20Downloader%20Bot!🔥"
+    keyboard_share = [[InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)]]
+    reply_markup_share = InlineKeyboardMarkup(keyboard_share)
 
-    file_base = f"video_{update.effective_user.id}_{update.message.message_id}"
-    output_template = f"{file_base}.%(ext)s"
+    video_prefix = f"video_{update.effective_user.id}_{update.message.message_id}"
+    audio_prefix = f"audio_{update.effective_user.id}_{update.message.message_id}"
 
+    video_template = f"{video_prefix}.%(ext)s"
+    audio_template = f"{audio_prefix}.%(ext)s"
+
+    video_sent = False
+    audio_sent = False
+
+    # 1. DOWNLOAD & SEND VIDEO
     try:
-        await asyncio.to_thread(download_video, url, output_template)
+        await asyncio.to_thread(download_video_func, url, video_template)
+        actual_video = find_downloaded_file(video_prefix)
 
-        # የወረደውን ፋይል ማግኘት
-        actual_file = None
-        for f in os.listdir('.'):
-            if f.startswith(file_base):
-                actual_file = f
-                break
-
-        if actual_file and os.path.exists(actual_file):
-            file_size = os.path.getsize(actual_file)
-            
-            keyboard_share = [[InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)]]
-            reply_markup_share = InlineKeyboardMarkup(keyboard_share)
-
-            await status_msg.edit_text("📤 <b>ቪዲዮውን በመላክ ላይ ይገኛል...</b>", parse_mode="HTML")
-            
-            with open(actual_file, 'rb') as f_obj:
-                # ቴሌግራም Bot API የ 50MB ገደብ ስላለው
-                if file_size > 50 * 1024 * 1024:
-                    await status_msg.edit_text("⚠️ <b>ቪዲዮው ከ 50MB በላይ ስለሆነ በቴሌግራም Bot API ገደብ ምክንያት መላክ አልተቻለም!</b>", parse_mode="HTML")
-                else:
+        if actual_video and os.path.exists(actual_video):
+            if os.path.getsize(actual_video) <= 50 * 1024 * 1024:
+                with open(actual_video, 'rb') as vf:
                     await update.message.reply_video(
-                        video=f_obj,
+                        video=vf,
                         caption=f'<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts\n\n <tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy! Don\'t forget to share it with your friends.</b>',
                         reply_markup=reply_markup_share,
                         parse_mode="HTML"
                     )
-                    await status_msg.delete()
-
-            if os.path.exists(actual_file):
-                os.remove(actual_file)
-        else:
-            await status_msg.edit_text("💔 <b>ቪዲዮውን ማግኘት አልተቻለም።</b>", parse_mode="HTML")
-
+                video_sent = True
     except Exception as e:
-        print("Download Error:", e)
-        for f in os.listdir('.'):
-            if f.startswith(file_base):
-                try:
-                    os.remove(f)
-                except:
-                    pass
-                    
+        print("Video Download Error:", e)
+
+    # 2. DOWNLOAD & SEND AUDIO
+    try:
+        await asyncio.to_thread(download_audio_func, url, audio_template)
+        actual_audio = find_downloaded_file(audio_prefix)
+
+        if actual_audio and os.path.exists(actual_audio):
+            if os.path.getsize(actual_audio) <= 50 * 1024 * 1024:
+                with open(actual_audio, 'rb') as af:
+                    await update.message.reply_audio(
+                        audio=af,
+                        caption=f'🎵 <b>Extracted Audio (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts',
+                        reply_markup=reply_markup_share,
+                        parse_mode="HTML"
+                    )
+                audio_sent = True
+    except Exception as e:
+        print("Audio Download Error:", e)
+
+    # 3. CLEANUP TEMP FILES
+    for f in os.listdir('.'):
+        if f.startswith(video_prefix) or f.startswith(audio_prefix):
+            try:
+                os.remove(f)
+            except Exception:
+                pass
+
+    # 4. RESPONSE STATUS
+    if video_sent and audio_sent:
+        await status_msg.delete()
+    elif video_sent and not audio_sent:
+        await status_msg.edit_text("✅ <b>ቪዲዮው ተልኳል! (ኦዲዮውን ማውረድ አልተቻለም)</b>", parse_mode="HTML")
+    elif audio_sent and not video_sent:
+        await status_msg.edit_text("🎵 <b>ቪዲዮው ባይወርድም ኦዲዮው (MP3) በተሳካ ሁኔታ ተልኳል!</b>", parse_mode="HTML")
+    else:
         await status_msg.edit_text(
-            "💔<b>ቪዲዮውን ማውረድ አልተቻለም!</b>\n\n"
+            "💔 <b>ቪዲዮውንም ሆነ ኦዲዮውን ማውረድ አልተቻለም!</b>\n\n"
             "እባክዎ የላኩት ሊንክ ትክክለኛ መሆኑን አረጋግጠው እንደገና ይሞክሩ። በጣም ይቅርታ!",
             parse_mode="HTML"
         )
@@ -616,7 +666,7 @@ async def handle_user_messages(
     is_supported_link = any(domain in text.lower() for domain in valid_domains)
 
     if is_supported_link:
-        # Regex በመጠቀም ሊንኩን ብቻ ለይቶ ማውጣት (Likee እና ሌሎች ላይ ያሉ ጽሁፎችን ለማስወገድ)
+        # Regex በመጠቀም ሊንኩን ብቻ ለይቶ ማውጣት
         url_match = re.search(r'https?://[^\s]+', text)
         target_url = url_match.group(0) if url_match else text
         await handle_url_download(update, context, target_url)
@@ -786,7 +836,7 @@ def main():
     
     app.add_error_handler(error_handler)
 
-    print("🤖 Mame Posts Bot is running...")
+    print("🤖 Mame Posts Bot is running with Video + Audio Downloader...")
     app.run_polling()
 
 if __name__ == '__main__':
