@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import asyncio
 from threading import Thread
@@ -217,14 +218,13 @@ async def show_force_join(
 def get_welcome_text():
     return (
         f'Hello <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
-        
         f'<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>My options (ከሁሉም Social Media ላይ video ያለ watermark ማውረድ ይችላሉ!) :</b>\n\n'
-        f'<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | <b>Tiktok: videos & photos</b>\n'
+        f'<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | <b>Tiktok & Likee: videos & photos</b>\n'
         f'<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | <b>Instagram: reels, posts & stories</b>\n'
         f'<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | <b>YouTube: videos & music (Full & Shorts)</b>\n'
         f'<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | <b>Twitter (X): videos & voice</b>\n'
         f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>Facebook, Reddit, Twitch, Vimeo & Others</b>\n\n'
-        f'<b>And others Social Media:</b> <tg-emoji emoji-id="5305749202997911340">📥</tg-emoji>'
+        f'<b>And others Social Media:</b> <tg-emoji emoji-id="5305466057278923962">📥</tg-emoji>'
     )
 
 
@@ -367,7 +367,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     await update.message.reply_text(
         f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
-        f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ YouTube, Instagram, TikTok, Facebook, Reddit, Twitch, Vimeo, SoundCloud, Threads እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
+        f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ YouTube, Instagram, TikTok, Likee, Facebook, Reddit, Twitch, Vimeo, SoundCloud, Threads እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
         f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
         parse_mode="HTML"
     )
@@ -383,17 +383,18 @@ def get_ydl_options(url: str, output_template=None):
         'no_warnings': True,
         'nocheckcertificate': True,
         'geo_bypass': True,
-        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        # ቴሌግራም ከ 50MB በላይ መላክ ስለማይችል ከ 48MB ያላነሰ/ያልበለጠ ምርጥ ጥራት እንዲመርጥ ማድረግ
+        'format': 'bestvideo[filesize<=48M]+bestaudio/best[filesize<=48M]/best[filesize_approx<=48M]/best',
         'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
         }
     }
 
-    # YouTube ከሆነ ልዩ የExtractor መፍትሔ
+    # የ Render IP በ YouTube እንዳይቀጣ ልዩ የመተላለፊያ Client አደረጃጀት
     if "youtube.com" in url or "youtu.be" in url:
         opts['extractor_args'] = {
             'youtube': {
-                'player_client': ['android', 'web']
+                'player_client': ['android', 'ios', 'mweb', 'web']
             }
         }
 
@@ -422,7 +423,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     try:
         await asyncio.to_thread(download_video, url, output_template)
 
-        # የወረደውን ፋይል መፈለግ (ማንኛውም ኤክስቴንሽን ቢኖረው)
+        # የወረደውን ፋይል ማግኘት
         actual_file = None
         for f in os.listdir('.'):
             if f.startswith(file_base):
@@ -438,13 +439,9 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
             await status_msg.edit_text("📤 <b>ቪዲዮውን በመላክ ላይ ይገኛል...</b>", parse_mode="HTML")
             
             with open(actual_file, 'rb') as f_obj:
+                # ቴሌግራም Bot API የ 50MB ገደብ ስላለው
                 if file_size > 50 * 1024 * 1024:
-                    await update.message.reply_document(
-                        document=f_obj,
-                        caption=f'<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts\n\n <tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy! Large file downloaded successfully.</b>',
-                        reply_markup=reply_markup_share,
-                        parse_mode="HTML"
-                    )
+                    await status_msg.edit_text("⚠️ <b>ቪዲዮው ከ 50MB በላይ ስለሆነ በቴሌግራም Bot API ገደብ ምክንያት መላክ አልተቻለም!</b>", parse_mode="HTML")
                 else:
                     await update.message.reply_video(
                         video=f_obj,
@@ -452,9 +449,10 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
                         reply_markup=reply_markup_share,
                         parse_mode="HTML"
                     )
+                    await status_msg.delete()
 
-            await status_msg.delete()
-            os.remove(actual_file)
+            if os.path.exists(actual_file):
+                os.remove(actual_file)
         else:
             await status_msg.edit_text("💔 <b>ቪዲዮውን ማግኘት አልተቻለም።</b>", parse_mode="HTML")
 
@@ -554,7 +552,7 @@ async def button_callback(
     elif data == "cmd_support":
         await query.edit_message_text(
             f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
-            f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ YouTube, Instagram, TikTok, Facebook, Reddit, Twitch, Vimeo, SoundCloud, Threads እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
+            f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ YouTube, Instagram, TikTok, Likee, Facebook, Reddit, Twitch, Vimeo, SoundCloud, Threads እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
             f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
@@ -585,13 +583,14 @@ async def handle_user_messages(
         "instagram.com", "tiktok.com", "youtube.com", "youtu.be", 
         "facebook.com", "fb.watch", "twitter.com", "x.com", "pinterest.com", "pin.it",
         "reddit.com", "redd.it", "twitch.tv", "tumblr.com", "vimeo.com", 
-        "threads.net", "soundcloud.com"
+        "threads.net", "soundcloud.com", "likee.video", "likee.com", "l.likee.video", "lk.video"
     ]
     is_supported_link = any(domain in text.lower() for domain in valid_domains)
 
     if is_supported_link:
-        urls = [word for word in text.split() if word.startswith("http://") or word.startswith("https://")]
-        target_url = urls[0] if urls else text
+        # Regex በመጠቀም ሊንኩን ብቻ ለይቶ ማውጣት (Likee እና ሌሎች ላይ ያሉ ጽሁፎችን ለማስወገድ)
+        url_match = re.search(r'https?://[^\s]+', text)
+        target_url = url_match.group(0) if url_match else text
         await handle_url_download(update, context, target_url)
         return
 
