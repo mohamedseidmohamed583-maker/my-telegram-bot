@@ -2,6 +2,8 @@ import os
 import re
 import json
 import asyncio
+import static_ffmpeg
+static_ffmpeg.add_paths()
 from threading import Thread
 from flask import Flask
 from telegram import (
