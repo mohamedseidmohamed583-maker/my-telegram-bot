@@ -54,7 +54,7 @@ def keep_alive():
 # CONFIGURATION
 # ==================================================
 
-TOKEN = "8795814797:AAGLdadHK9TJvaPM6lHI3lMk2VDX45VWjEQ"
+TOKEN = "8795814797:AAFTJVwEkMJLAY8IK_5o00oZvhaIkn003Qg"
 ADMIN_ID = 6753546651
 
 # Force Join Channel
@@ -376,18 +376,31 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==================================================
-# DYNAMIC DOWNLOAD ENGINE (VIDEO + AUDIO EXTRACTION)
+# ULTRA-ROBUST DOWNLOAD ENGINE (YOUTUBE SHORTS & AUDIO BYPASS)
 # ==================================================
 
-def get_video_options(url: str, output_template: str):
+def clean_url(url: str) -> str:
+    # ዩቲዩብ Shorts እና ጥቃቅን ሊንኮችን ወደ Standard YouTube Watch Format መቀየር
+    if "youtube.com/shorts/" in url:
+        match = re.search(r'youtube\.com/shorts/([a-zA-Z0-9_-]+)', url)
+        if match:
+            return f"https://www.youtube.com/watch?v={match.group(1)}"
+    elif "youtu.be/" in url:
+        match = re.search(r'youtu\.be/([a-zA-Z0-9_-]+)', url)
+        if match:
+            return f"https://www.youtube.com/watch?v={match.group(1)}"
+    return url
+
+
+def get_video_options(url: str, output_template: str, fallback: bool = False):
     opts = {
         'quiet': True,
         'no_warnings': True,
         'nocheckcertificate': True,
         'geo_bypass': True,
         'concurrent_fragment_downloads': 5,
-        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'outtmpl': output_template,
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'http_headers': {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -396,10 +409,10 @@ def get_video_options(url: str, output_template: str):
     }
 
     if "youtube.com" in url or "youtu.be" in url:
+        clients = ['android', 'ios', 'tv_embedded'] if fallback else ['mweb', 'android', 'ios', 'tv_embedded']
         opts['extractor_args'] = {
             'youtube': {
-                'player_client': ['mweb', 'android', 'ios'],
-                'skip': ['hls', 'dash']
+                'player_client': clients
             }
         }
         opts['format'] = 'best[ext=mp4]/bestvideo+bestaudio/best'
@@ -419,7 +432,7 @@ def get_video_options(url: str, output_template: str):
     return opts
 
 
-def get_audio_options(url: str, output_template: str):
+def get_audio_options(url: str, output_template: str, with_postprocessor: bool = True, fallback: bool = False):
     opts = {
         'quiet': True,
         'no_warnings': True,
@@ -427,21 +440,23 @@ def get_audio_options(url: str, output_template: str):
         'geo_bypass': True,
         'format': 'bestaudio/best',
         'outtmpl': output_template,
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
-            'preferredquality': '192',
-        }],
         'http_headers': {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
         }
     }
 
+    if with_postprocessor:
+        opts['postprocessors'] = [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        }]
+
     if "youtube.com" in url or "youtu.be" in url:
+        clients = ['android', 'ios', 'tv_embedded'] if fallback else ['mweb', 'android', 'ios', 'tv_embedded']
         opts['extractor_args'] = {
             'youtube': {
-                'player_client': ['mweb', 'android', 'ios'],
-                'skip': ['hls', 'dash']
+                'player_client': clients
             }
         }
     elif "likee" in url or "likee.video" in url:
@@ -457,13 +472,13 @@ def get_audio_options(url: str, output_template: str):
     return opts
 
 
-def download_video_func(url: str, output_template: str):
-    with yt_dlp.YoutubeDL(get_video_options(url, output_template)) as ydl:
+def download_video_func(url: str, output_template: str, fallback: bool = False):
+    with yt_dlp.YoutubeDL(get_video_options(url, output_template, fallback)) as ydl:
         ydl.download([url])
 
 
-def download_audio_func(url: str, output_template: str):
-    with yt_dlp.YoutubeDL(get_audio_options(url, output_template)) as ydl:
+def download_audio_func(url: str, output_template: str, with_postprocessor: bool = True, fallback: bool = False):
+    with yt_dlp.YoutubeDL(get_audio_options(url, output_template, with_postprocessor, fallback)) as ydl:
         ydl.download([url])
 
 
@@ -474,13 +489,16 @@ def find_downloaded_file(prefix: str):
     return None
 
 
-async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE, url: str):
+async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE, raw_url: str):
     status_msg = await update.message.reply_text("🚀 <b>ቪዲዮውን እና ኦዲዮውን በማውረድ ላይ ይገኛል፣ እባክዎ ይጠብቁ...</b> 📥", parse_mode="HTML")
 
     bot_username = context.bot.username or "mame_posts_bot"
     share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Video%20Downloader%20Bot!🔥"
     keyboard_share = [[InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)]]
     reply_markup_share = InlineKeyboardMarkup(keyboard_share)
+
+    # ሊንኩን ማፅዳትና ለዩቲዩብ ዝግጁ ማድረግ
+    url = clean_url(raw_url)
 
     video_prefix = f"video_{update.effective_user.id}_{update.message.message_id}"
     audio_prefix = f"audio_{update.effective_user.id}_{update.message.message_id}"
@@ -493,7 +511,12 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     # 1. DOWNLOAD & SEND VIDEO
     try:
-        await asyncio.to_thread(download_video_func, url, video_template)
+        try:
+            await asyncio.to_thread(download_video_func, url, video_template, False)
+        except Exception:
+            # Fallback client attempt for YouTube
+            await asyncio.to_thread(download_video_func, url, video_template, True)
+
         actual_video = find_downloaded_file(video_prefix)
 
         if actual_video and os.path.exists(actual_video):
@@ -509,9 +532,19 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     except Exception as e:
         print("Video Download Error:", e)
 
-    # 2. DOWNLOAD & SEND AUDIO
+    # 2. DOWNLOAD & SEND AUDIO (MULTI-STAGE FALLBACK)
     try:
-        await asyncio.to_thread(download_audio_func, url, audio_template)
+        # Attempt A: MP3 conversion via standard client
+        try:
+            await asyncio.to_thread(download_audio_func, url, audio_template, True, False)
+        except Exception:
+            # Attempt B: MP3 conversion via fallback client (Android/TV)
+            try:
+                await asyncio.to_thread(download_audio_func, url, audio_template, True, True)
+            except Exception:
+                # Attempt C: Raw Audio download without FFmpeg conversion
+                await asyncio.to_thread(download_audio_func, url, audio_template, False, True)
+
         actual_audio = find_downloaded_file(audio_prefix)
 
         if actual_audio and os.path.exists(actual_audio):
@@ -519,7 +552,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
                 with open(actual_audio, 'rb') as af:
                     await update.message.reply_audio(
                         audio=af,
-                        caption=f'🎵 <b>Extracted Audio (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts',
+                        caption=f'🎵 <b>Extracted Audio</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts',
                         reply_markup=reply_markup_share,
                         parse_mode="HTML"
                     )
@@ -541,7 +574,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     elif video_sent and not audio_sent:
         await status_msg.edit_text("✅ <b>ቪዲዮው ተልኳል! (ኦዲዮውን ማውረድ አልተቻለም)</b>", parse_mode="HTML")
     elif audio_sent and not video_sent:
-        await status_msg.edit_text("🎵 <b>ቪዲዮው ባይወርድም ኦዲዮው (MP3) በተሳካ ሁኔታ ተልኳል!</b>", parse_mode="HTML")
+        await status_msg.edit_text("🎵 <b>ቪዲዮው ባይወርድም ኦዲዮው (Music) በተሳካ ሁኔታ ተልኳል!</b>", parse_mode="HTML")
     else:
         await status_msg.edit_text(
             "💔 <b>ቪዲዮውንም ሆነ ኦዲዮውን ማውረድ አልተቻለም!</b>\n\n"
@@ -836,7 +869,7 @@ def main():
     
     app.add_error_handler(error_handler)
 
-    print("🤖 Mame Posts Bot is running with Video + Audio Downloader...")
+    print("🤖 Mame Posts Bot is running with Enhanced YouTube Downloader...")
     app.run_polling()
 
 if __name__ == '__main__':
