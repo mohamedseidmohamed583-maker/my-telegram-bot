@@ -180,13 +180,19 @@ async def is_joined(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==================================================
-# FORCE JOIN MESSAGE
+# FORCE JOIN MESSAGE (PREMIUM EMOJIS / STICKER FORMAT)
 # ==================================================
 
 async def show_force_join(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE
 ):
+    text = (
+        '<tg-emoji emoji-id="6034962180875490251">🔒</tg-emoji> <b>ቦቱን ለመጠቀም ከታች ያለውን ቻናል መቀላቀል አለብዎት!</b>\n\n'
+        '1️⃣ <tg-emoji emoji-id="5267442591548320083">📢</tg-emoji> <b>Join Channel የሚለውን ይጫኑ::</b>\n'
+        '2️⃣ ከዚያ <tg-emoji emoji-id="5305749202997911340">✔️</tg-emoji> <b>I\'ve Joined የሚለውን ተጫነው የላኩትን ደግመው ይላኩ <tg-emoji emoji-id="5103034602121856013">🙂</tg-emoji>::</b>'
+    )
+
     keyboard = [
         [
             InlineKeyboardButton(
@@ -206,9 +212,7 @@ async def show_force_join(
 
     if update.message:
         await update.message.reply_text(
-            "🔒 <b>ቦቱን ለመጠቀም ከታች ያለውን ቻናል መቀላቀል አለብዎት!</b>\n\n"
-            "1️⃣ 📢 Join Channel የሚለውን ይጫኑ።\n"
-            "2️⃣ ከዚያ ✅ I've Joined የሚለውን ተጭነው የላኩትን ድጋሜ ይላኩ🙂።",
+            text=text,
             reply_markup=reply_markup,
             parse_mode="HTML"
         )
