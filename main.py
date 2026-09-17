@@ -239,10 +239,6 @@ async def start(
     user_id = update.effective_user.id
     record_user_activity(user_id)
 
-    if not await is_joined(update, context):
-        await show_force_join(update, context)
-        return
-
     bot_username = context.bot.username or "mame_posts_bot"
     await update.message.reply_text(
         get_welcome_text(),
@@ -258,10 +254,6 @@ async def start(
 async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     record_user_activity(user.id)
-
-    if not await is_joined(update, context):
-        await show_force_join(update, context)
-        return
 
     total_users, user_msg_count = get_user_stats(user.id)
     username_text = f"@{user.username}" if user.username else "የለውም"
@@ -335,9 +327,6 @@ async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def rates_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     record_user_activity(update.effective_user.id)
-    if not await is_joined(update, context):
-        await show_force_join(update, context)
-        return
     await update.message.reply_text(
         f'<tg-emoji emoji-id="5447458260200214425">💰</tg-emoji> <b>የማስታወቂያ ዋጋዎች</b>\n\n'
         f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 12 Hours — <b>በስምምነት ETB</b>\n'
@@ -350,9 +339,6 @@ async def rates_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def payment_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     record_user_activity(update.effective_user.id)
-    if not await is_joined(update, context):
-        await show_force_join(update, context)
-        return
     await update.message.reply_text(
         f'<tg-emoji emoji-id="5186349709169525403">💳</tg-emoji> <b>Payment Method</b>\n\n'
         f'<tg-emoji emoji-id="5961054379350955385">🏦</tg-emoji> <b>ንግድ ባንክ (CBE)</b>\n'
@@ -360,32 +346,30 @@ async def payment_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f'Mohammed Seid\n\n'
         f'<tg-emoji emoji-id="5960632377339285724">📱</tg-emoji> <b>ቴሌ ብር (TELE BIRR)</b>\n'
         f'<code>+251963266849</code>\n\n'
-        f'<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>ክፍያውን ሲፈጽሙ ስክሪን ሹቱን ይላኩ!</b>',
+        f'<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>ክፍያውን ሲፈጽሙ ስክሪን ሹቱን ከስር ይላኩ!</b>',
         parse_mode="HTML"
     )
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     record_user_activity(update.effective_user.id)
-    if not await is_joined(update, context):
-        await show_force_join(update, context)
-        return
     await update.message.reply_text(
         f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
         f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ YouTube, Instagram, TikTok, Likee, Facebook, Reddit, Twitch, Vimeo, SoundCloud, Threads እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
-        f'🎬 <b>Video to Audio:</b> ማናቸውንም ቪዲዮ ከስልክዎ ይላኩ፣ ወደ MP3 Audio ቀይሮ ይልክልዎታል።\n\n'
+        f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Video to Audio:</b> ማናቸውንም ቪዲዮ ከስልክዎ ይላኩ፣ ወደ MP3 Audio ቀይሮ ይልክልዎታል።\n\n'
         f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
         parse_mode="HTML"
     )
 
 
 # ==================================================
-# VIDEO TO AUDIO CONVERTER HANDLER
+# VIDEO TO AUDIO CONVERTER HANDLER (FORCE JOIN CHECK INCLUDED)
 # ==================================================
 
 async def convert_video_to_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     record_user_activity(user_id)
 
+    # Force Join check only when sending video to convert
     if not await is_joined(update, context):
         await show_force_join(update, context)
         return
@@ -620,7 +604,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
                 with open(actual_audio, 'rb') as af:
                     await update.message.reply_audio(
                         audio=af,
-                        caption=f'🎵 <b>Extracted Audio</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts',
+                        caption=f'<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>Extracted Audio</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts',
                         reply_markup=reply_markup_share,
                         parse_mode="HTML"
                     )
@@ -732,7 +716,7 @@ async def button_callback(
         await query.edit_message_text(
             f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
             f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ ለማውረድ:</b> የ YouTube, Instagram, TikTok, Likee, Facebook, Reddit, Twitch, Vimeo, SoundCloud, Threads እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
-            f'🎬 <b>Video to Audio:</b> ማናቸውንም ቪዲዮ ከስልክዎ ይላኩ፣ ወደ MP3 Audio ቀይሮ ይልክልዎታል።\n\n'
+            f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Video to Audio:</b> ማናቸውንም ቪዲዮ ከስልክዎ ይላኩ፣ ወደ MP3 Audio ቀይሮ ይልክልዎታል።\n\n'
             f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
@@ -740,7 +724,7 @@ async def button_callback(
 
 
 # ==================================================
-# USER MESSAGES HANDLER
+# USER MESSAGES HANDLER (FORCE JOIN CHECK ONLY FOR DOWNLOAD LINKS)
 # ==================================================
 
 async def handle_user_messages(
@@ -753,10 +737,6 @@ async def handle_user_messages(
     user_id = update.effective_user.id
     record_user_activity(user_id)
 
-    if not await is_joined(update, context):
-        await show_force_join(update, context)
-        return
-
     text = update.message.text or ""
 
     valid_domains = [
@@ -768,6 +748,11 @@ async def handle_user_messages(
     is_supported_link = any(domain in text.lower() for domain in valid_domains)
 
     if is_supported_link:
+        # Check Force Join ONLY when user sends a video download link!
+        if not await is_joined(update, context):
+            await show_force_join(update, context)
+            return
+
         url_match = re.search(r'https?://[^\s]+', text)
         target_url = url_match.group(0) if url_match else text
         await handle_url_download(update, context, target_url)
