@@ -208,7 +208,7 @@ async def show_force_join(
         await update.message.reply_text(
             "🔒 <b>ቦቱን ለመጠቀም ከታች ያለውን ቻናል መቀላቀል አለብዎት!</b>\n\n"
             "1️⃣ 📢 Join Channel የሚለውን ይጫኑ።\n"
-            "2️⃣ ከዚያ ✅ I've Joined ይጫኑ።",
+            "2️⃣ ከዚያ ✅ I've Joined የሚለውን ተጭነው የላኩትን ድጋሜ ይላኩ🙂።",
             reply_markup=reply_markup,
             parse_mode="HTML"
         )
