@@ -190,9 +190,9 @@ async def show_force_join(
     context: ContextTypes.DEFAULT_TYPE
 ):
     text = (
-        '<tg-emoji emoji-id="5305577086478489521">🔒</tg-emoji> <b>ቦቱን ለመጠቀም ከታች ያለውን ቻናል መቀላቀል አለብዎት!</b>\n\n'
-        '1️⃣ <tg-emoji emoji-id="5305655375142364109">📢</tg-emoji> <b>Join Channel የሚለውን ይጫኑ::</b>\n'
-        '2️⃣ ከዚያ <tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>I\'ve Joined የሚለውን ተጫነው የላኩትን ደግመው ይላኩ <tg-emoji emoji-id="5463249828450424568">🙂</tg-emoji>::</b>'
+        '<tg-emoji emoji-id="6034962180875490251">🔒</tg-emoji> <b>ቦቱን ለመጠቀም ከታች ያለውን ቻናል መቀላቀል አለብዎት!</b>\n\n'
+        '1️⃣ <tg-emoji emoji-id="5267442591548320083">📢</tg-emoji> <b>Join Channel የሚለውን ይጫኑ::</b>\n'
+        '2️⃣ ከዚያ <tg-emoji emoji-id="5305749202997911340">✅</tg-emoji> <b>I\'ve Joined የሚለውን ተጭነው የላኩትን ደግመው ይላኩ <tg-emoji emoji-id="5217449524410199951">🙂</tg-emoji>::</b>'
     )
 
     keyboard = [
@@ -300,7 +300,10 @@ async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     success_count = 0
     fail_count = 0
 
-    status_msg = await update.message.reply_text("🚀 መልዕክቱን ለተጠቃሚዎች በመላክ ላይ ይገኛል...")
+    status_msg = await update.message.reply_text(
+        '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>መልዕክቱን ለተጠቃሚዎች በመላክ ላይ ይገኛል...</b>',
+        parse_mode="HTML"
+    )
 
     for uid_str in data.keys():
         try:
@@ -320,7 +323,7 @@ async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             fail_count += 1
 
     await status_msg.edit_text(
-        f"✔️<b>ብሮድካስት ተጠናቋል!</b>\n\n"
+        f"✔️ <b>ብሮድካስት ተጠናቋል!</b>\n\n"
         f"• የተሳካ: <code>{success_count}</code>\n"
         f"• ያልተሳካ (ቦቱን የዘጉ): <code>{fail_count}</code>",
         parse_mode="HTML"
@@ -360,7 +363,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     record_user_activity(update.effective_user.id)
     await update.message.reply_text(
         f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
-        f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ/ፎቶ ለማውረድ:</b> የ Pinterest, YouTube, Instagram, TikTok, Likee, Facebook, Reddit, Twitch, Vimeo, SoundCloud, Threads እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
+        f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ/ፎቶ ለማውረድ:</b> የ Tiktok, Instagram, Facebook, Reddit, Twitch, Vimeo, SoundCloud, Threads እና ሌሎችን ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
         f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Video to Audio:</b> ማናቸውንም ቪዲዮ ከስልክዎ ይላኩ፣ ወደ MP3 Audio ቀይሮ ይልክልዎታል።\n\n'
         f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
         parse_mode="HTML"
@@ -387,7 +390,12 @@ async def convert_video_to_audio(update: Update, context: ContextTypes.DEFAULT_T
         return
 
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.RECORD_VOICE)
-    status_msg = await update.message.reply_text("Loading | ይጠብቁ🔎")
+    
+    # 📌 ተስተካክሏል፦ BOLD TEXT + CUSTOM EMOJI
+    status_msg = await update.message.reply_text(
+        '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>Loading | ይጠብቁ...🔎</b>',
+        parse_mode="HTML"
+    )
 
     file_id = update.message.message_id
     input_path = f"input_vid_{user_id}_{file_id}.mp4"
@@ -418,17 +426,17 @@ async def convert_video_to_audio(update: Update, context: ContextTypes.DEFAULT_T
             with open(output_path, 'rb') as audio_file:
                 await update.message.reply_audio(
                     audio=audio_file,
-                    caption=f'🎵 <b>ከቪዲዮ የተቀየረ (Extracted Audio)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Converted with</b> @{bot_username} & @mame_posts',
+                    caption=f'<tg-emoji emoji-id="5305534793935527938">🎵</tg-emoji> <b>ከቪዲዮ የተቀየረው (Extracted Audio)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Converted with</b> @{bot_username} & @mame_posts',
                     reply_markup=reply_markup_share,
                     parse_mode="HTML"
                 )
             await status_msg.delete()
         else:
-            await status_msg.edit_text("❌ <b>ቪዲዮውን ወደ ኦዲዮ መቀየር አልተቻለም!</b>")
+            await status_msg.edit_text("😥 <b>ቪዲዮውን ወደ ኦዲዮ መቀየር አልተቻለም!</b>", parse_mode="HTML")
 
     except Exception as e:
         print("Video to Audio Error:", e)
-        await status_msg.edit_text("❌ <b>ቪዲዮውን ማውረድ አልተቻለም!</b>")
+        await status_msg.edit_text("😥 <b>ቪዲዮውን ማውረድ አልተቻለም!</b>", parse_mode="HTML")
 
     finally:
         for path in [input_path, output_path]:
@@ -443,7 +451,18 @@ async def convert_video_to_audio(update: Update, context: ContextTypes.DEFAULT_T
 # ULTRA-ROBUST DOWNLOAD ENGINE (VIDEOS, AUDIOS & PHOTOS)
 # ==================================================
 
-def clean_url(url: str) -> str:
+def unshorten_url(url: str) -> str:
+    try:
+        session = requests.Session()
+        session.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'})
+        resp = session.head(url, allow_redirects=True, timeout=10)
+        return resp.url
+    except Exception:
+        return url
+
+
+def clean_url(raw_url: str) -> str:
+    url = unshorten_url(raw_url)
     if "youtube.com/shorts/" in url:
         match = re.search(r'youtube\.com/shorts/([a-zA-Z0-9_-]+)', url)
         if match:
@@ -507,31 +526,33 @@ def find_downloaded_file(prefix: str):
 async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE, raw_url: str):
     chat_id = update.effective_chat.id
     
-    # 1. Shows "sending a file..." in Telegram top status header
     await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.UPLOAD_DOCUMENT)
     
-    # 2. Telegram chat status message -> Loading | ይጠብቁ🔎
-    status_msg = await update.message.reply_text("Loading | ይጠብቁ🔎")
+    # 📌 ተስተካክሏል፦ BOLD TEXT + CUSTOM EMOJI
+    status_msg = await update.message.reply_text(
+        '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>Loading | ይጠብቁ...🔎</b>',
+        parse_mode="HTML"
+    )
 
     bot_username = context.bot.username or "mame_posts_bot"
     share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Downloader%20Bot!🔥"
-    keyboard_share = [[InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)]]
-    reply_markup_share = InlineKeyboardMarkup(keyboard_share)
+    reply_markup_share = InlineKeyboardMarkup([[InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)]])
 
     url = clean_url(raw_url)
 
-    # PINTEREST PHOTO HANDLING
+    # PINTEREST REAL PHOTO EXTRACTION
     if "pinterest.com" in url or "pin.it" in url:
         try:
-            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
             res = requests.get(url, headers=headers, timeout=10)
-            img_match = re.search(r'https://i\.pinimg\.com/originals/[^"\'\s]+\.(jpg|png|jpeg)', res.text) or \
-                        re.search(r'https://i\.pinimg\.com/736x/[^"\'\s]+\.(jpg|png|jpeg)', res.text)
-            if img_match:
-                img_url = img_match.group(0)
+            
+            img_matches = re.findall(r'https://i\.pinimg\.com/(?:originals|736x)/[^\s"\'\>]+\.(?:jpg|png|jpeg|webp)', res.text)
+            
+            if img_matches:
+                real_img_url = img_matches[0]
                 await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.UPLOAD_DOCUMENT)
                 await update.message.reply_photo(
-                    photo=img_url,
+                    photo=real_img_url,
                     caption=f'📸 <b>Pinterest Photo</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Downloaded with</b> @{bot_username}',
                     reply_markup=reply_markup_share,
                     parse_mode="HTML"
@@ -539,15 +560,13 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
                 await status_msg.delete()
                 return
         except Exception as pe:
-            print("Pinterest direct fetch error:", pe)
+            print("Pinterest Fetch Error:", pe)
 
     media_prefix = f"media_{update.effective_user.id}_{update.message.message_id}"
     media_template = f"{media_prefix}.%(ext)s"
-
     sent_any = False
 
     try:
-        # DOWNLOAD MEDIA FILE
         try:
             await asyncio.to_thread(download_media_func, url, media_template, False)
         except Exception:
@@ -558,7 +577,6 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
         if actual_file and os.path.exists(actual_file):
             ext = os.path.splitext(actual_file)[1].lower()
             
-            # IF THE FILE IS A PHOTO (Instagram, TikTok, Pinterest Image)
             if ext in ['.jpg', '.jpeg', '.png', '.webp']:
                 await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.UPLOAD_DOCUMENT)
                 with open(actual_file, 'rb') as pf:
@@ -569,34 +587,22 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
                         parse_mode="HTML"
                     )
                 sent_any = True
-            
-            # IF THE FILE IS A VIDEO -> Send Video AND Extract MP3 Audio
             else:
                 if os.path.getsize(actual_file) <= 50 * 1024 * 1024:
-                    # 1. Send Video
                     await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.UPLOAD_DOCUMENT)
                     with open(actual_file, 'rb') as vf:
                         await update.message.reply_video(
                             video=vf,
-                            caption=f'<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts\n\n <tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy!</b>',
+                            caption=f'<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy!</b>',
                             reply_markup=reply_markup_share,
                             parse_mode="HTML"
                         )
                     sent_any = True
 
-                    # 2. Extract Audio (MP3) from downloaded video using FFmpeg
                     audio_output = f"audio_{update.effective_user.id}_{update.message.message_id}.mp3"
-                    cmd = [
-                        "ffmpeg", "-y",
-                        "-i", actual_file,
-                        "-vn",
-                        "-acodec", "libmp3lame",
-                        "-q:a", "2",
-                        audio_output
-                    ]
+                    cmd = ["ffmpeg", "-y", "-i", actual_file, "-vn", "-acodec", "libmp3lame", "-q:a", "2", audio_output]
                     await asyncio.to_thread(subprocess.run, cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-                    # 3. Send MP3 Audio File
                     if os.path.exists(audio_output):
                         await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.UPLOAD_DOCUMENT)
                         with open(audio_output, 'rb') as af:
@@ -606,13 +612,10 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
                                 reply_markup=reply_markup_share,
                                 parse_mode="HTML"
                             )
-                        if os.path.exists(audio_output):
-                            os.remove(audio_output)
-
+                        os.remove(audio_output)
     except Exception as e:
         print("Media Download Error:", e)
 
-    # CLEANUP TEMP FILES
     for f in os.listdir('.'):
         if f.startswith(media_prefix):
             try:
@@ -624,8 +627,8 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
         await status_msg.delete()
     else:
         await status_msg.edit_text(
-            "💔 <b>ፋይሉን (ፎቶ/ቪዲዮ/ኦዲዮ) ማውረድ አልተቻለም!</b>\n\n"
-            "እባክዎ የላኩት ሊንክ ትክክለኛ መሆኑን አረጋግጠው እንደገና ይሞክሩ።",
+            "💔 <b> የፈለጉትን File ማግኘት አልቻልኩም!</b>\n\n"
+            "እባክዎ የላኩት ሊንክ private አለመሆኑን አረጋግጠው እንደገና ይሞክሩ።",
             parse_mode="HTML"
         )
 
@@ -665,8 +668,8 @@ async def button_callback(
 
     elif data == "cmd_order":
         await query.edit_message_text(
-            f'<tg-emoji emoji-id="5197304993920616826">📢</tg-emoji> <b>ማስታወቂያ ለማስታወቅ/ለማሰራት</b>\n\n'
-            f'<tg-emoji emoji-id="5305634553140912174">👇</tg-emoji> እባክዎ ማስታወቂያ ማሰራት የሚፈልጉትን Post እዚህ ይላኩ <tg-emoji emoji-id="5305739801314501775">ℹ️</tg-emoji>',
+            f'<tg-emoji emoji-id="5197304993920616826">📢</tg-emoji> <b> @mame_posts ቻናል ላይ ማስታወቂያ ለማሰራት</b>\n\n'
+            f'<tg-emoji emoji-id="5305634553140912174">👇</tg-emoji> እባክዎ ማስታወቂያ ማሰራት የሚፈልጉትን Post ከስር ልከው የማስታወቂያ ዋጋዎችን ይመልከቱ <tg-emoji emoji-id="5305739801314501775">ℹ️</tg-emoji>',
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
@@ -702,7 +705,7 @@ async def button_callback(
             f'Mohammed Seid\n\n'
             f'<tg-emoji emoji-id="5960632377339285724">📱</tg-emoji> <b>ቴሌ ብር (TELE BIRR)</b>\n'
             f'<code>+251963266849</code>\n\n'
-            f'<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>ክፍያውን ሲፈጽሙ ስክሪን ሹቱን ይላኩ!</b>',
+            f'<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>ክፍያውን ሲፈጽሙ ስክሪን ሹቱን ከስር ይላኩ!</b>',
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
         )
@@ -710,7 +713,7 @@ async def button_callback(
     elif data == "cmd_support":
         await query.edit_message_text(
             f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
-            f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ/ፎቶ ለማውረድ:</b> የ Pinterest, YouTube, Instagram, TikTok, Likee, Facebook, Reddit, Twitch, Vimeo, SoundCloud, Threads እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
+            f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ/ፎቶ ለማውረድ:</b> የ Tiktok, Instagram, Facebook, Reddit, Twitch, Vimeo, SoundCloud, Threads እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
             f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Video to Audio:</b> ማናቸውንም ቪዲዮ ከስልክዎ ይላኩ፣ ወደ MP3 Audio ቀይሮ ይልክልዎታል።\n\n'
             f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
             reply_markup=get_back_keyboard(),
