@@ -12,7 +12,7 @@ from telegram import (
     Update,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
-    ReplyKeyboardMarkup,  # <-- አዲስ የተጨመረው (ለ "Send link 🔗" ጽሁፍ)
+    ReplyKeyboardMarkup,
     BotCommand
 )
 from telegram.constants import ChatAction
@@ -38,7 +38,7 @@ if COOKIES_ENV:
 # ==================================================
 # FLASK WEB SERVER (Render Port Binding)
 # ==================================================
-app_web = Flask('')
+app_web = Flask(__name__)
 
 @app_web.route('/')
 def home():
@@ -248,16 +248,14 @@ async def start(
 
     bot_username = context.bot.username or "mame_posts_bot"
     
-    # አዲስ የተጨመረው: ይሄ "Send link 🔗" የሚለውን Placeholder ከታች ያመጣልናል
     setup_keyboard = ReplyKeyboardMarkup(
         [["🏠 Menu"]],
         resize_keyboard=True,
         input_field_placeholder="Send link 🔗"
     )
 
-    # በመጀመሪያ placeholder-ውን ሴት ለማድረግ ይህን ሜሴጅ ይልካል
     await update.message.reply_text(
-        "🚀 <b>Welcome to the Best Media Downloader Bot!</b>",
+        " <b> @ads_poster1bot !</b>",
         reply_markup=setup_keyboard,
         parse_mode="HTML"
     )
@@ -489,7 +487,6 @@ def clean_url(raw_url: str) -> str:
     return url
 
 
-# የተሻሻለው የ Download ማድረጊያ Settings (High Quality ለሁሉም Social Medias)
 def get_video_options(url: str, output_template: str, fallback: bool = False):
     opts = {
         'quiet': True,
@@ -498,9 +495,8 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
         'geo_bypass': True,
         'concurrent_fragment_downloads': 5,
         'outtmpl': output_template,
-        # ከፍተኛ ጥራት ያለውን ቪዲዮ እና ኦዲዮ እንዲያወርድ ተስተካክሏል
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best[ext=mp4]/best',
-        'merge_output_format': 'mp4', # መጨረሻ ላይ ፎርማቱ MP4 እንዲሆን ያደርጋል
+        'merge_output_format': 'mp4', 
         'http_headers': {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -517,10 +513,8 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
         }
         opts['format'] = 'best[ext=mp4]/bestvideo+bestaudio/best'
     elif "tiktok.com" in url:
-        # ለ Tiktok photo slideshows እና HD Videos
         opts['format'] = 'bestvideo+bestaudio/best'
     elif "instagram.com" in url:
-        # ለ IG reels እና photos
         opts['format'] = 'bestvideo+bestaudio/best'
     elif "twitter.com" in url or "x.com" in url:
         opts['format'] = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
@@ -544,7 +538,7 @@ def download_media_func(url: str, output_template: str, fallback: bool = False):
 
 def find_downloaded_file(prefix: str):
     for f in os.listdir('.'):
-        if f.startswith(prefix):
+        if f.startswith(prefix) and not f.endswith(('.part', '.ytdl')):
             return f
     return None
 
@@ -638,6 +632,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
                                 parse_mode="HTML"
                             )
                         os.remove(audio_output)
+                        sent_any = True
     except Exception as e:
         print("Media Download Error:", e)
 
@@ -760,9 +755,8 @@ async def handle_user_messages(
     user_id = update.effective_user.id
     record_user_activity(user_id)
 
-    text = update.message.text or ""
+    text = update.message.text or update.message.caption or ""
     
-    # የ Menu በተኑ ሲነካ ወደ ዋናው start እንዲመልሰው ተስተካክሏል
     if text == "🏠 Menu":
         await start(update, context)
         return
@@ -794,7 +788,7 @@ async def handle_user_messages(
             f"📩<b>አዲስ መልዕክት!</b>\n\n"
             f"👤 User: {update.effective_user.full_name}\n"
             f"🌐 Username: {username_text}\n"
-            f"🆔ID: <code>{user_id}</code>"
+            f"🆔 ID: <code>{user_id}</code>"
         ),
         parse_mode="HTML"
     )
