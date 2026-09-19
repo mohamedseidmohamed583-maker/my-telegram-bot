@@ -12,6 +12,7 @@ from telegram import (
     Update,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
+    ReplyKeyboardMarkup,  # <-- አዲስ የተጨመረው (ለ "Send link 🔗" ጽሁፍ)
     BotCommand
 )
 from telegram.constants import ChatAction
@@ -57,7 +58,7 @@ def keep_alive():
 # CONFIGURATION
 # ==================================================
 
-TOKEN = os.environ.get("BOT_TOKEN", "8795814797:AAHVJwla-8KawwEx3xOWfIIjyCuYg7GHuE0")
+TOKEN = os.environ.get("BOT_TOKEN", "8795814797:AAGfwFwFgH7oLUMtZhUHZQLPNcxykHPKcwQ")
 ADMIN_ID = int(os.environ.get("ADMIN_ID", 6753546651))
 
 # Force Join Channel
@@ -246,6 +247,21 @@ async def start(
     record_user_activity(user_id)
 
     bot_username = context.bot.username or "mame_posts_bot"
+    
+    # አዲስ የተጨመረው: ይሄ "Send link 🔗" የሚለውን Placeholder ከታች ያመጣልናል
+    setup_keyboard = ReplyKeyboardMarkup(
+        [["🏠 Menu"]],
+        resize_keyboard=True,
+        input_field_placeholder="Send link 🔗"
+    )
+
+    # በመጀመሪያ placeholder-ውን ሴት ለማድረግ ይህን ሜሴጅ ይልካል
+    await update.message.reply_text(
+        "🚀 <b>Welcome to the Best Media Downloader Bot!</b>",
+        reply_markup=setup_keyboard,
+        parse_mode="HTML"
+    )
+
     await update.message.reply_text(
         get_welcome_text(),
         reply_markup=get_main_menu_keyboard(bot_username),
@@ -391,7 +407,6 @@ async def convert_video_to_audio(update: Update, context: ContextTypes.DEFAULT_T
 
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.RECORD_VOICE)
     
-    # 📌 ተስተካክሏል፦ BOLD TEXT + CUSTOM EMOJI
     status_msg = await update.message.reply_text(
         '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>Loading | ይጠብቁ...🔎</b>',
         parse_mode="HTML"
@@ -474,6 +489,7 @@ def clean_url(raw_url: str) -> str:
     return url
 
 
+# የተሻሻለው የ Download ማድረጊያ Settings (High Quality ለሁሉም Social Medias)
 def get_video_options(url: str, output_template: str, fallback: bool = False):
     opts = {
         'quiet': True,
@@ -482,7 +498,9 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
         'geo_bypass': True,
         'concurrent_fragment_downloads': 5,
         'outtmpl': output_template,
-        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        # ከፍተኛ ጥራት ያለውን ቪዲዮ እና ኦዲዮ እንዲያወርድ ተስተካክሏል
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best[ext=mp4]/best',
+        'merge_output_format': 'mp4', # መጨረሻ ላይ ፎርማቱ MP4 እንዲሆን ያደርጋል
         'http_headers': {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -498,6 +516,14 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
             }
         }
         opts['format'] = 'best[ext=mp4]/bestvideo+bestaudio/best'
+    elif "tiktok.com" in url:
+        # ለ Tiktok photo slideshows እና HD Videos
+        opts['format'] = 'bestvideo+bestaudio/best'
+    elif "instagram.com" in url:
+        # ለ IG reels እና photos
+        opts['format'] = 'bestvideo+bestaudio/best'
+    elif "twitter.com" in url or "x.com" in url:
+        opts['format'] = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
     elif "likee" in url or "likee.video" in url:
         opts['http_headers']['Referer'] = 'https://likee.video/'
         opts['format'] = 'best'
@@ -528,7 +554,6 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     
     await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.UPLOAD_DOCUMENT)
     
-    # 📌 ተስተካክሏል፦ BOLD TEXT + CUSTOM EMOJI
     status_msg = await update.message.reply_text(
         '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>Loading | ይጠብቁ...🔎</b>',
         parse_mode="HTML"
@@ -736,6 +761,11 @@ async def handle_user_messages(
     record_user_activity(user_id)
 
     text = update.message.text or ""
+    
+    # የ Menu በተኑ ሲነካ ወደ ዋናው start እንዲመልሰው ተስተካክሏል
+    if text == "🏠 Menu":
+        await start(update, context)
+        return
 
     valid_domains = [
         "instagram.com", "tiktok.com", "youtube.com", "youtu.be", 
