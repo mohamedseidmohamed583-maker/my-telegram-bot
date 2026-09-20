@@ -59,7 +59,7 @@ def keep_alive():
 # CONFIGURATION
 # ==================================================
 
-TOKEN = os.environ.get("8795814797:AAHOlQUC2tZFOGu75r9yaRLa_F0Q41tzO7U")
+TOKEN = "8795814797:AAHOlQUC2tZFOGu75r9yaRLa_F0Q41tzO7U"
 ADMIN_ID = int(os.environ.get("ADMIN_ID", 6753546651))
 
 # Force Join Channel
@@ -71,6 +71,7 @@ FORCE_CHANNEL_LINK = "https://t.me/mame_posts"
 # ==================================================
 
 DATA_FILE = "user_data.json"
+
 
 def load_data():
     if os.path.exists(DATA_FILE):
