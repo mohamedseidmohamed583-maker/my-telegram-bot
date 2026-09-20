@@ -65,7 +65,7 @@ CONFIGURATION
 
 ==================================================
 
-TOKEN = os.environ.get("BOT_TOKEN ")
+TOKEN = os.environ.get("BOT_TOKEN")
 ADMIN_ID = int(os.environ.get("ADMIN_ID", 6753546651))
 
 Force Join Channel
@@ -206,9 +206,9 @@ update: Update,
 context: ContextTypes.DEFAULT_TYPE
 ):
 text = (
-'<tg-emoji emoji-id="6034962180875490251">🔒</tg-emoji> <b>ቦቱን ለመጠቀም ከታች ያለውን ቻናል መቀላቀል አለብዎት!</b>\n\n'
-'1️⃣ <tg-emoji emoji-id="5267442591548320083">📢</tg-emoji> <b>Join Channel የሚለውን ይጫኑ::</b>\n'
-'2️⃣ ከዚያ <tg-emoji emoji-id="5305749202997911340">✅</tg-emoji> <b>I've Joined የሚለውን ተጭነው የላኩትን ደግመው ይላኩ <tg-emoji emoji-id="5217449524410199951">🙂</tg-emoji>::</b>'
+    '<tg-emoji emoji-id="6034962180875490251">🔒</tg-emoji> <b>ቦቱን ለመጠቀም ከታች ያለውን ቻናል መቀላቀል አለብዎት!</b>\n\n'
+    '1️⃣ <tg-emoji emoji-id="5267442591548320083">📢</tg-emoji> <b>Join Channel የሚለውን ይጫኑ::</b>\n'
+    '2️⃣ ከዚያ <tg-emoji emoji-id="5305749202997911340">✅</tg-emoji> <b>I\'ve Joined የሚለውን ተጭነው የላኩትን ደግመው ይላኩ <tg-emoji emoji-id="5217449524410199951">🙂</tg-emoji>::</b>'
 )
 
 keyboard = [    
@@ -968,6 +968,6 @@ app.add_error_handler(error_handler)
 print("🤖 Mame Posts Bot is running...")    
 app.run_polling()
 
-if name == 'main':
-main()
+if __name__ == '__main__':
+    main()
 
