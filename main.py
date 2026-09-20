@@ -69,7 +69,7 @@ def keep_alive():
 # Put your bot token in Render Environment Variable:
 # BOT_TOKEN = your_new_bot_token
 
-TOKEN = os.environ.get("8795814797:AAG-fARBC00UpldWdrdW3ViUKn0Qomrs1yI")
+TOKEN = os.environ.get("BOT_TOKEN")
 
 if not TOKEN:
     raise ValueError(
