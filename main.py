@@ -120,30 +120,61 @@ def get_user_stats(user_id):
 def get_main_menu_keyboard(bot_username):
     keyboard = [
         [
-            InlineKeyboardButton("🤖 Add a bot to the chat ➕", url=f"https://t.me/{bot_username}?startgroup=true")
+            InlineKeyboardButton(
+                text="Add a bot to the chat",
+                icon_custom_emoji_id="5305545479814161889",
+                url=f"https://t.me/{bot_username}?startgroup=true"
+            )
         ],
         [
-            InlineKeyboardButton("📢 ማስታወቂያ ለማሰራት 🪪", callback_data="cmd_order")
+            InlineKeyboardButton(
+                text="ማስታወቂያ ለማሰራት",
+                icon_custom_emoji_id="5267442591548320083",
+                callback_data="cmd_order"
+            )
         ],
         [
-            InlineKeyboardButton("💵 Price | ዋጋ", callback_data="cmd_price"),
-            InlineKeyboardButton("💳 Payment Method", callback_data="cmd_payment")
+            InlineKeyboardButton(
+                text="Price | ዋጋ",
+                icon_custom_emoji_id="5447458260200214425",
+                callback_data="cmd_price"
+            ),
+            InlineKeyboardButton(
+                text="Payment Method",
+                icon_custom_emoji_id="5186349709169525403",
+                callback_data="cmd_payment"
+            )
         ],
         [
-            InlineKeyboardButton("👤 My Status & Stats 📊", callback_data="cmd_status")
+            InlineKeyboardButton(
+                text="My Status & Stats",
+                icon_custom_emoji_id="5431577498364158238",
+                callback_data="cmd_status"
+            )
         ],
         [
-            InlineKeyboardButton("💬 Support | ድጋፍ", callback_data="cmd_support")
+            InlineKeyboardButton(
+                text="Support | ድጋፍ",
+                icon_custom_emoji_id="5949327894567195412",
+                callback_data="cmd_support"
+            )
         ]
     ]
+
     return InlineKeyboardMarkup(keyboard)
+
 
 def get_back_keyboard():
     keyboard = [
         [
-            InlineKeyboardButton("🔙 Back to Menu", callback_data="cmd_back")
+            InlineKeyboardButton(
+                text="Back to Menu",
+                icon_custom_emoji_id="5248948801674159296",
+                callback_data="cmd_back"
+            )
         ]
     ]
+
     return InlineKeyboardMarkup(keyboard)
 
 # ==================================================
