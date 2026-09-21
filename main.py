@@ -59,7 +59,7 @@ def keep_alive():
 # CONFIGURATION
 # ==================================================
 
-TOKEN = "8795814797:AAHOlQUC2tZFOGu75r9yaRLa_F0Q41tzO7U"
+TOKEN = "8795814797:AAFpu2MlFg-Bb1GuP272p-Wm4uZTCKmPc-Y"
 ADMIN_ID = int(os.environ.get("ADMIN_ID", 6753546651))
 
 # Force Join Channel
@@ -434,7 +434,7 @@ async def convert_video_to_audio(update: Update, context: ContextTypes.DEFAULT_T
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.RECORD_VOICE)    
         
     status_msg = await update.message.reply_text(    
-        '<tg-emoji emoji-id="6050887597486513073">⏳</tg-emoji> <Loading... </b>',    
+        '<tg-emoji emoji-id="6050887597486513073">⏳</tg-emoji> <b>Loading|ይጠብቁ...</b>',    
         parse_mode="HTML"    
     )    
 
@@ -595,7 +595,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.UPLOAD_DOCUMENT)    
         
     status_msg = await update.message.reply_text(    
-        '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <Loading... </b>',    
+        '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>Loading|ይጠብቁ...</b>',    
         parse_mode="HTML"    
     )    
 
