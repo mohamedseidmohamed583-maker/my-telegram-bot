@@ -530,36 +530,17 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
         }
     }
 
-    # ==============================
-    # YOUTUBE
-    # ==============================
-    if "youtube.com" in url or "youtu.be" in url:
+# ==============================
+# YOUTUBE
+# ==============================
+if "youtube.com" in url or "youtu.be" in url:
 
-        if fallback:
-            clients = [
-                'android',
-                'ios',
-                'tv_embedded'
-            ]
-        else:
-            clients = [
-                'android',
-                'ios',
-                'mweb',
-                'tv_embedded'
-            ]
-
-        opts['extractor_args'] = {
-            'youtube': {
-                'player_client': clients
-            }
-        }
-
-        opts['format'] = (
-            'bestvideo[ext=mp4]+bestaudio[ext=m4a]/'
-            'best[ext=mp4]/'
-            'best'
-        )
+    opts['format'] = (
+        'bestvideo[ext=mp4]+bestaudio[ext=m4a]/'
+        'bestvideo+bestaudio/'
+        'best[ext=mp4]/'
+        'best'
+    )
 
     # ==============================
     # OTHER PLATFORMS
