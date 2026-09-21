@@ -226,29 +226,34 @@ async def show_force_join(
         '2️⃣ ከዚያ <tg-emoji emoji-id="5305749202997911340">✅</tg-emoji> <b>I\'ve Joined የሚለውን ተጭነው የላኩትን ደግመው ይላኩ <tg-emoji emoji-id="5217449524410199951">🙂</tg-emoji>::</b>'
     )
 
-    keyboard = [    
-        [    
-            InlineKeyboardButton(    
-                "📢 Join Channel",    
-                url=FORCE_CHANNEL_LINK    
-            )    
-        ],    
-        [    
-            InlineKeyboardButton(    
-                "✅ I've Joined",    
-                callback_data="check_join"    
-            )    
-        ]    
-    ]    
-
-    reply_markup = InlineKeyboardMarkup(keyboard)    
-
-    if update.message:    
-        await update.message.reply_text(    
-            text=text,    
-            reply_markup=reply_markup,    
-            parse_mode="HTML"    
+    keyboard = [
+    [
+        InlineKeyboardButton(
+            "📢 Join Channel",
+            url=FORCE_CHANNEL_LINK
         )
+    ],
+    [
+        InlineKeyboardButton(
+            "✅ I've Joined",
+            callback_data="check_join"
+        )
+    ]
+]
+
+reply_markup = InlineKeyboardMarkup(keyboard)
+
+if update.message:
+    await update.message.reply_text(
+        text=(
+            '<tg-emoji emoji-id="5767358836134382747">📢</tg-emoji> '
+            '<b>Join our channel first!</b>\n\n'
+            '<tg-emoji emoji-id="5895288332581082241">✅</tg-emoji> '
+            '<b>After joining, press "I\'ve Joined".</b>'
+        ),
+        reply_markup=reply_markup,
+        parse_mode="HTML"
+    )
 
 # ==================================================
 # START & MENU COMMAND
