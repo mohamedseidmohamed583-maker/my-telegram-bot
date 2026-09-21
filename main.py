@@ -496,16 +496,7 @@ def unshorten_url(url: str) -> str:
         return url
 
 def clean_url(raw_url: str) -> str:
-    url = unshorten_url(raw_url)
-    if "youtube.com/shorts/" in url:
-        match = re.search(r'youtube.com/shorts/([a-zA-Z0-9_-]+)', url)
-        if match:
-            return f"https://www.youtube.com/watch?v={match.group(1)}"
-    elif "youtu.be/" in url:
-        match = re.search(r'youtu.be/([a-zA-Z0-9_-]+)', url)
-        if match:
-            return f"https://www.youtube.com/watch?v={match.group(1)}"
-    return url
+    return unshorten_url(raw_url)
 
 def get_video_options(url: str, output_template: str, fallback: bool = False):
     opts = {
@@ -515,38 +506,91 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
         'geo_bypass': True,
         'concurrent_fragment_downloads': 5,
         'outtmpl': output_template,
-        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best[ext=mp4]/best',
+
+        # YouTube + other platforms
+        'format': (
+            'bestvideo[ext=mp4]+bestaudio[ext=m4a]/'
+            'bestvideo+bestaudio/'
+            'best[ext=mp4]/best'
+        ),
+
         'merge_output_format': 'mp4',
+
         'http_headers': {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'User-Agent': (
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                'AppleWebKit/537.36 (KHTML, like Gecko) '
+                'Chrome/128.0.0.0 Safari/537.36'
+            ),
+            'Accept': (
+                'text/html,application/xhtml+xml,'
+                'application/xml;q=0.9,image/webp,*/*;q=0.8'
+            ),
             'Accept-Language': 'en-US,en;q=0.9',
         }
     }
 
-    if "youtube.com" in url or "youtu.be" in url:    
-        clients = ['android', 'ios', 'tv_embedded'] if fallback else ['mweb', 'android', 'ios', 'tv_embedded']    
-        opts['extractor_args'] = {    
-            'youtube': {    
-                'player_client': clients    
-            }    
-        }    
-        opts['format'] = 'best[ext=mp4]/bestvideo+bestaudio/best'    
-    elif "tiktok.com" in url:    
-        opts['format'] = 'bestvideo+bestaudio/best'    
-    elif "instagram.com" in url:    
-        opts['format'] = 'bestvideo+bestaudio/best'    
-    elif "twitter.com" in url or "x.com" in url:    
-        opts['format'] = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'    
-    elif "likee" in url or "likee.video" in url:    
-        opts['http_headers']['Referer'] = 'https://likee.video/'    
-        opts['format'] = 'best'    
-    elif "vimeo.com" in url:    
-        opts['http_headers']['Referer'] = 'https://vimeo.com/'    
-        opts['format'] = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best'    
+    # ==============================
+    # YOUTUBE
+    # ==============================
+    if "youtube.com" in url or "youtu.be" in url:
 
-    if os.path.exists('cookies.txt'):    
-        opts['cookiefile'] = 'cookies.txt'    
+        if fallback:
+            clients = [
+                'android',
+                'ios',
+                'tv_embedded'
+            ]
+        else:
+            clients = [
+                'android',
+                'ios',
+                'mweb',
+                'tv_embedded'
+            ]
+
+        opts['extractor_args'] = {
+            'youtube': {
+                'player_client': clients
+            }
+        }
+
+        opts['format'] = (
+            'bestvideo[ext=mp4]+bestaudio[ext=m4a]/'
+            'best[ext=mp4]/'
+            'best'
+        )
+
+    # ==============================
+    # OTHER PLATFORMS
+    # ==============================
+    elif "tiktok.com" in url:
+        opts['format'] = 'bestvideo+bestaudio/best'
+
+    elif "instagram.com" in url:
+        opts['format'] = 'bestvideo+bestaudio/best'
+
+    elif "twitter.com" in url or "x.com" in url:
+        opts['format'] = (
+            'bestvideo[ext=mp4]+bestaudio[ext=m4a]/'
+            'best[ext=mp4]/best'
+        )
+
+    elif "likee" in url or "likee.video" in url:
+        opts['http_headers']['Referer'] = 'https://likee.video/'
+        opts['format'] = 'best'
+
+    elif "vimeo.com" in url:
+        opts['http_headers']['Referer'] = 'https://vimeo.com/'
+        opts['format'] = (
+            'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best'
+        )
+
+    # ==============================
+    # YOUTUBE COOKIES
+    # ==============================
+    if os.path.exists('cookies.txt'):
+        opts['cookiefile'] = 'cookies.txt'
 
     return opts
 
