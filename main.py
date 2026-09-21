@@ -346,7 +346,7 @@ async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     fail_count = 0    
 
     status_msg = await update.message.reply_text(    
-        '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>መልዕክቱን ለተጠቃሚዎች በመላክ ላይ ይገኛል...</b>',    
+        '<tg-emoji emoji-id="5956569406996747523">⏳</tg-emoji> <b>መልዕክቱን ለተጠቃሚዎች በመላክ ላይ ይገኛል...</b>',    
         parse_mode="HTML"    
     )    
 
@@ -434,7 +434,7 @@ async def convert_video_to_audio(update: Update, context: ContextTypes.DEFAULT_T
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.RECORD_VOICE)    
         
     status_msg = await update.message.reply_text(    
-        '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>Loading | ይጠብቁ...🔎</b>',    
+        '<tg-emoji emoji-id="6050887597486513073">⏳</tg-emoji> <b>Loading | ይጠብቁ...🔎</b>',    
         parse_mode="HTML"    
     )    
 
