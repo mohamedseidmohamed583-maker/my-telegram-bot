@@ -643,7 +643,31 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
                         await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.UPLOAD_DOCUMENT)    
                         with open(audio_output, 'rb') as af:    
                             await update.message.reply_audio(    
-                                audio=af,
+                                audio=af,caption=f'<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>Extracted Audio (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Downloaded with</b> @{bot_username}',    
+                                reply_markup=reply_markup_share,    
+                                parse_mode="HTML"    
+                            )    
+                        os.remove(audio_output)    
+                        sent_any = True    
+    except Exception as e:    
+        print("Media Download Error:", e)    
+
+    for f in os.listdir('.'):    
+        if f.startswith(media_prefix):    
+            try:    
+                os.remove(f)    
+            except Exception:    
+                pass    
+
+    if sent_any:    
+        await status_msg.delete()    
+    else:    
+        await status_msg.edit_text(    
+            "💔 <b> የፈለጉትን File ማግኘት አልቻልኩም!</b>\n\n"    
+            "እባክዎ የላኩት ሊንክ private አለመሆኑን አረጋግጠው እንደገና ይሞክሩ።",    
+            parse_mode="HTML"    
+        )
+                                
 # ==================================================
 # BUTTON CLICK HANDLER
 # ==================================================
