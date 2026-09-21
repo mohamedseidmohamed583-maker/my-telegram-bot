@@ -482,1129 +482,168 @@ async def convert_video_to_audio(update: Update, context: ContextTypes.DEFAULT_T
                 except Exception:    
                     pass
 
-
 # ==================================================
-# ULTRA-ROBUST DOWNLOAD ENGINE
-# VIDEOS + AUDIOS + PHOTOS
+# ULTRA-ROBUST DOWNLOAD ENGINE (VIDEOS, AUDIOS & PHOTOS)
 # ==================================================
 
 def unshorten_url(url: str) -> str:
     try:
         session = requests.Session()
-        session.headers.update({
-            'User-Agent': (
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-                'AppleWebKit/537.36 (KHTML, like Gecko) '
-                'Chrome/128.0.0.0 Safari/537.36'
-            )
-        })
-
-        resp = session.head(
-            url,
-            allow_redirects=True,
-            timeout=10
-        )
-
+        session.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'})
+        resp = session.head(url, allow_redirects=True, timeout=10)
         return resp.url
-
     except Exception:
         return url
 
-
 def clean_url(raw_url: str) -> str:
     url = unshorten_url(raw_url)
-
-    # YouTube Shorts
     if "youtube.com/shorts/" in url:
-        match = re.search(
-            r'youtube\.com/shorts/([a-zA-Z0-9_-]+)',
-            url
-        )
-
+        match = re.search(r'youtube.com/shorts/([a-zA-Z0-9_-]+)', url)
         if match:
-            return (
-                f"https://www.youtube.com/watch?v="
-                f"{match.group(1)}"
-            )
-
-    # YouTube short URL
-    if "youtu.be/" in url:
-        match = re.search(
-            r'youtu\.be/([a-zA-Z0-9_-]+)',
-            url
-        )
-
+            return f"https://www.youtube.com/watch?v={match.group(1)}"
+    elif "youtu.be/" in url:
+        match = re.search(r'youtu.be/([a-zA-Z0-9_-]+)', url)
         if match:
-            return (
-                f"https://www.youtube.com/watch?v="
-                f"{match.group(1)}"
-            )
-
+            return f"https://www.youtube.com/watch?v={match.group(1)}"
     return url
 
-
-# ==================================================
-# YT-DLP OPTIONS
-# ==================================================
-
-def get_video_options(
-    url: str,
-    output_template: str,
-    fallback: bool = False
-):
-
+def get_video_options(url: str, output_template: str, fallback: bool = False):
     opts = {
         'quiet': True,
         'no_warnings': True,
         'nocheckcertificate': True,
         'geo_bypass': True,
-
         'concurrent_fragment_downloads': 5,
-
         'outtmpl': output_template,
-
-        # Video first, then normal fallback
-        'format': (
-            'bestvideo[ext=mp4]+bestaudio[ext=m4a]/'
-            'bestvideo+bestaudio/'
-            'best[ext=mp4]/best'
-        ),
-
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best[ext=mp4]/best',
         'merge_output_format': 'mp4',
-
         'http_headers': {
-            'User-Agent': (
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-                'AppleWebKit/537.36 (KHTML, like Gecko) '
-                'Chrome/128.0.0.0 Safari/537.36'
-            ),
-
-            'Accept': (
-                'text/html,application/xhtml+xml,'
-                'application/xml;q=0.9,image/webp,*/*;q=0.8'
-            ),
-
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.9',
         }
     }
 
-    # ==================================================
-    # YOUTUBE
-    # ==================================================
+    if "youtube.com" in url or "youtu.be" in url:    
+        clients = ['android', 'ios', 'tv_embedded'] if fallback else ['mweb', 'android', 'ios', 'tv_embedded']    
+        opts['extractor_args'] = {    
+            'youtube': {    
+                'player_client': clients    
+            }    
+        }    
+        opts['format'] = 'best[ext=mp4]/bestvideo+bestaudio/best'    
+    elif "tiktok.com" in url:    
+        opts['format'] = 'bestvideo+bestaudio/best'    
+    elif "instagram.com" in url:    
+        opts['format'] = 'bestvideo+bestaudio/best'    
+    elif "twitter.com" in url or "x.com" in url:    
+        opts['format'] = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'    
+    elif "likee" in url or "likee.video" in url:    
+        opts['http_headers']['Referer'] = 'https://likee.video/'    
+        opts['format'] = 'best'    
+    elif "vimeo.com" in url:    
+        opts['http_headers']['Referer'] = 'https://vimeo.com/'    
+        opts['format'] = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best'    
 
-    if "youtube.com" in url or "youtu.be" in url:
-
-        clients = (
-            ['android', 'ios', 'tv_embedded']
-            if fallback
-            else
-            ['mweb', 'android', 'ios', 'tv_embedded']
-        )
-
-        opts['extractor_args'] = {
-            'youtube': {
-                'player_client': clients
-            }
-        }
-
-        opts['format'] = (
-            'best[ext=mp4]/'
-            'bestvideo+bestaudio/'
-            'best'
-        )
-
-    # ==================================================
-    # TIKTOK
-    # ==================================================
-
-    elif "tiktok.com" in url:
-
-        opts['format'] = (
-            'bestvideo+bestaudio/'
-            'best'
-        )
-
-    # ==================================================
-    # INSTAGRAM
-    # ==================================================
-
-    elif "instagram.com" in url:
-
-        opts['format'] = (
-            'bestvideo+bestaudio/'
-            'best'
-        )
-
-        opts['http_headers']['Referer'] = (
-            'https://www.instagram.com/'
-        )
-
-    # ==================================================
-    # FACEBOOK
-    # ==================================================
-
-    elif "facebook.com" in url or "fb.watch" in url:
-
-        opts['format'] = (
-            'bestvideo+bestaudio/'
-            'best'
-        )
-
-        opts['http_headers']['Referer'] = (
-            'https://www.facebook.com/'
-        )
-
-    # ==================================================
-    # TWITTER / X
-    # ==================================================
-
-    elif "twitter.com" in url or "x.com" in url:
-
-        opts['format'] = (
-            'bestvideo[ext=mp4]+bestaudio[ext=m4a]/'
-            'best[ext=mp4]/'
-            'best'
-        )
-
-    # ==================================================
-    # REDDIT
-    # ==================================================
-
-    elif "reddit.com" in url or "redd.it" in url:
-
-        opts['format'] = (
-            'bestvideo+bestaudio/'
-            'best'
-        )
-
-        opts['http_headers']['Referer'] = (
-            'https://www.reddit.com/'
-        )
-
-    # ==================================================
-    # LIKEE
-    # ==================================================
-
-    elif "likee" in url or "likee.video" in url:
-
-        opts['http_headers']['Referer'] = (
-            'https://likee.video/'
-        )
-
-        opts['format'] = 'best'
-
-    # ==================================================
-    # VIMEO
-    # ==================================================
-
-    elif "vimeo.com" in url:
-
-        opts['http_headers']['Referer'] = (
-            'https://vimeo.com/'
-        )
-
-        opts['format'] = (
-            'bestvideo[ext=mp4]+bestaudio[ext=m4a]/'
-            'best'
-        )
-
-    # ==================================================
-    # THREADS
-    # ==================================================
-
-    elif "threads.net" in url:
-
-        opts['format'] = 'best'
-
-        opts['http_headers']['Referer'] = (
-            'https://www.threads.net/'
-        )
-
-    # ==================================================
-    # TUMBLR
-    # ==================================================
-
-    elif "tumblr.com" in url:
-
-        opts['format'] = 'best'
-
-        opts['http_headers']['Referer'] = (
-            'https://www.tumblr.com/'
-        )
-
-    # ==================================================
-    # PINTEREST
-    # ==================================================
-
-    elif "pinterest.com" in url or "pin.it" in url:
-
-        opts['format'] = 'best'
-
-        opts['http_headers']['Referer'] = (
-            'https://www.pinterest.com/'
-        )
-
-    # ==================================================
-    # COOKIES
-    # ==================================================
-
-    if os.path.exists('cookies.txt'):
-        opts['cookiefile'] = 'cookies.txt'
+    if os.path.exists('cookies.txt'):    
+        opts['cookiefile'] = 'cookies.txt'    
 
     return opts
 
-
-def download_media_func(
-    url: str,
-    output_template: str,
-    fallback: bool = False
-):
-
-    with yt_dlp.YoutubeDL(
-        get_video_options(
-            url,
-            output_template,
-            fallback
-        )
-    ) as ydl:
-
+def download_media_func(url: str, output_template: str, fallback: bool = False):
+    with yt_dlp.YoutubeDL(get_video_options(url, output_template, fallback)) as ydl:
         ydl.download([url])
 
-
 def find_downloaded_file(prefix: str):
-
     for f in os.listdir('.'):
-
-        if (
-            f.startswith(prefix)
-            and not f.endswith('.part')
-            and not f.endswith('.ytdl')
-        ):
+        if f.startswith(prefix) and not f.endswith(('.part', '.ytdl')):
             return f
-
     return None
 
-
-# ==================================================
-# PHOTO URL EXTRACTION
-# ==================================================
-
-def extract_photo_urls(url: str):
-    """
-    Try to find real photo URLs from supported
-    social-media pages.
-
-    Returns:
-        list[str]
-    """
-
-    photo_urls = []
-
-    headers = {
-        'User-Agent': (
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-            'AppleWebKit/537.36 (KHTML, like Gecko) '
-            'Chrome/128.0.0.0 Safari/537.36'
-        ),
-
-        'Accept-Language': 'en-US,en;q=0.9'
-    }
-
-    try:
-
-        response = requests.get(
-            url,
-            headers=headers,
-            timeout=15,
-            allow_redirects=True
-        )
-
-        if response.status_code != 200:
-            return []
-
-        html = response.text
-
-        # ==================================================
-        # OG IMAGE
-        # ==================================================
-
-        og_patterns = [
-            r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)',
-            r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:image',
-            r'<meta[^>]+name=["\']twitter:image["\'][^>]+content=["\']([^"\']+)',
-            r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+name=["\']twitter:image'
-        ]
-
-        for pattern in og_patterns:
-
-            matches = re.findall(
-                pattern,
-                html,
-                flags=re.IGNORECASE
-            )
-
-            for img in matches:
-
-                img = img.replace(
-                    '&amp;',
-                    '&'
-                )
-
-                if img.startswith('//'):
-                    img = 'https:' + img
-
-                if img.startswith('http'):
-                    if img not in photo_urls:
-                        photo_urls.append(img)
-
-        # ==================================================
-        # PINTEREST
-        # ==================================================
-
-        if (
-            "pinterest.com" in url
-            or "pin.it" in url
-        ):
-
-            pin_patterns = [
-                r'https://i\.pinimg\.com/[^"\'>\s]+'
-            ]
-
-            for pattern in pin_patterns:
-
-                matches = re.findall(
-                    pattern,
-                    html,
-                    flags=re.IGNORECASE
-                )
-
-                for img in matches:
-
-                    img = img.replace(
-                        '\\/',
-                        '/'
-                    )
-
-                    img = img.replace(
-                        '&amp;',
-                        '&'
-                    )
-
-                    if img not in photo_urls:
-                        photo_urls.append(img)
-
-        # ==================================================
-        # IMAGE URLS FROM HTML
-        # ==================================================
-
-        image_patterns = [
-            r'https?://[^"\'>\s]+?\.(?:jpg|jpeg|png|webp)(?:\?[^"\'>\s]*)?'
-        ]
-
-        for pattern in image_patterns:
-
-            matches = re.findall(
-                pattern,
-                html,
-                flags=re.IGNORECASE
-            )
-
-            for img in matches:
-
-                img = img.replace(
-                    '\\/',
-                    '/'
-                )
-
-                img = img.replace(
-                    '&amp;',
-                    '&'
-                )
-
-                if img not in photo_urls:
-                    photo_urls.append(img)
-
-        # ==================================================
-        # REMOVE BAD / THUMBNAIL IMAGES
-        # ==================================================
-
-        filtered = []
-
-        bad_words = [
-            'avatar',
-            'profile',
-            'logo',
-            'icon',
-            'favicon',
-            'sprite'
-        ]
-
-        for img in photo_urls:
-
-            low = img.lower()
-
-            if any(
-                bad in low
-                for bad in bad_words
-            ):
-                continue
-
-            filtered.append(img)
-
-        return filtered[:10]
-
-    except Exception as e:
-
-        print(
-            "Photo URL Extraction Error:",
-            e
-        )
-
-        return []
-
-
-# ==================================================
-# YT-DLP PHOTO EXTRACTION
-# ==================================================
-
-def extract_yt_dlp_photos(url: str):
-
-    photos = []
-
-    try:
-
-        opts = {
-            'quiet': True,
-            'no_warnings': True,
-            'skip_download': True,
-            'nocheckcertificate': True,
-
-            'http_headers': {
-                'User-Agent': (
-                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-                    'AppleWebKit/537.36 (KHTML, like Gecko) '
-                    'Chrome/128.0.0.0 Safari/537.36'
-                )
-            }
-        }
-
-        if os.path.exists('cookies.txt'):
-            opts['cookiefile'] = 'cookies.txt'
-
-        with yt_dlp.YoutubeDL(opts) as ydl:
-
-            info = ydl.extract_info(
-                url,
-                download=False
-            )
-
-            # ==================================================
-            # SINGLE ITEM
-            # ==================================================
-
-            if info:
-
-                direct_url = info.get('url')
-
-                ext = info.get('ext')
-
-                if (
-                    direct_url
-                    and ext in [
-                        'jpg',
-                        'jpeg',
-                        'png',
-                        'webp'
-                    ]
-                ):
-                    photos.append(
-                        direct_url
-                    )
-
-                # ==================================================
-                # THUMBNAILS
-                # ==================================================
-
-                thumbnails = info.get(
-                    'thumbnails',
-                    []
-                )
-
-                for thumb in reversed(thumbnails):
-
-                    thumb_url = thumb.get('url')
-
-                    if (
-                        thumb_url
-                        and thumb_url not in photos
-                    ):
-                        photos.append(
-                            thumb_url
-                        )
-
-            # ==================================================
-            # MULTIPLE ITEMS / CAROUSEL
-            # ==================================================
-
-            entries = info.get(
-                'entries',
-                []
-            ) if info else []
-
-            for entry in entries:
-
-                if not entry:
-                    continue
-
-                direct_url = entry.get('url')
-
-                ext = entry.get('ext')
-
-                if (
-                    direct_url
-                    and ext in [
-                        'jpg',
-                        'jpeg',
-                        'png',
-                        'webp'
-                    ]
-                ):
-                    if direct_url not in photos:
-                        photos.append(
-                            direct_url
-                        )
-
-                thumbnails = entry.get(
-                    'thumbnails',
-                    []
-                )
-
-                for thumb in reversed(thumbnails):
-
-                    thumb_url = thumb.get('url')
-
-                    if (
-                        thumb_url
-                        and thumb_url not in photos
-                    ):
-                        photos.append(
-                            thumb_url
-                        )
-
-        return photos[:10]
-
-    except Exception as e:
-
-        print(
-            "YT-DLP Photo Extraction Error:",
-            e
-        )
-
-        return []
-
-
-# ==================================================
-# SEND PHOTO
-# ==================================================
-
-async def send_photo_result(
-    update,
-    context,
-    photo_url,
-    bot_username,
-    reply_markup_share,
-    caption="📸 <b>Downloaded Photo</b>"
-):
-
+async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE, raw_url: str):
     chat_id = update.effective_chat.id
 
-    try:
-
-        await context.bot.send_chat_action(
-            chat_id=chat_id,
-            action=ChatAction.UPLOAD_PHOTO
-        )
-
-        await update.message.reply_photo(
-            photo=photo_url,
-            caption=(
-                f'{caption}\n\n'
-                f'<tg-emoji emoji-id="5260463209562776385">'
-                f'✅</tg-emoji> '
-                f'<b>Downloaded with</b> '
-                f'@{bot_username}'
-            ),
-            reply_markup=reply_markup_share,
-            parse_mode="HTML"
-        )
-
-        return True
-
-    except Exception as e:
-
-        print(
-            "Send Photo URL Error:",
-            e
-        )
-
-        return False
-
-
-# ==================================================
-# MAIN DOWNLOAD HANDLER
-# ==================================================
-
-async def handle_url_download(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE,
-    raw_url: str
-):
-
-    chat_id = update.effective_chat.id
-
-    await context.bot.send_chat_action(
-        chat_id=chat_id,
-        action=ChatAction.UPLOAD_DOCUMENT
-    )
-
-    status_msg = await update.message.reply_text(
-        '<tg-emoji emoji-id="5305254783542667121">'
-        '⏳</tg-emoji> '
-        '<b>Loading | ይጠብቁ...🔎</b>',
-        parse_mode="HTML"
-    )
-
-    bot_username = (
-        context.bot.username
-        or "mame_posts_bot"
-    )
-
-    share_url = (
-        f"https://t.me/share/url?"
-        f"url=https://t.me/{bot_username}"
-        f"?start=share&text="
-        f"Try%20this%20awesome%20Downloader%20Bot!🔥"
-    )
-
-    reply_markup_share = InlineKeyboardMarkup(
-        [[
-            InlineKeyboardButton(
-                "🔗 Share Bot 🚀",
-                url=share_url
-            )
-        ]]
-    )
-
-    url = clean_url(raw_url)
-
-    sent_any = False
-
-    # ==================================================
-    # STEP 1 — PHOTO EXTRACTION
-    # ==================================================
-    #
-    # This runs BEFORE normal video downloading.
-    # Therefore photo-only posts can now be handled.
-    #
-
-    photo_urls = []
-
-    # First: webpage extraction
-    try:
-
-        photo_urls = await asyncio.to_thread(
-            extract_photo_urls,
-            url
-        )
-
-    except Exception as e:
-
-        print(
-            "Web Photo Extraction Error:",
-            e
-        )
-
-    # ==================================================
-    # STEP 2 — YT-DLP PHOTO EXTRACTION
-    # ==================================================
-
-    if not photo_urls:
-
-        try:
-
-            photo_urls = await asyncio.to_thread(
-                extract_yt_dlp_photos,
-                url
-            )
-
-        except Exception as e:
-
-            print(
-                "YT-DLP Photo Extraction Error:",
-                e
-            )
-
-    # ==================================================
-    # STEP 3 — SEND PHOTO
-    # ==================================================
-
-    if photo_urls:
-
-        # Send maximum 10 photos
-        # Avoid sending duplicate URLs.
-
-        unique_photos = []
-
-        for photo in photo_urls:
-
-            if photo not in unique_photos:
-                unique_photos.append(photo)
-
-        for index, photo_url in enumerate(
-            unique_photos[:10]
-        ):
-
-            success = await send_photo_result(
-                update,
-                context,
-                photo_url,
-                bot_username,
-                reply_markup_share,
-                caption=(
-                    '📸 <b>Photo Downloaded</b>'
-                    if len(unique_photos) == 1
-                    else
-                    f'📸 <b>Photo {index + 1} '
-                    f'of {len(unique_photos[:10])}</b>'
-                )
-            )
-
-            if success:
-                sent_any = True
-
-    # ==================================================
-    # IMPORTANT:
-    # If photo was successfully sent, STOP here.
-    # Do NOT try to download it again as video.
-    # ==================================================
-
-    if sent_any:
-
-        try:
-            await status_msg.delete()
-        except Exception:
-            pass
-
-        return
-
-    # ==================================================
-    # STEP 4 — NORMAL VIDEO / AUDIO DOWNLOAD
-    # ==================================================
-
-    media_prefix = (
-        f"media_"
-        f"{update.effective_user.id}_"
-        f"{update.message.message_id}"
-    )
-
-    media_template = (
-        f"{media_prefix}.%(ext)s"
-    )
-
-    try:
-
-        # --------------------------------------------------
-        # FIRST ATTEMPT
-        # --------------------------------------------------
-
-        try:
-
-            await asyncio.to_thread(
-                download_media_func,
-                url,
-                media_template,
-                False
-            )
-
-        except Exception as first_error:
-
-            print(
-                "First Download Attempt Error:",
-                first_error
-            )
-
-            # --------------------------------------------------
-            # FALLBACK ATTEMPT
-            # --------------------------------------------------
-
-            await asyncio.to_thread(
-                download_media_func,
-                url,
-                media_template,
-                True
-            )
-
-        actual_file = find_downloaded_file(
-            media_prefix
-        )
-
-        # ==================================================
-        # FILE FOUND
-        # ==================================================
-
-        if actual_file and os.path.exists(
-            actual_file
-        ):
-
-            ext = os.path.splitext(
-                actual_file
-            )[1].lower()
-
-            # ==================================================
-            # PHOTO FILE
-            # ==================================================
-
-            if ext in [
-                '.jpg',
-                '.jpeg',
-                '.png',
-                '.webp'
-            ]:
-
-                try:
-
-                    await context.bot.send_chat_action(
-                        chat_id=chat_id,
-                        action=ChatAction.UPLOAD_PHOTO
-                    )
-
-                    with open(
-                        actual_file,
-                        'rb'
-                    ) as pf:
-
-                        await update.message.reply_photo(
-                            photo=pf,
-                            caption=(
-                                '📸 <b>Downloaded Photo</b>\n\n'
-                                '<tg-emoji emoji-id="5260463209562776385">'
-                                '✅</tg-emoji> '
-                                f'<b>Downloaded with</b> '
-                                f'@{bot_username}'
-                            ),
-                            reply_markup=reply_markup_share,
-                            parse_mode="HTML"
-                        )
-
-                    sent_any = True
-
-                except Exception as photo_error:
-
-                    print(
-                        "Downloaded Photo Send Error:",
-                        photo_error
-                    )
-
-            # ==================================================
-            # VIDEO FILE
-            # ==================================================
-
-            else:
-
-                file_size = os.path.getsize(
-                    actual_file
-                )
-
-                # Under 50 MB → Video
-                if file_size <= 50 * 1024 * 1024:
-
-                    await context.bot.send_chat_action(
-                        chat_id=chat_id,
-                        action=ChatAction.UPLOAD_VIDEO
-                    )
-
-                    with open(
-                        actual_file,
-                        'rb'
-                    ) as vf:
-
-                        await update.message.reply_video(
-                            video=vf,
-                            caption=(
-                                '<tg-emoji emoji-id="5305762354187772738">'
-                                '🚀</tg-emoji> '
-                                f'<b>Downloaded with</b> '
-                                f'@{bot_username} & @mame_posts\n\n'
-                                '<tg-emoji emoji-id="5260463209562776385">'
-                                '✅</tg-emoji> '
-                                '<b>Enjoy!</b>'
-                            ),
-                            reply_markup=reply_markup_share,
-                            parse_mode="HTML"
-                        )
-
-                    sent_any = True
-
-                    # ==================================================
-                    # EXTRACT AUDIO
-                    # ==================================================
-
-                    audio_output = (
-                        f"audio_"
-                        f"{update.effective_user.id}_"
-                        f"{update.message.message_id}.mp3"
-                    )
-
-                    cmd = [
-                        "ffmpeg",
-                        "-y",
-                        "-i",
-                        actual_file,
-                        "-vn",
-                        "-acodec",
-                        "libmp3lame",
-                        "-q:a",
-                        "2",
-                        audio_output
-                    ]
-
-                    await asyncio.to_thread(
-                        subprocess.run,
-                        cmd,
-                        stdout=subprocess.DEVNULL,
-                        stderr=subprocess.DEVNULL
-                    )
-
-                    if os.path.exists(
-                        audio_output
-                    ):
-
-                        try:
-
-                            await context.bot.send_chat_action(
-                                chat_id=chat_id,
-                                action=ChatAction.UPLOAD_DOCUMENT
-                            )
-
-                            with open(
-                                audio_output,
-                                'rb'
-                            ) as af:
-
-                                await update.message.reply_audio(
-                                    audio=af,
-                                    caption=(
-                                        '<tg-emoji emoji-id="5307705891313721642">'
-                                        '🎧</tg-emoji> '
-                                        '<b>Extracted Audio (MP3)</b>\n\n'
-                                        '<tg-emoji emoji-id="5260463209562776385">'
-                                        '✅</tg-emoji> '
-                                        f'<b>Downloaded with</b> '
-                                        f'@{bot_username}'
-                                    ),
-                                    reply_markup=reply_markup_share,
-                                    parse_mode="HTML"
-                                )
-
-                            sent_any = True
-
-                        except Exception as audio_error:
-
-                            print(
-                                "Audio Send Error:",
-                                audio_error
-                            )
-
-                        finally:
-
-                            if os.path.exists(
-                                audio_output
-                            ):
-                                try:
-                                    os.remove(
-                                        audio_output
-                                    )
-                                except Exception:
-                                    pass
-
-                # ==================================================
-                # OVER 50 MB
-                # ==================================================
-
-                else:
-
-                    # Send as Telegram Document
-                    await context.bot.send_chat_action(
-                        chat_id=chat_id,
-                        action=ChatAction.UPLOAD_DOCUMENT
-                    )
-
-                    with open(
-                        actual_file,
-                        'rb'
-                    ) as vf:
-
-                        await update.message.reply_document(
-                            document=vf,
-                            caption=(
-                                '<tg-emoji emoji-id="5305762354187772738">'
-                                '🚀</tg-emoji> '
-                                f'<b>Downloaded with</b> '
-                                f'@{bot_username} & @mame_posts\n\n'
-                                '<tg-emoji emoji-id="5260463209562776385">'
-                                '✅</tg-emoji> '
-                                '<b>Video is over 50 MB, '
-                                'so it was sent as a Document.</b>'
-                            ),
-                            reply_markup=reply_markup_share,
-                            parse_mode="HTML"
-                        )
-
-                    sent_any = True
-
-    except Exception as e:
-
-        print(
-            "Media Download Error:",
-            e
-        )
-
-    # ==================================================
-    # CLEAN TEMP FILES
-    # ==================================================
-
-    for f in os.listdir('.'):
-
-        if f.startswith(
-            media_prefix
-        ):
-
-            try:
-                os.remove(f)
-            except Exception:
-                pass
-
-    # ==================================================
-    # FINAL RESULT
-    # ==================================================
-
-    if sent_any:
-
-        try:
-            await status_msg.delete()
-        except Exception:
-            pass
-
-    else:
-
-        await status_msg.edit_text(
-            "💔 <b>የፈለጉትን File ማግኘት "
-            "አልቻልኩም!</b>\n\n"
-            "እባክዎ የላኩት ሊንክ private አለመሆኑን "
-            "አረጋግጠው እንደገና ይሞክሩ።",
-            parse_mode="HTML"
-        )
-
+    await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.UPLOAD_DOCUMENT)    
+        
+    status_msg = await update.message.reply_text(    
+        '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>Loading | ይጠብቁ...🔎</b>',    
+        parse_mode="HTML"    
+    )    
+
+    bot_username = context.bot.username or "mame_posts_bot"    
+    share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Downloader%20Bot!🔥"    
+    reply_markup_share = InlineKeyboardMarkup([[InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)]])    
+
+    url = clean_url(raw_url)    
+
+    # PINTEREST REAL PHOTO EXTRACTION    
+    if "pinterest.com" in url or "pin.it" in url:    
+        try:    
+            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}    
+            res = requests.get(url, headers=headers, timeout=10)    
+                
+            img_matches = re.findall(r'https://i\.pinimg\.com/(?:originals|736x)/[^\s"\'\>]+\.(?:jpg|png|jpeg|webp)', res.text)    
+                
+            if img_matches:    
+                real_img_url = img_matches[0]    
+                await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.UPLOAD_DOCUMENT)    
+                await update.message.reply_photo(    
+                    photo=real_img_url,    
+                    caption=f'📸 <b>Pinterest Photo</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Downloaded with</b> @{bot_username}',    
+                    reply_markup=reply_markup_share,    
+                    parse_mode="HTML"    
+                )    
+                await status_msg.delete()    
+                return    
+        except Exception as pe:    
+            print("Pinterest Fetch Error:", pe)    
+
+    media_prefix = f"media_{update.effective_user.id}_{update.message.message_id}"    
+    media_template = f"{media_prefix}.%(ext)s"    
+    sent_any = False    
+
+    try:    
+        try:    
+            await asyncio.to_thread(download_media_func, url, media_template, False)    
+        except Exception:    
+            await asyncio.to_thread(download_media_func, url, media_template, True)    
+
+        actual_file = find_downloaded_file(media_prefix)    
+
+        if actual_file and os.path.exists(actual_file):    
+            ext = os.path.splitext(actual_file)[1].lower()    
+                
+            if ext in ['.jpg', '.jpeg', '.png', '.webp']:    
+                await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.UPLOAD_DOCUMENT)    
+                with open(actual_file, 'rb') as pf:    
+                    await update.message.reply_photo(    
+                        photo=pf,    
+                        caption=f'📸 <b>Downloaded Photo</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Downloaded with</b> @{bot_username}',    
+                        reply_markup=reply_markup_share,    
+                        parse_mode="HTML"    
+                    )    
+                sent_any = True    
+            else:    
+                if os.path.getsize(actual_file) <= 50 * 1024 * 1024:    
+                    await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.UPLOAD_DOCUMENT)    
+                    with open(actual_file, 'rb') as vf:    
+                        await update.message.reply_video(    
+                            video=vf,    
+                            caption=f'<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy!</b>',    
+                            reply_markup=reply_markup_share,    
+                            parse_mode="HTML"    
+                        )    
+                    sent_any = True    
+
+                    audio_output = f"audio_{update.effective_user.id}_{update.message.message_id}.mp3"    
+                    cmd = ["ffmpeg", "-y", "-i", actual_file, "-vn", "-acodec", "libmp3lame", "-q:a", "2", audio_output]    
+                    await asyncio.to_thread(subprocess.run, cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)    
+
+                    if os.path.exists(audio_output):    
+                        await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.UPLOAD_DOCUMENT)    
+                        with open(audio_output, 'rb') as af:    
+                            await update.message.reply_audio(    
+                                audio=af,
 # ==================================================
 # BUTTON CLICK HANDLER
 # ==================================================
