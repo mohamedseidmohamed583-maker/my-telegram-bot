@@ -529,18 +529,17 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
             'Accept-Language': 'en-US,en;q=0.9',
         }
     }
+    # ==============================
+    # YOUTUBE
+    # ==============================
+    if "youtube.com" in url or "youtu.be" in url:
 
-# ==============================
-# YOUTUBE
-# ==============================
-if "youtube.com" in url or "youtu.be" in url:
-
-    opts['format'] = (
-        'bestvideo[ext=mp4]+bestaudio[ext=m4a]/'
-        'bestvideo+bestaudio/'
-        'best[ext=mp4]/'
-        'best'
-    )
+        opts['format'] = (
+            'bestvideo[ext=mp4]+bestaudio[ext=m4a]/'
+            'bestvideo+bestaudio/'
+            'best[ext=mp4]/'
+            'best'
+        )
 
     # ==============================
     # OTHER PLATFORMS
