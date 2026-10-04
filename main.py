@@ -487,6 +487,7 @@ async def convert_video_to_audio(update: Update, context: ContextTypes.DEFAULT_T
                 except Exception:    
                     pass
 
+
 # ==================================================
 # ULTRA-ROBUST DOWNLOAD ENGINE (VIDEOS, AUDIOS & PHOTOS)
 # ==================================================
@@ -502,6 +503,33 @@ def unshorten_url(url: str) -> str:
 
 def clean_url(raw_url: str) -> str:
     return unshorten_url(raw_url)
+
+def download_youtube_cobalt(url: str, output_path: str) -> bool:
+    try:
+        api_url = "https://api.cobalt.tools/api/json"
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "url": url,
+            "vQuality": "720"
+        }
+        res = requests.post(api_url, json=payload, headers=headers, timeout=20)
+        if res.status_code == 200:
+            data = res.json()
+            dl_url = data.get("url")
+            if dl_url:
+                v_res = requests.get(dl_url, stream=True, timeout=60)
+                if v_res.status_code == 200:
+                    with open(output_path, 'wb') as f:
+                        for chunk in v_res.iter_content(chunk_size=8192):
+                            if chunk:
+                                f.write(chunk)
+                    return True
+    except Exception as e:
+        print("Cobalt Download Error:", e)
+    return False
 
 def get_video_options(url: str, output_template: str, fallback: bool = False):
     opts = {
@@ -632,10 +660,19 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     sent_any = False    
 
     try:    
-        try:    
-            await asyncio.to_thread(download_media_func, url, media_template, False)    
-        except Exception:    
-            await asyncio.to_thread(download_media_func, url, media_template, True)    
+        if "youtube.com" in url or "youtu.be" in url:
+            yt_file = f"{media_prefix}.mp4"
+            success = await asyncio.to_thread(download_youtube_cobalt, url, yt_file)
+            if not success:
+                try:    
+                    await asyncio.to_thread(download_media_func, url, media_template, False)    
+                except Exception:    
+                    await asyncio.to_thread(download_media_func, url, media_template, True)
+        else:
+            try:    
+                await asyncio.to_thread(download_media_func, url, media_template, False)    
+            except Exception:    
+                await asyncio.to_thread(download_media_func, url, media_template, True)    
 
         actual_file = find_downloaded_file(media_prefix)    
 
@@ -693,10 +730,10 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     else:    
         await status_msg.edit_text(    
             "💔 <b> የፈለጉትን File ማግኘት አልቻልኩም!</b>\n\n"    
-            "እባክዎ የላኩት ሊንክ private አለመሆኑን አረጋግጠው እንደገና ይሞክሩ።",    
+            "እባክዎ የላኩት ሊንክ private አለመሆኑን አረጋግተው እንደገና ይሞክሩ።",    
             parse_mode="HTML"    
         )
-                                
+
 # ==================================================
 # BUTTON CLICK HANDLER
 # ==================================================
