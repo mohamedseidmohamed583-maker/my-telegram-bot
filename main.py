@@ -59,7 +59,7 @@ def keep_alive():
 # CONFIGURATION
 # ==================================================
 
-TOKEN = "8795814797:AAGlzA6OfiZU5ZbhTQ4v8Q8JHoDtozcdrqw"
+TOKEN = "8795814797:AAFV7qGUvkMJEz_NQr2CwR0o495WvpB7O0E"
 ADMIN_ID = int(os.environ.get("ADMIN_ID", 6753546651))
 
 # Force Join Channel
