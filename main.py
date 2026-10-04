@@ -59,7 +59,10 @@ def keep_alive():
 # CONFIGURATION
 # ==================================================
 
-TOKEN = "8795814797:AAFV7qGUvkMJEz_NQr2CwR0o495WvpB7O0E"
+import os
+
+# TOKEN በ Render Environment Variables ብቻ ይነበባል (ኮድ ውስጥ ምንም ቶከን የለም)
+TOKEN = os.environ.get("BOT_TOKEN")
 ADMIN_ID = int(os.environ.get("ADMIN_ID", 6753546651))
 
 # Force Join Channel
