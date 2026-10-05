@@ -500,14 +500,10 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
         'geo_bypass': True,
         'concurrent_fragment_downloads': 5,
         'outtmpl': output_template,
-
-        'format': (
-            'bestvideo[ext=mp4]+bestaudio[ext=m4a]/'
-            'bestvideo+bestaudio/'
-            'best[ext=mp4]/best'
-        ),
-
         'merge_output_format': 'mp4',
+
+        # ጥራቱ ምንም ይሁን ምን የሚገኘውን ምርጥ ፎርማት እንዲመርጥ የሚያስገድድ
+        'format': 'bestvideo+bestaudio/best',
 
         'http_headers': {
             'User-Agent': (
@@ -515,37 +511,26 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
                 'AppleWebKit/537.36 (KHTML, like Gecko) '
                 'Chrome/128.0.0.0 Safari/537.36'
             ),
-            'Accept': (
-                'text/html,application/xhtml+xml,'
-                'application/xml;q=0.9,image/webp,*/*;q=0.8'
-            ),
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.9',
         }
     }
 
-    # የዩቲዩብ የ IP Block መከላከያ ማስተካከያ (Android/iOS Spoofing)
+    # ለዩቲዩብ ልዩ የ Client ማስተካከያ
     if "youtube.com" in url or "youtu.be" in url:
         opts['extractor_args'] = {
             'youtube': {
-                'player_client': ['ios', 'android', 'web']
+                'player_client': ['android', 'ios', 'web']
             }
         }
-        opts['format'] = (
-            'bestvideo[ext=mp4][height<=1080]+bestaudio[ext=m4a]/'
-            'best[ext=mp4]/best'
-        )
+        # ዩቲዩብ ላይ 'Format not available' እንዳይል በጣም ተለዋዋጭ ፎርማት
+        opts['format'] = 'b/bv*+ba/best'
 
-    elif "tiktok.com" in url:
-        opts['format'] = 'bestvideo+bestaudio/best'
-
-    elif "instagram.com" in url:
+    elif "tiktok.com" in url or "instagram.com" in url:
         opts['format'] = 'bestvideo+bestaudio/best'
 
     elif "twitter.com" in url or "x.com" in url:
-        opts['format'] = (
-            'bestvideo[ext=mp4]+bestaudio[ext=m4a]/'
-            'best[ext=mp4]/best'
-        )
+        opts['format'] = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
 
     elif "likee" in url or "likee.video" in url:
         opts['http_headers']['Referer'] = 'https://likee.video/'
@@ -553,9 +538,7 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
 
     elif "vimeo.com" in url:
         opts['http_headers']['Referer'] = 'https://vimeo.com/'
-        opts['format'] = (
-            'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best'
-        )
+        opts['format'] = 'bestvideo+bestaudio/best'
 
     if os.path.exists('cookies.txt'):
         opts['cookiefile'] = 'cookies.txt'
