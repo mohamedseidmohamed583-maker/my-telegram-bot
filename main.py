@@ -33,8 +33,10 @@ import yt_dlp
 
 COOKIES_ENV = os.environ.get("YOUTUBE_COOKIES")
 if COOKIES_ENV:
-    with open("cookies.txt", "w") as f:
-        f.write(COOKIES_ENV)
+    # \n ችግር እንዳይኖር አድርጎ ኩኪሱን መጻፍ
+    formatted_cookies = COOKIES_ENV.replace("\\n", "\n")
+    with open("cookies.txt", "w", encoding="utf-8") as f:
+        f.write(formatted_cookies)
     print("✅ cookies.txt file created successfully from Environment Variable!")
 
 # ==================================================
@@ -521,12 +523,16 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
         }
     }
 
+    # የዩቲዩብ የ IP Block መከላከያ ማስተካከያ (Android/iOS Spoofing)
     if "youtube.com" in url or "youtu.be" in url:
+        opts['extractor_args'] = {
+            'youtube': {
+                'player_client': ['ios', 'android', 'web']
+            }
+        }
         opts['format'] = (
-            'bestvideo[ext=mp4]+bestaudio[ext=m4a]/'
-            'bestvideo+bestaudio/'
-            'best[ext=mp4]/'
-            'best'
+            'bestvideo[ext=mp4][height<=1080]+bestaudio[ext=m4a]/'
+            'best[ext=mp4]/best'
         )
 
     elif "tiktok.com" in url:
@@ -611,7 +617,8 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     try:    
         try:    
             await asyncio.to_thread(download_media_func, url, media_template, False)    
-        except Exception:    
+        except Exception as err1:
+            print("First download attempt failed, retrying with fallback...", err1)
             await asyncio.to_thread(download_media_func, url, media_template, True)    
 
         actual_file = find_downloaded_file(media_prefix)    
@@ -655,6 +662,12 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
                             )    
                         os.remove(audio_output)    
                         sent_any = True    
+                else:
+                    await status_msg.edit_text(
+                        "⚠️ <b>ቪዲዮው ከ 50MB በላይ ስለሆነ በቴሌግራም መላክ አይቻልም!</b>", 
+                        parse_mode="HTML"
+                    )
+                    return
     except Exception as e:    
         print("Media Download Error:", e)    
 
@@ -723,11 +736,11 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f'<tg-emoji emoji-id="5465638272648617243">✈️</tg-emoji> <b>ስም:</b> {user.full_name}\n'    
             f'<tg-emoji emoji-id="5465638272648617243">✈️</tg-emoji> <b>Username:</b> {username_text}\n'    
             f'<tg-emoji emoji-id="5465638272648617243">✈️</tg-emoji> <b>Telegram ID:</b> <code>{user.id}</code>\n'    
-            f'<tg-emoji emoji-id="5465638272648617243">✈️️</tg-emoji> <b>የላኳቸው አጠቃላይ መልዕክቶች:</b> <code>{user_msg_count}</code>\n\n'    
+            f'<tg-emoji emoji-id="5465638272648617243">✈️</tg-emoji> <b>የላኳቸው አጠቃላይ መልዕክቶች:</b> <code>{user_msg_count}</code>\n\n'    
                 
             f'<tg-emoji emoji-id="5307979128543158051">🤖</tg-emoji> <b>የቦቱ አጠቃላይ መረጃ፦</b>\n'    
             f'<tg-emoji emoji-id="5465638272648617243">✈️</tg-emoji> <b>ሁኔታ:</b> Active <tg-emoji emoji-id="5307976826440687996">🔥</tg-emoji>\n'    
-            f'<tg-emoji emoji-id="5465638272648617243">✈️</tg-emoji> <b>ጠቅላላ Users:</b> <code>{total_users}</code> <tg-emoji emoji-id="5305466057278923962">👥</tg-emoji>'    
+            f'<tg-emoji emoji-id="5465638272648617243">✈️️</tg-emoji> <b>ጠቅላላ Users:</b> <code>{total_users}</code> <tg-emoji emoji-id="5305466057278923962">👥</tg-emoji>'    
         )    
             
         await query.edit_message_text(    
