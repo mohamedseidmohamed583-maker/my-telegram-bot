@@ -6,6 +6,7 @@ import subprocess
 import requests
 import static_ffmpeg
 static_ffmpeg.add_paths()
+
 from threading import Thread
 from flask import Flask
 from telegram import (
@@ -59,9 +60,7 @@ def keep_alive():
 # CONFIGURATION
 # ==================================================
 
-import os
-
-# TOKEN በ Render Environment Variables ብቻ ይነበባል (ኮድ ውስጥ ምንም ቶከን የለም)
+# TOKEN በ Render Environment Variables ብቻ ይነበባል
 TOKEN = os.environ.get("BOT_TOKEN")
 ADMIN_ID = int(os.environ.get("ADMIN_ID", 6753546651))
 
@@ -74,7 +73,6 @@ FORCE_CHANNEL_LINK = "https://t.me/mame_posts"
 # ==================================================
 
 DATA_FILE = "user_data.json"
-
 
 def load_data():
     if os.path.exists(DATA_FILE):
@@ -166,7 +164,6 @@ def get_main_menu_keyboard(bot_username):
 
     return InlineKeyboardMarkup(keyboard)
 
-
 def get_back_keyboard():
     keyboard = [
         [
@@ -219,10 +216,7 @@ async def is_joined(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # FORCE JOIN MESSAGE
 # ==================================================
 
-async def show_force_join(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
+async def show_force_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         '<tg-emoji emoji-id="6034962180875490251">🔒</tg-emoji> '
         '<b>ቦቱን ለመጠቀም ከታች ያለውን ቻናል መቀላቀል አለብዎት!</b>\n\n'
@@ -235,16 +229,10 @@ async def show_force_join(
 
     keyboard = [
         [
-            InlineKeyboardButton(
-                "📢 Join Channel",
-                url=FORCE_CHANNEL_LINK
-            )
+            InlineKeyboardButton("📢 Join Channel", url=FORCE_CHANNEL_LINK)
         ],
         [
-            InlineKeyboardButton(
-                "✅ I've Joined",
-                callback_data="check_join"
-            )
+            InlineKeyboardButton("✅ I've Joined", callback_data="check_join")
         ]
     ]
 
@@ -256,7 +244,6 @@ async def show_force_join(
             reply_markup=reply_markup,
             parse_mode="HTML"
         )
-
 
 # ==================================================
 # START & MENU COMMAND
@@ -275,10 +262,7 @@ def get_welcome_text():
         f'<b>And others Social Media | ሌሎችንም ሶሻል ሚድያ ማውረድ ይችላሉ!:</b> <tg-emoji emoji-id="5305466057278923962">📥</tg-emoji>'
     )
 
-async def start(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     record_user_activity(user_id)
 
@@ -515,7 +499,6 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
         'concurrent_fragment_downloads': 5,
         'outtmpl': output_template,
 
-        # YouTube + other platforms
         'format': (
             'bestvideo[ext=mp4]+bestaudio[ext=m4a]/'
             'bestvideo+bestaudio/'
@@ -537,11 +520,8 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
             'Accept-Language': 'en-US,en;q=0.9',
         }
     }
-    # ==============================
-    # YOUTUBE
-    # ==============================
-    if "youtube.com" in url or "youtu.be" in url:
 
+    if "youtube.com" in url or "youtu.be" in url:
         opts['format'] = (
             'bestvideo[ext=mp4]+bestaudio[ext=m4a]/'
             'bestvideo+bestaudio/'
@@ -549,9 +529,6 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
             'best'
         )
 
-    # ==============================
-    # OTHER PLATFORMS
-    # ==============================
     elif "tiktok.com" in url:
         opts['format'] = 'bestvideo+bestaudio/best'
 
@@ -574,9 +551,6 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
             'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best'
         )
 
-    # ==============================
-    # YOUTUBE COOKIES
-    # ==============================
     if os.path.exists('cookies.txt'):
         opts['cookiefile'] = 'cookies.txt'
 
@@ -675,7 +649,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
                         await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.UPLOAD_DOCUMENT)    
                         with open(audio_output, 'rb') as af:    
                             await update.message.reply_audio(    
-                                audio=af,caption=f'<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>Extracted Audio (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Downloaded with</b> @{bot_username}',    
+                                audio=af, caption=f'<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>Extracted Audio (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Downloaded with</b> @{bot_username}',    
                                 reply_markup=reply_markup_share,    
                                 parse_mode="HTML"    
                             )    
@@ -684,12 +658,13 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     except Exception as e:    
         print("Media Download Error:", e)    
 
-    for f in os.listdir('.'):    
-        if f.startswith(media_prefix):    
-            try:    
-                os.remove(f)    
-            except Exception:    
-                pass    
+    finally:
+        for f in os.listdir('.'):    
+            if f.startswith(media_prefix):    
+                try:    
+                    os.remove(f)    
+                except Exception:    
+                    pass    
 
     if sent_any:    
         await status_msg.delete()    
@@ -699,15 +674,12 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
             "እባክዎ የላኩት ሊንክ private አለመሆኑን አረጋግጠው እንደገና ይሞክሩ።",    
             parse_mode="HTML"    
         )
-                                
+
 # ==================================================
 # BUTTON CLICK HANDLER
 # ==================================================
 
-async def button_callback(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
+async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
@@ -751,7 +723,7 @@ async def button_callback(
             f'<tg-emoji emoji-id="5465638272648617243">✈️</tg-emoji> <b>ስም:</b> {user.full_name}\n'    
             f'<tg-emoji emoji-id="5465638272648617243">✈️</tg-emoji> <b>Username:</b> {username_text}\n'    
             f'<tg-emoji emoji-id="5465638272648617243">✈️</tg-emoji> <b>Telegram ID:</b> <code>{user.id}</code>\n'    
-            f'<tg-emoji emoji-id="5465638272648617243">✈️</tg-emoji> <b>የላኳቸው አጠቃላይ መልዕክቶች:</b> <code>{user_msg_count}</code>\n\n'    
+            f'<tg-emoji emoji-id="5465638272648617243">✈️️</tg-emoji> <b>የላኳቸው አጠቃላይ መልዕክቶች:</b> <code>{user_msg_count}</code>\n\n'    
                 
             f'<tg-emoji emoji-id="5307979128543158051">🤖</tg-emoji> <b>የቦቱ አጠቃላይ መረጃ፦</b>\n'    
             f'<tg-emoji emoji-id="5465638272648617243">✈️</tg-emoji> <b>ሁኔታ:</b> Active <tg-emoji emoji-id="5307976826440687996">🔥</tg-emoji>\n'    
@@ -791,10 +763,7 @@ async def button_callback(
 # USER MESSAGES HANDLER
 # ==================================================
 
-async def handle_user_messages(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
+async def handle_user_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message:
         return
 
@@ -856,10 +825,7 @@ async def handle_user_messages(
 # ADMIN REPLY HANDLER
 # ==================================================
 
-async def admin_reply(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
+async def admin_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID:
         return
 
@@ -903,10 +869,7 @@ async def admin_reply(
 # CHECK JOIN BUTTON
 # ==================================================
 
-async def check_join(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
+async def check_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
@@ -945,10 +908,7 @@ async def check_join(
 # ERROR HANDLER
 # ==================================================
 
-async def error_handler(
-    update: object,
-    context: ContextTypes.DEFAULT_TYPE
-):
+async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
     print("❌ ERROR:", context.error)
 
 # ==================================================
