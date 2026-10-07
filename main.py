@@ -502,8 +502,15 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
         'outtmpl': output_template,
         'merge_output_format': 'mp4',
 
-        # ጥራቱ ምንም ይሁን ምን የሚገኘውን ምርጥ ፎርማት እንዲመርጥ የሚያስገድድ
-        'format': 'bestvideo+bestaudio/best',
+        # ጓደኛህ የላከው ተለዋዋጭ ፎርማት (bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b)
+        'format': 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b',
+
+        # ጓደኛህ የላከው የ Player Client ማስተካከያ (android, web)
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['android', 'web']
+            }
+        },
 
         'http_headers': {
             'User-Agent': (
@@ -516,29 +523,11 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
         }
     }
 
-    # ለዩቲዩብ ልዩ የ Client ማስተካከያ
-    if "youtube.com" in url or "youtu.be" in url:
-        opts['extractor_args'] = {
-            'youtube': {
-                'player_client': ['android', 'ios', 'web']
-            }
-        }
-        # ዩቲዩብ ላይ 'Format not available' እንዳይል በጣም ተለዋዋጭ ፎርማት
-        opts['format'] = 'b/bv*+ba/best'
-
-    elif "tiktok.com" in url or "instagram.com" in url:
-        opts['format'] = 'bestvideo+bestaudio/best'
-
-    elif "twitter.com" in url or "x.com" in url:
-        opts['format'] = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
-
-    elif "likee" in url or "likee.video" in url:
+    if "likee" in url or "likee.video" in url:
         opts['http_headers']['Referer'] = 'https://likee.video/'
-        opts['format'] = 'best'
 
     elif "vimeo.com" in url:
         opts['http_headers']['Referer'] = 'https://vimeo.com/'
-        opts['format'] = 'bestvideo+bestaudio/best'
 
     if os.path.exists('cookies.txt'):
         opts['cookiefile'] = 'cookies.txt'
@@ -723,7 +712,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 
             f'<tg-emoji emoji-id="5307979128543158051">🤖</tg-emoji> <b>የቦቱ አጠቃላይ መረጃ፦</b>\n'    
             f'<tg-emoji emoji-id="5465638272648617243">✈️</tg-emoji> <b>ሁኔታ:</b> Active <tg-emoji emoji-id="5307976826440687996">🔥</tg-emoji>\n'    
-            f'<tg-emoji emoji-id="5465638272648617243">✈️️</tg-emoji> <b>ጠቅላላ Users:</b> <code>{total_users}</code> <tg-emoji emoji-id="5305466057278923962">👥</tg-emoji>'    
+            f'<tg-emoji emoji-id="5465638272648617243">✈</tg-emoji> <b>ጠቅላላ Users:</b> <code>{total_users}</code> <tg-emoji emoji-id="5305466057278923962">👥</tg-emoji>'    
         )    
             
         await query.edit_message_text(    
