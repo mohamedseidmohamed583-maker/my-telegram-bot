@@ -172,7 +172,6 @@ def get_back_keyboard():
             )
         ]
     ]
-
     return InlineKeyboardMarkup(keyboard)
 
 # ==================================================
@@ -272,16 +271,18 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         input_field_placeholder="Send link 🔗"    
     )    
 
-    await update.message.reply_text(    
-        "<b> @ads_poster1bot !</b>",    
-        reply_markup=setup_keyboard,    
-        parse_mode="HTML"    
-    )    
-
+    # ሁለቱን መልዕክቶች በአንድ ላይ በማድረግ ዌልካም ቴክስቱን እና የኢንላይን በተኖቹን ከታችኛው ኪቦርድ ጋር እንልካለን
     await update.message.reply_text(    
         get_welcome_text(),    
         reply_markup=get_main_menu_keyboard(bot_username),    
         parse_mode="HTML"    
+    )
+    
+    # ኪቦርዱን ብቻ በተናጠል ሁልጊዜ እንዲስተካከል መላክ ከፈለግን
+    await update.message.reply_text(
+        "👇 <b>ከታች ካሉት አማራጮች ይምረጡ፦</b>",
+        reply_markup=setup_keyboard,
+        parse_mode="HTML"
     )
 
 # ==================================================
