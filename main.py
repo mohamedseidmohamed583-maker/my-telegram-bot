@@ -1871,18 +1871,53 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             resize_keyboard=True,    
             input_field_placeholder="Send link 🔗"    
         )
+        
+        # የቋንቋ ምርጫ የነበረውን መልዕክት እናጠፋዋለን (Delete)
+        try:
+            await query.message.delete()
+        except Exception:
+            pass
+
+        # ተጠቃሚው በመረጠው ቋንቋ Done የሚል መልዕክት እንልክልታለን
+        done_text = {
+            "am": "✅ <b>ተጠናቋል! ቋንቋዎ ተስተካክሏል።</b>",
+            "en": "✅ <b>Done! Your language has been set.</b>",
+            "ar": "✅ <b>تم! تم تعيين لغتك.</b>",
+            "ru": "✅ <b>Готово! Ваш язык установлен.</b>",
+            "fr": "✅ <b>Terminé ! Votre langue a été définie.</b>",
+            "es": "✅ <b>¡Listo! Tu idioma ha sido configurado.</b>",
+            "fa": "✅ <b>انجام شد! زبان شما تنظیم شد.</b>",
+            "hi": "✅ <b>हो गया! आपकी भाषा सेट कर दी गई है।</b>",
+            "uz": "✅ <b>Tayyor! Tilingiz o'rnatildi.</b>",
+            "pt": "✅ <b>Concluído! Seu idioma foi definido.</b>",
+            "zh": "✅ <b>完成！您的语言已设置。</b>",
+            "bn": "✅ <b>সম্পন্ন হয়েছে! আপনার ভাষা সেট করা হয়েছে।</b>",
+            "id": "✅ <b>Selesai! Bahasa Anda telah disetel.</b>",
+            "de": "✅ <b>Fertig! Ihre Sprache wurde eingestellt.</b>",
+            "uk": "✅ <b>Готово! Вашу мову встановлено.</b>",
+            "tr": "✅ <b>Tamamlandı! Diliniz ayarlandı.</b>",
+            "ko": "✅ <b>완료되었습니다! 언어가 설정되었습니다.</b>",
+            "it": "✅ <b>Fatto! La tua lingua è stata impostata.</b>",
+            "pl": "✅ <b>Gotowe! Twój język został ustawiony.</b>",
+            "vi": "✅ <b>Hoàn tất! Ngôn ngữ của bạn đã được đặt.</b>",
+            "kk": "✅ <b>Дайын! Тіліңіз орнатылды.</b>"
+        }.get(lang_code, "✅ <b>Done!</b>")
+
         await context.bot.send_message(
             chat_id=user.id,
-            text="👍",
-            reply_markup=setup_keyboard
+            text=done_text,
+            parse_mode="HTML"
         )
 
-        await query.edit_message_text(
-            get_trans(user.id, "welcome"),
+        # በመቀጠል ዋናውን ሜኑ እና በተኖቹን እንልክለታለን
+        await context.bot.send_message(
+            chat_id=user.id,
+            text=get_trans(user.id, "welcome"),
             reply_markup=get_main_menu_keyboard(bot_username, user.id),
             parse_mode="HTML"
         )
 
+    
     elif data == "cmd_change_lang":
         await query.edit_message_text(
             "<b>Please select your language / እባክዎ ቋንቋ ይምረጡ፦</b>",
