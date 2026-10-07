@@ -866,6 +866,40 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 # ==================================================
+# MENU BUTTON HANDLER (ለ '🏠 Menu' የተለየ ተግባር)
+# ==================================================
+
+async def menu_button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    record_user_activity(user_id)
+    bot_username = context.bot.username or "mame_posts_bot"
+    user_lang = get_user_language(user_id)
+
+    setup_keyboard = ReplyKeyboardMarkup(    
+        [["🏠 Menu"]],    
+        resize_keyboard=True,    
+        input_field_placeholder="Send link 🔗"    
+    )
+
+    if not user_lang:
+        await update.message.reply_text(
+            "<b>Please select your language / እባክዎ ቋንቋ ይምረጡ፦</b>",
+            reply_markup=get_language_keyboard(),
+            parse_mode="HTML"
+        )
+    else:
+        await update.message.reply_text(    
+            "<b> @ads_poster1bot !</b>",    
+            reply_markup=setup_keyboard,    
+            parse_mode="HTML"    
+        )    
+        await update.message.reply_text(    
+            get_trans(user_id, "welcome"),    
+            reply_markup=get_main_menu_keyboard(bot_username, user_id),    
+            parse_mode="HTML"    
+        )
+
+# ==================================================
 # STATUS COMMAND (/status)
 # ==================================================
 
@@ -1344,7 +1378,7 @@ async def handle_user_messages(update: Update, context: ContextTypes.DEFAULT_TYP
     text = update.message.text or update.message.caption or ""    
         
     if text == "🏠 Menu":    
-        await start(update, context)    
+        await menu_button_handler(update, context)    
         return    
 
     valid_domains = [    
