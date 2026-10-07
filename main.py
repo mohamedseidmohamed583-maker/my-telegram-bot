@@ -33,7 +33,6 @@ import yt_dlp
 
 COOKIES_ENV = os.environ.get("YOUTUBE_COOKIES")
 if COOKIES_ENV:
-    # \n ችግር እንዳይኖር አድርጎ ኩኪሱን መጻፍ
     formatted_cookies = COOKIES_ENV.replace("\\n", "\n")
     with open("cookies.txt", "w", encoding="utf-8") as f:
         f.write(formatted_cookies)
@@ -62,11 +61,9 @@ def keep_alive():
 # CONFIGURATION
 # ==================================================
 
-# TOKEN በ Render Environment Variables ብቻ ይነበባል
 TOKEN = os.environ.get("BOT_TOKEN")
 ADMIN_ID = int(os.environ.get("ADMIN_ID", 6753546651))
 
-# Force Join Channel
 FORCE_CHANNEL = "@mame_posts"
 FORCE_CHANNEL_LINK = "https://t.me/mame_posts"
 
@@ -187,52 +184,18 @@ def get_main_menu_keyboard(bot_username):
 
 def get_language_keyboard():
     keyboard = [
-        [
-            InlineKeyboardButton("🇬🇧 English", callback_data="lang_en"),
-            InlineKeyboardButton("🇪🇹 አማርኛ", callback_data="lang_am")
-        ],
-        [
-            InlineKeyboardButton("🇸🇦 العربية", callback_data="lang_ar")
-        ],
-        [
-            InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru"),
-            InlineKeyboardButton("🇫🇷 Français", callback_data="lang_fr")
-        ],
-        [
-            InlineKeyboardButton("🇪🇸 Español", callback_data="lang_es"),
-            InlineKeyboardButton("🇮🇷 ایران", callback_data="lang_fa")
-        ],
-        [
-            InlineKeyboardButton("🇮🇳 भारत", callback_data="lang_hi"),
-            InlineKeyboardButton("🇺🇿 O'zbek", callback_data="lang_uz")
-        ],
-        [
-            InlineKeyboardButton("🇵🇹 Português", callback_data="lang_pt"),
-            InlineKeyboardButton("🇨🇳 中文", callback_data="lang_zh")
-        ],
-        [
-            InlineKeyboardButton("🇧🇩 বাংলা", callback_data="lang_bn"),
-            InlineKeyboardButton("🇮🇩 Indonesia", callback_data="lang_id")
-        ],
-        [
-            InlineKeyboardButton("🇩🇪 Deutsch", callback_data="lang_de"),
-            InlineKeyboardButton("🇺🇦 Українська", callback_data="lang_uk")
-        ],
-        [
-            InlineKeyboardButton("🇹🇷 Türkçe", callback_data="lang_tr"),
-            InlineKeyboardButton("🇰🇷 한국어", callback_data="lang_ko")
-        ],
-        [
-            InlineKeyboardButton("🇮🇹 Italiano", callback_data="lang_it"),
-            InlineKeyboardButton("🇵🇱 Polski", callback_data="lang_pl")
-        ],
-        [
-            InlineKeyboardButton("🇻🇳 Tiếng Việt", callback_data="lang_vi"),
-            InlineKeyboardButton("🇰🇿 Қазақша", callback_data="lang_kk")
-        ],
-        [
-            InlineKeyboardButton("← Back", callback_data="cmd_back")
-        ]
+        [InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru"), InlineKeyboardButton("🇬🇧 English", callback_data="lang_en")],
+        [InlineKeyboardButton("🇫🇷 Français", callback_data="lang_fr"), InlineKeyboardButton("🇪🇸 Español", callback_data="lang_es")],
+        [InlineKeyboardButton("🇮🇷 ایران", callback_data="lang_fa"), InlineKeyboardButton("🇮🇳 भारत", callback_data="lang_hi")],
+        [InlineKeyboardButton("🇺🇿 O'zbek", callback_data="lang_uz"), InlineKeyboardButton("🇵🇹 Português", callback_data="lang_pt")],
+        [InlineKeyboardButton("🇨🇳 中文", callback_data="lang_zh"), InlineKeyboardButton("🇸🇦 العربية", callback_data="lang_ar")],
+        [InlineKeyboardButton("🇧🇩 বাংলা", callback_data="lang_bn"), InlineKeyboardButton("🇮🇩 Indonesia", callback_data="lang_id")],
+        [InlineKeyboardButton("🇩🇪 Deutsch", callback_data="lang_de"), InlineKeyboardButton("🇺🇦 Українська", callback_data="lang_uk")],
+        [InlineKeyboardButton("🇹🇷 Türkçe", callback_data="lang_tr"), InlineKeyboardButton("🇰🇷 한국어", callback_data="lang_ko")],
+        [InlineKeyboardButton("🇮🇹 Italiano", callback_data="lang_it"), InlineKeyboardButton("🇵🇱 Polski", callback_data="lang_pl")],
+        [InlineKeyboardButton("🇻🇳 Tiếng Việt", callback_data="lang_vi"), InlineKeyboardButton("🇰🇿 Қазақша", callback_data="lang_kk")],
+        [InlineKeyboardButton("🇪🇹 አማርኛ", callback_data="lang_am")],
+        [InlineKeyboardButton("← Back", callback_data="cmd_back")]
     ]
     return InlineKeyboardMarkup(keyboard)
 
@@ -332,11 +295,23 @@ def get_welcome_text(lang="am"):
             f'<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | <b>Twitter (X): videos & voice</b>\n'
             f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>Facebook, Reddit, Twitch, Vimeo & Others</b>\n'
             f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Video to Audio Converter: Convert video to audio!</b>\n\n'
-            f'<b>And others Social Media:</b> <tg-emoji emoji-id="5305466057278923962">📥</tg-emoji>'
+            f'<b>And other Social Media:</b> <tg-emoji emoji-id="5305466057278923962">📥</tg-emoji>'
+        )
+    elif lang == "ru":
+        return (
+            f'Привет <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
+            f'<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>Мои возможности (Скачивайте видео, фото и аудио из всех соцсетей):</b>\n\n'
+            f'<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | <b>Tiktok & Likee: видео и фото</b>\n'
+            f'<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | <b>Pinterest & Instagram: reels, фото и истории</b>\n'
+            f'<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | <b>YouTube: видео и музыка</b>\n'
+            f'<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | <b>Twitter (X): видео и голосовые</b>\n'
+            f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>Facebook, Reddit, Twitch, Vimeo и другие</b>\n'
+            f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Конвертер видео в аудио</b>\n\n'
+            f'<b>И другие соцсети:</b> <tg-emoji emoji-id="5305466057278923962">📥</tg-emoji>'
         )
     elif lang == "ar":
         return (
-            f'Hello <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
+            f'مرحباً <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
             f'<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>خياراتي (يمكنك تحميل الفيديوهات والصور والصوتيات من جميع وسائل التواصل الاجتماعي):</b>\n\n'
             f'<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | <b>تيك توك ولايكي: فيديوهات وصور</b>\n'
             f'<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | <b>بينتريست وإنستغرام: ريلز وصور والستوري</b>\n'
@@ -598,10 +573,8 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
         'outtmpl': output_template,
         'merge_output_format': 'mp4',
 
-        # ጓደኛህ የላከው ተለዋዋጭ ፎርማት (bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b)
         'format': 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b',
 
-        # ጓደኛህ የላከው የ Player Client ማስተካከያ (android, web)
         'extractor_args': {
             'youtube': {
                 'player_client': ['android', 'web']
