@@ -128,7 +128,7 @@ def get_user_stats(user_id):
     return total_users, user_msg_count
 
 # ==================================================
-# COMPLETE MULTI-LANGUAGE TRANSLATIONS WITH FULL EMOJIS
+# COMPLETE MULTI-LANGUAGE TRANSLATIONS
 # ==================================================
 
 TRANSLATIONS = {
@@ -141,6 +141,7 @@ TRANSLATIONS = {
         "btn_lang": "Language | ቋንቋ",
         "btn_support": "Support | ድጋፍ",
         "btn_back": "Back to Menu",
+        "done_msg": "✅ <b>ተጠናቋል! ቋንቋዎ ተስተካክሏል።</b>",
         "loading": '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>Loading|ይጠብቁ...</b>',
         "download_success": '<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy!</b>',
         "audio_extracted": '<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>Extracted Audio (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Downloaded with</b> @{bot_username}',
@@ -195,6 +196,7 @@ TRANSLATIONS = {
         "btn_lang": "Language | ቋንቋ",
         "btn_support": "Support & Help",
         "btn_back": "Back to Menu",
+        "done_msg": "✅ <b>Done! Your language has been set.</b>",
         "loading": '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>Loading|Please wait...</b>',
         "download_success": '<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username}\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy!</b>',
         "audio_extracted": '<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>Extracted Audio (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Downloaded with</b> @{bot_username}',
@@ -249,6 +251,7 @@ TRANSLATIONS = {
         "btn_lang": "Language | ቋንቋ",
         "btn_support": "الدعم والتعليمات",
         "btn_back": "العودة للالقائمة",
+        "done_msg": "✅ <b>تم! تم تعيين لغتك.</b>",
         "loading": '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>جاري التحميل...</b>',
         "download_success": '<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>تم التحميل بواسطة</b> @{bot_username}\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>استمتع!</b>',
         "audio_extracted": '<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>الصوت المستخرج (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>تم بواسطة</b> @{bot_username}',
@@ -303,6 +306,7 @@ TRANSLATIONS = {
         "btn_lang": "Language | Язык",
         "btn_support": "Помощь",
         "btn_back": "Назад в меню",
+        "done_msg": "✅ <b>Готово! Ваш язык установлен.</b>",
         "loading": '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>Загрузка... Пожалуйста, подождите</b>',
         "download_success": '<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Скачано с помощью</b> @{bot_username}\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Приятного просмотра!</b>',
         "audio_extracted": '<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>Извлеченный звук (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Загружено через</b> @{bot_username}',
@@ -357,6 +361,7 @@ TRANSLATIONS = {
         "btn_lang": "Language | Langue",
         "btn_support": "Aide",
         "btn_back": "Retour au menu",
+        "done_msg": "✅ <b>Terminé ! Votre langue a été définie.</b>",
         "loading": '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>Chargement... Patientez</b>',
         "download_success": '<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Téléchargé avec</b> @{bot_username}\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Profitez-en!</b>',
         "audio_extracted": '<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>Audio extrait (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Téléchargé avec</b> @{bot_username}',
@@ -411,6 +416,7 @@ TRANSLATIONS = {
         "btn_lang": "Language | Idioma",
         "btn_support": "Soporte",
         "btn_back": "Volver al menú",
+        "done_msg": "✅ <b>¡Listo! Tu idioma ha sido configurado.</b>",
         "loading": '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>Cargando... Espere</b>',
         "download_success": '<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Descargado con</b> @{bot_username}\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>¡Disfrútalo!</b>',
         "audio_extracted": '<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>Audio extraído (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Descargado con</b> @{bot_username}',
@@ -465,6 +471,7 @@ TRANSLATIONS = {
         "btn_lang": "Language | زبان",
         "btn_support": "پشتیبانی",
         "btn_back": "بازگشت به منو",
+        "done_msg": "✅ <b>انجام شد! زبان شما تنظیم شد.</b>",
         "loading": '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>در حال بارگذاری...</b>',
         "download_success": '<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>دانلود شده توسط</b> @{bot_username}\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>لذت ببرید!</b>',
         "audio_extracted": '<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>صوت استخراج شده (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>دانلود شده توسط</b> @{bot_username}',
@@ -519,6 +526,7 @@ TRANSLATIONS = {
         "btn_lang": "Language | भाषा",
         "btn_support": "सहायता",
         "btn_back": "मेनू पर वापस",
+        "done_msg": "✅ <b>हो गया! आपकी भाषा सेट कर दी गई है।</b>",
         "loading": '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>लोड हो रहा है... प्रतीक्षा करें</b>',
         "download_success": '<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>डाउनलोड किया गया:</b> @{bot_username}\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>आनंद लें!</b>',
         "audio_extracted": '<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>ऑडियो निकाला गया (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>डाउनलोड किया गया:</b> @{bot_username}',
@@ -573,6 +581,7 @@ TRANSLATIONS = {
         "btn_lang": "Language | Til",
         "btn_support": "Yordam",
         "btn_back": "Menyuga qaytish",
+        "done_msg": "✅ <b>Tayyor! Tilingiz o'rnatildi.</b>",
         "loading": '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>Yuklanmoqda... Kuting</b>',
         "download_success": '<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Yuklab olindi:</b> @{bot_username}\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Yoqimli tomosha!</b>',
         "audio_extracted": '<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>Olingan audio (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Yuklab olindi:</b> @{bot_username}',
@@ -627,6 +636,7 @@ TRANSLATIONS = {
         "btn_lang": "Language | Idioma",
         "btn_support": "Suporte",
         "btn_back": "Voltar ao menu",
+        "done_msg": "✅ <b>Concluído! Seu idioma foi definido.</b>",
         "loading": '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>Carregando... Aguarde</b>',
         "download_success": '<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Baixado com</b> @{bot_username}\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Aproveite!</b>',
         "audio_extracted": '<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>Áudio extraído (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Baixado com</b> @{bot_username}',
@@ -681,6 +691,7 @@ TRANSLATIONS = {
         "btn_lang": "Language | 语言",
         "btn_support": "帮助与支持",
         "btn_back": "返回菜单",
+        "done_msg": "✅ <b>完成！您的语言已设置。</b>",
         "loading": '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>加载中... 请稍候</b>',
         "download_success": '<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>已通过</b> @{bot_username} <b>下载</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>请享用！</b>',
         "audio_extracted": '<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>提取的音频 (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>下载自</b> @{bot_username}',
@@ -735,6 +746,7 @@ TRANSLATIONS = {
         "btn_lang": "Language | ভাষা",
         "btn_support": "সহায়তা",
         "btn_back": "মেনুতে ফিরে যান",
+        "done_msg": "✅ <b>সম্পন্ন হয়েছে! আপনার ভাষা সেট করা হয়েছে।</b>",
         "loading": '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>লোড হচ্ছে... অপেক্ষা করুন</b>',
         "download_success": '<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>ডাউনলোড করেছেন:</b> @{bot_username}\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>উপভোগ করুন!</b>',
         "audio_extracted": '<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>অডিও নিষ্কাশিত (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>ডাউনলোড করেছেন:</b> @{bot_username}',
@@ -789,6 +801,7 @@ TRANSLATIONS = {
         "btn_lang": "Language | Bahasa",
         "btn_support": "Bantuan",
         "btn_back": "Kembali",
+        "done_msg": "✅ <b>Selesai! Bahasa Anda telah disetel.</b>",
         "loading": '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>Memuat... Tunggu sebentar</b>',
         "download_success": '<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Diunduh dengan</b> @{bot_username}\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Selamat menikmati!</b>',
         "audio_extracted": '<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>Audio diekstrak (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Diunduh dengan</b> @{bot_username}',
@@ -843,6 +856,7 @@ TRANSLATIONS = {
         "btn_lang": "Language | Sprache",
         "btn_support": "Hilfe",
         "btn_back": "Zurück",
+        "done_msg": "✅ <b>Fertig! Ihre Sprache wurde eingestellt.</b>",
         "loading": '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>Laden... Bitte warten</b>',
         "download_success": '<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Heruntergeladen mit</b> @{bot_username}\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Viel Spaß!</b>',
         "audio_extracted": '<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>Extrahiertes Audio (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Heruntergeladen mit</b> @{bot_username}',
@@ -897,6 +911,7 @@ TRANSLATIONS = {
         "btn_lang": "Language | Мова",
         "btn_support": "Допомога",
         "btn_back": "Назад",
+        "done_msg": "✅ <b>Готово! Вашу мову встановлено.</b>",
         "loading": '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>Завантаження... Зачекайте</b>',
         "download_success": '<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Завантажено за допомогою</b> @{bot_username}\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Приємного перегляду!</b>',
         "audio_extracted": '<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>Витягнуте аудіо (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Завантажено через</b> @{bot_username}',
@@ -951,6 +966,7 @@ TRANSLATIONS = {
         "btn_lang": "Language | Dil",
         "btn_support": "Destek",
         "btn_back": "Geri",
+        "done_msg": "✅ <b>Tamamlandı! Diliniz ayarlandı.</b>",
         "loading": '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>Yükleniyor... Lütfen bekleyin</b>',
         "download_success": '<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>İndirildi:</b> @{bot_username}\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Keyfini çıkarın!</b>',
         "audio_extracted": '<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>Ses ayıklandı (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>İndirildi:</b> @{bot_username}',
@@ -1005,6 +1021,7 @@ TRANSLATIONS = {
         "btn_lang": "Language | 언어",
         "btn_support": "지원",
         "btn_back": "돌아가기",
+        "done_msg": "✅ <b>완료되었습니다! 언어가 설정되었습니다.</b>",
         "loading": '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>로딩 중... 잠시만요</b>',
         "download_success": '<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>다운로드 완료:</b> @{bot_username}\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>즐기세요!</b>',
         "audio_extracted": '<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>추출된 오디오 (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>다운로드 완료:</b> @{bot_username}',
@@ -1059,6 +1076,7 @@ TRANSLATIONS = {
         "btn_lang": "Language | Lingua",
         "btn_support": "Supporto",
         "btn_back": "Indietro",
+        "done_msg": "✅ <b>Fatto! La tua lingua è stata impostata.</b>",
         "loading": '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>Caricamento... Attendere</b>',
         "download_success": '<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Scaricato con</b> @{bot_username}\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Buona visione!</b>',
         "audio_extracted": '<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>Audio estratto (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Scaricato con</b> @{bot_username}',
@@ -1113,6 +1131,7 @@ TRANSLATIONS = {
         "btn_lang": "Language | Język",
         "btn_support": "Pomoc",
         "btn_back": "Wróć",
+        "done_msg": "✅ <b>Gotowe! Twój język został ustawiony.</b>",
         "loading": '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>Ładowanie... Proszę czekać</b>',
         "download_success": '<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Pobrano przez</b> @{bot_username}\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Miłego oglądania!</b>',
         "audio_extracted": '<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>Pobrany dźwięk (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Pobrano przez</b> @{bot_username}',
@@ -1167,6 +1186,7 @@ TRANSLATIONS = {
         "btn_lang": "Language | Ngôn ngữ",
         "btn_support": "Hỗ trợ",
         "btn_back": "Quay lại",
+        "done_msg": "✅ <b>Hoàn tất! Ngôn ngữ của bạn đã được đặt.</b>",
         "loading": '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>Đang tải... Vui lòng chờ</b>',
         "download_success": '<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Đã tải xuống bởi</b> @{bot_username}\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Tận hưởng nhé!</b>',
         "audio_extracted": '<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>Âm thanh đã trích xuất (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Đã tải xuống bởi</b> @{bot_username}',
@@ -1221,6 +1241,7 @@ TRANSLATIONS = {
         "btn_lang": "Language | Тіл",
         "btn_support": "Көмек",
         "btn_back": "Қайту",
+        "done_msg": "✅ <b>Дайын! Тіліңіз орнатылды.</b>",
         "loading": '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>Жүктелуде... Күте тұрыңыз</b>',
         "download_success": '<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Жүктеп алынды:</b> @{bot_username}\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Тамашалаңыз!</b>',
         "audio_extracted": '<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>Аудио (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Жүктеп алынды:</b> @{bot_username}',
@@ -1276,7 +1297,7 @@ def get_trans(user_id, key):
     return lang_dict.get(key, TRANSLATIONS["en"].get(key, TRANSLATIONS["am"].get(key, "")))
 
 # ==================================================
-# MAIN MENU KEYBOARD (WITH CUSTOM EMOJIS)
+# KEYBOARDS WITH LANGUAGE BUTTON
 # ==================================================
 
 def get_main_menu_keyboard(bot_username, user_id):
@@ -1437,7 +1458,7 @@ async def show_force_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
         '1️⃣ <tg-emoji emoji-id="5267442591548320083">📢</tg-emoji> '
         '<b>Join Channel የሚለውን ይጫኑ::</b>\n'
         '2️⃣ ከዚያ <tg-emoji emoji-id="5305749202997911340">✅</tg-emoji> '
-        '<b>I\'ve Joined የሚለውን ተጭነው የላኩትን ደግመው ይላኩ '
+        '<b>I\'ve Joined የሚለውን ተጭነው የላኩትን ደግመው ይላ库 '
         '<tg-emoji emoji-id="5217449524410199951">🙂</tg-emoji>::</b>'
     )
 
@@ -1460,15 +1481,21 @@ async def show_force_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
 # ==================================================
-# START & MENU COMMAND (FIRST CHOICE: LANGUAGE)
+# START & MENU COMMAND (LANGUAGE SELECTION FIRST)
 # ==================================================
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     record_user_activity(user_id)
 
-    bot_username = context.bot.username or "ads_poster1bot"
+    bot_username = context.bot.username or "mame_posts_bot"
     user_lang = get_user_language(user_id)
+
+    setup_keyboard = ReplyKeyboardMarkup(    
+        [["🏠 Menu"]],    
+        resize_keyboard=True,    
+        input_field_placeholder="Send link 🔗"    
+    )
 
     if not user_lang:
         await update.message.reply_text(
@@ -1477,11 +1504,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="HTML"
         )
     else:
-        setup_keyboard = ReplyKeyboardMarkup(    
-            [["🏠 Menu"]],    
-            resize_keyboard=True,    
-            input_field_placeholder="Send link 🔗"    
-        )
+        await update.message.reply_text(    
+            "<b> @ads_poster1bot !</b>",    
+            reply_markup=setup_keyboard,    
+            parse_mode="HTML"    
+        )    
         await update.message.reply_text(    
             get_trans(user_id, "welcome"),    
             reply_markup=get_main_menu_keyboard(bot_username, user_id),    
@@ -1637,7 +1664,7 @@ async def convert_video_to_audio(update: Update, context: ContextTypes.DEFAULT_T
         await asyncio.to_thread(subprocess.run, cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)    
 
         if os.path.exists(output_path):    
-            bot_username = context.bot.username or "ads_poster1bot"    
+            bot_username = context.bot.username or "mame_posts_bot"    
             share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Video%20to%20Audio%20Converter%20Bot!🔥"    
             keyboard_share = [[InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)]]    
             reply_markup_share = InlineKeyboardMarkup(keyboard_share)    
@@ -1692,15 +1719,7 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
         'concurrent_fragment_downloads': 5,
         'outtmpl': output_template,
         'merge_output_format': 'mp4',
-
-        'format': 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b',
-
-        'extractor_args': {
-            'youtube': {
-                'player_client': ['android', 'web']
-            }
-        },
-
+        'format': 'bestvideo+bestaudio/best',
         'http_headers': {
             'User-Agent': (
                 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
@@ -1712,9 +1731,15 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
         }
     }
 
-    if "likee" in url or "likee.video" in url:
+    if "youtube.com" in url or "youtu.be" in url:
+        opts['extractor_args'] = {
+            'youtube': {
+                'player_client': ['android', 'ios', 'web']
+            }
+        }
+        opts['format'] = 'b/bv*+ba/best'
+    elif "likee" in url or "likee.video" in url:
         opts['http_headers']['Referer'] = 'https://likee.video/'
-
     elif "vimeo.com" in url:
         opts['http_headers']['Referer'] = 'https://vimeo.com/'
 
@@ -1744,18 +1769,16 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
         parse_mode="HTML"    
     )    
 
-    bot_username = context.bot.username or "ads_poster1bot"    
+    bot_username = context.bot.username or "mame_posts_bot"    
     share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Downloader%20Bot!🔥"    
     reply_markup_share = InlineKeyboardMarkup([[InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)]])    
 
     url = clean_url(raw_url)    
 
-    # PINTEREST REAL PHOTO EXTRACTION    
     if "pinterest.com" in url or "pin.it" in url:    
         try:    
             headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}    
             res = requests.get(url, headers=headers, timeout=10)    
-                
             img_matches = re.findall(r'https://i\.pinimg\.com/(?:originals|736x)/[^\s"\'\>]+\.(?:jpg|png|jpeg|webp)', res.text)    
                 
             if img_matches:    
@@ -1860,7 +1883,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     data = query.data    
     user = query.from_user    
-    bot_username = context.bot.username or "ads_poster1bot"
+    bot_username = context.bot.username or "mame_posts_bot"
 
     if data.startswith("lang_"):
         lang_code = data.split("_")[1]
@@ -1872,44 +1895,19 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             input_field_placeholder="Send link 🔗"    
         )
         
-        # የቋንቋ ምርጫ የነበረውን መልዕክት እናጠፋዋለን (Delete)
         try:
             await query.message.delete()
         except Exception:
             pass
 
-        # ተጠቃሚው በመረጠው ቋንቋ Done የሚል መልዕክት እንልክልታለን
-        done_text = {
-            "am": "✅ <b>ተጠናቋል! ቋንቋዎ ተስተካክሏል።</b>",
-            "en": "✅ <b>Done! Your language has been set.</b>",
-            "ar": "✅ <b>تم! تم تعيين لغتك.</b>",
-            "ru": "✅ <b>Готово! Ваш язык установлен.</b>",
-            "fr": "✅ <b>Terminé ! Votre langue a été définie.</b>",
-            "es": "✅ <b>¡Listo! Tu idioma ha sido configurado.</b>",
-            "fa": "✅ <b>انجام شد! زبان شما تنظیم شد.</b>",
-            "hi": "✅ <b>हो गया! आपकी भाषा सेट कर दी गई है।</b>",
-            "uz": "✅ <b>Tayyor! Tilingiz o'rnatildi.</b>",
-            "pt": "✅ <b>Concluído! Seu idioma foi definido.</b>",
-            "zh": "✅ <b>完成！您的语言已设置。</b>",
-            "bn": "✅ <b>সম্পন্ন হয়েছে! আপনার ভাষা সেট করা হয়েছে।</b>",
-            "id": "✅ <b>Selesai! Bahasa Anda telah disetel.</b>",
-            "de": "✅ <b>Fertig! Ihre Sprache wurde eingestellt.</b>",
-            "uk": "✅ <b>Готово! Вашу мову встановлено.</b>",
-            "tr": "✅ <b>Tamamlandı! Diliniz ayarlandı.</b>",
-            "ko": "✅ <b>완료되었습니다! 언어가 설정되었습니다.</b>",
-            "it": "✅ <b>Fatto! La tua lingua è stata impostata.</b>",
-            "pl": "✅ <b>Gotowe! Twój język został ustawiony.</b>",
-            "vi": "✅ <b>Hoàn tất! Ngôn ngữ của bạn đã được đặt.</b>",
-            "kk": "✅ <b>Дайын! Тіліңіз орнатылды.</b>"
-        }.get(lang_code, "✅ <b>Done!</b>")
-
+        done_text = get_trans(user.id, "done_msg")
         await context.bot.send_message(
             chat_id=user.id,
             text=done_text,
+            reply_markup=setup_keyboard,
             parse_mode="HTML"
         )
 
-        # በመቀጠል ዋናውን ሜኑ እና በተኖቹን እንልክለታለን
         await context.bot.send_message(
             chat_id=user.id,
             text=get_trans(user.id, "welcome"),
@@ -1917,7 +1915,6 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="HTML"
         )
 
-    
     elif data == "cmd_change_lang":
         await query.edit_message_text(
             "<b>Please select your language / እባክዎ ቋንቋ ይምረጡ፦</b>",
