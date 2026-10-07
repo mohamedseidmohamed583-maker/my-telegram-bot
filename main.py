@@ -33,7 +33,6 @@ import yt_dlp
 
 COOKIES_ENV = os.environ.get("YOUTUBE_COOKIES")
 if COOKIES_ENV:
-    # \n ችግር እንዳይኖር አድርጎ ኩኪሱን መጻፍ
     formatted_cookies = COOKIES_ENV.replace("\\n", "\n")
     with open("cookies.txt", "w", encoding="utf-8") as f:
         f.write(formatted_cookies)
@@ -62,11 +61,9 @@ def keep_alive():
 # CONFIGURATION
 # ==================================================
 
-# TOKEN በ Render Environment Variables ብቻ ይነበባል
 TOKEN = os.environ.get("BOT_TOKEN")
 ADMIN_ID = int(os.environ.get("ADMIN_ID", 6753546651))
 
-# Force Join Channel
 FORCE_CHANNEL = "@mame_posts"
 FORCE_CHANNEL_LINK = "https://t.me/mame_posts"
 
@@ -277,7 +274,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )    
 
     await update.message.reply_text(    
-        " <b> @ads_poster1bot !</b>",    
+        "<b> @ads_poster1bot !</b>",    
         reply_markup=setup_keyboard,    
         parse_mode="HTML"    
     )    
@@ -501,17 +498,7 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
         'concurrent_fragment_downloads': 5,
         'outtmpl': output_template,
         'merge_output_format': 'mp4',
-
-        # ጓደኛህ የላከው ተለዋዋጭ ፎርማት (bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b)
-        'format': 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b',
-
-        # ጓደኛህ የላከው የ Player Client ማስተካከያ (android, web)
-        'extractor_args': {
-            'youtube': {
-                'player_client': ['android', 'web']
-            }
-        },
-
+        'format': 'bestvideo+bestaudio/best',
         'http_headers': {
             'User-Agent': (
                 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
@@ -523,11 +510,23 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
         }
     }
 
-    if "likee" in url or "likee.video" in url:
+    if "youtube.com" in url or "youtu.be" in url:
+        opts['extractor_args'] = {
+            'youtube': {
+                'player_client': ['android', 'ios', 'web']
+            }
+        }
+        opts['format'] = 'b/bv*+ba/best'
+    elif "tiktok.com" in url or "instagram.com" in url:
+        opts['format'] = 'bestvideo+bestaudio/best'
+    elif "twitter.com" in url or "x.com" in url:
+        opts['format'] = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'
+    elif "likee" in url or "likee.video" in url:
         opts['http_headers']['Referer'] = 'https://likee.video/'
-
+        opts['format'] = 'best'
     elif "vimeo.com" in url:
         opts['http_headers']['Referer'] = 'https://vimeo.com/'
+        opts['format'] = 'bestvideo+bestaudio/best'
 
     if os.path.exists('cookies.txt'):
         opts['cookiefile'] = 'cookies.txt'
@@ -555,17 +554,15 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     )    
 
     bot_username = context.bot.username or "mame_posts_bot"    
-    share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Downloader%20Bot!🔥"    
+    share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Video%20to%20Audio%20Converter%20Bot!🔥"    
     reply_markup_share = InlineKeyboardMarkup([[InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)]])    
 
     url = clean_url(raw_url)    
 
-    # PINTEREST REAL PHOTO EXTRACTION    
     if "pinterest.com" in url or "pin.it" in url:    
         try:    
             headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}    
             res = requests.get(url, headers=headers, timeout=10)    
-                
             img_matches = re.findall(r'https://i\.pinimg\.com/(?:originals|736x)/[^\s"\'\>]+\.(?:jpg|png|jpeg|webp)', res.text)    
                 
             if img_matches:    
@@ -614,7 +611,7 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
                     with open(actual_file, 'rb') as vf:    
                         await update.message.reply_video(    
                             video=vf,    
-                            caption=f'<tg-emoji emoji-id="5305762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy!</b>',    
+                            caption=f'<tg-emoji emoji-id="530762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy!</b>',    
                             reply_markup=reply_markup_share,    
                             parse_mode="HTML"    
                         )    
@@ -712,7 +709,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 
             f'<tg-emoji emoji-id="5307979128543158051">🤖</tg-emoji> <b>የቦቱ አጠቃላይ መረጃ፦</b>\n'    
             f'<tg-emoji emoji-id="5465638272648617243">✈️</tg-emoji> <b>ሁኔታ:</b> Active <tg-emoji emoji-id="5307976826440687996">🔥</tg-emoji>\n'    
-            f'<tg-emoji emoji-id="5465638272648617243">✈</tg-emoji> <b>ጠቅላላ Users:</b> <code>{total_users}</code> <tg-emoji emoji-id="5305466057278923962">👥</tg-emoji>'    
+            f'<tg-emoji emoji-id="5465638272648617243">✈️</tg-emoji> <b>ጠቅላላ Users:</b> <code>{total_users}</code> <tg-emoji emoji-id="5305466057278923962">👥</tg-emoji>'    
         )    
             
         await query.edit_message_text(    
