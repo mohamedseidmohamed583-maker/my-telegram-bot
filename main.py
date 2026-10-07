@@ -147,43 +147,43 @@ TRANSLATIONS = {
         "video_converted": '<tg-emoji emoji-id="5305534793935527938">🎵</tg-emoji> <b>ከቪዲዮ የተቀየረው (Extracted Audio)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Converted with</b> @{bot_username} & @mame_posts',
         "size_limit": "⚠️ <b>ቪዲዮው ከ 50MB በላይ ስለሆነ በቴሌግራም መላክ አይቻልም!</b>",
         "fail_download": "💔 <b> የፈለጉትን File ማግኘት አልቻልኩም!</b>\n\nእባክዎ የላኩት ሊንክ private አለመሆኑን አረጋግጠው እንደገና ይሞክሩ።",
-        "photo_download": "📸 <b>Downloaded Photo</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Downloaded with</b> @{bot_username}",
+        "photo_download": "📸 <b>Downloaded Photo</b>\n\n<tg-emoji emoji-id=\"5260463209562776385\">✅</tg-emoji> <b>Downloaded with</b> @{bot_username}",
         "welcome": (
-            f'Hello <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
-            f'<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>My options (ከሁሉም Social Media ላይ video, photo እና audio ማውረድና መቀየር ይችላሉ!) :</b>\n\n'
-            f'<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | <b>Tiktok & Likee: videos & photos</b>\n'
-            f'<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | <b>Pinterest & Instagram: reels, photos & stories</b>\n'
-            f'<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | <b>YouTube: videos & music (Full & Shorts)</b>\n'
-            f'<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | <b>Twitter (X): videos & voice</b>\n'
-            f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>Facebook, Reddit, Twitch, Vimeo & Others</b>\n'
-            f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Video to Audio Converter: ቪዲዮ ወደ ኦዲዮ መቀየር ይችላሉ! </b>\n\n'
-            f'<b>And others Social Media | ሌሎችንም ሶሻል ሚድያ ማውረድ ይችላሉ!:</b> <tg-emoji emoji-id="5305466057278923962">📥</tg-emoji>'
+            'Hello <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
+            '<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>My options (ከሁሉም Social Media ላይ video, photo እና audio ማውረድና መቀየር ይችላሉ!) :</b>\n\n'
+            '<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | <b>Tiktok & Likee: videos & photos</b>\n'
+            '<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | <b>Pinterest & Instagram: reels, photos & stories</b>\n'
+            '<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | <b>YouTube: videos & music (Full & Shorts)</b>\n'
+            '<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | <b>Twitter (X): videos & voice</b>\n'
+            '<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>Facebook, Reddit, Twitch, Vimeo & Others</b>\n'
+            '<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Video to Audio Converter: ቪዲዮ ወደ ኦዲዮ መቀየር ይችላሉ! </b>\n\n'
+            '<b>And others Social Media | ሌሎችንም ሶሻል ሚድያ ማውረድ ይችላሉ!:</b> <tg-emoji emoji-id="5305466057278923962">📥</tg-emoji>'
         ),
         "price": (
-            f'<tg-emoji emoji-id="5447458260200214425">💰</tg-emoji> <b>የማስታወቂያ ዋጋዎች</b>\n\n'
-            f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 12 Hours — <b>በስምምነት ETB</b>\n'
-            f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 24 Hours — <b>500 ETB</b>\n'
-            f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 48 Hours — <b>700 ETB</b>\n\n'
-            f'የፈለጉትን ምርጫ አሳውቀው የክፍያ አማራጮችን (payment method) ይጎብኙ <tg-emoji emoji-id="5463249828450424568">🤝</tg-emoji>'
+            '<tg-emoji emoji-id="5447458260200214425">💰</tg-emoji> <b>የማስታወቂያ ዋጋዎች</b>\n\n'
+            '<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 12 Hours — <b>በስምምነት ETB</b>\n'
+            '<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 24 Hours — <b>500 ETB</b>\n'
+            '<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 48 Hours — <b>700 ETB</b>\n\n'
+            'የፈለጉትን ምርጫ አሳውቀው የክፍያ አማራጮችን (payment method) ይጎብኙ <tg-emoji emoji-id="5463249828450424568">🤝</tg-emoji>'
         ),
         "order": (
-            f'<tg-emoji emoji-id="5197304993920616826">📢</tg-emoji> <b> @mame_posts ቻናል ላይ ማስታወቂያ ለማሰራት</b>\n\n'
-            f'<tg-emoji emoji-id="5305634553140912174">👇</tg-emoji> እባክዎ ማስታወቂያ ማሰራት የሚፈልጉትን Post ከስር ልከው የማስታወቂያ ዋጋዎችን ይመልከቱ <tg-emoji emoji-id="5305739801314501775">ℹ️</tg-emoji>'
+            '<tg-emoji emoji-id="5197304993920616826">📢</tg-emoji> <b> @mame_posts ቻናል ላይ ማስታወቂያ ለማሰራት</b>\n\n'
+            '<tg-emoji emoji-id="5305634553140912174">👇</tg-emoji> እባክዎ ማስታወቂያ ማሰራት የሚፈልጉትን Post ከስር ልከው የማስታወቂያ ዋጋዎችን ይመልከቱ <tg-emoji emoji-id="5305739801314501775">ℹ️</tg-emoji>'
         ),
         "payment": (
-            f'<tg-emoji emoji-id="5186349709169525403">💳</tg-emoji> <b>Payment Method</b>\n\n'
-            f'<tg-emoji emoji-id="5961054379350955385">🏦</tg-emoji> <b>ንግድ ባንክ (CBE)</b>\n'
-            f'<code>1000528274394</code>\n\n'
-            f'Mohammed Seid\n\n'
-            f'<tg-emoji emoji-id="5960632377339285724">📱</tg-emoji> <b>ቴሌ ብር (TELE BIRR)</b>\n'
-            f'<code>+251963266849</code>\n\n'
-            f'<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>ክፍያውን ሲፈጽሙ ስክሪን ሹቱን ከስር ይላኩ!</b>'
+            '<tg-emoji emoji-id="5186349709169525403">💳</tg-emoji> <b>Payment Method</b>\n\n'
+            '<tg-emoji emoji-id="5961054379350955385">🏦</tg-emoji> <b>ንግድ ባንክ (CBE)</b>\n'
+            '<code>1000528274394</code>\n\n'
+            'Mohammed Seid\n\n'
+            '<tg-emoji emoji-id="5960632377339285724">📱</tg-emoji> <b>ቴሌ ብር (TELE BIRR)</b>\n'
+            '<code>+251963266849</code>\n\n'
+            '<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>ክፍያውን ሲፈጽሙ ስክሪን ሹቱን ከስር ይላኩ!</b>'
         ),
         "support": (
-            f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
-            f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ/ፎቶ ለማውረድ:</b> የ Tiktok, Instagram, Facebook, Reddit, Twitch, Vimeo, SoundCloud, Threads እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
-            f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Video to Audio:</b> ማናቸውንም ቪዲዮ ከስልክዎ ይላኩ፣ ወደ MP3 Audio ቀይሮ ይልክልዎታል።\n\n'
-            f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።'
+            '<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
+            '<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ/ፎቶ ለማውረድ:</b> የ Tiktok, Instagram, Facebook, Reddit, Twitch, Vimeo, SoundCloud, Threads እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
+            '<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Video to Audio:</b> ማናቸውንም ቪዲዮ ከስልክዎ ይላኩ፣ ወደ MP3 Audio ቀይሮ ይልክልዎታል።\n\n'
+            '<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።'
         )
     },
     "en": {
@@ -201,43 +201,43 @@ TRANSLATIONS = {
         "video_converted": '<tg-emoji emoji-id="5305534793935527938">🎵</tg-emoji> <b>Extracted Audio</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Converted with</b> @{bot_username}',
         "size_limit": "⚠️ <b>File is larger than 50MB! Telegram limit exceeded.</b>",
         "fail_download": "💔 <b>Could not download the file! Please check if link is public.</b>",
-        "photo_download": "📸 <b>Downloaded Photo</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Downloaded with</b> @{bot_username}",
+        "photo_download": "📸 <b>Downloaded Photo</b>\n\n<tg-emoji emoji-id=\"5260463209562776385\">✅</tg-emoji> <b>Downloaded with</b> @{bot_username}",
         "welcome": (
-            f'Hello <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
-            f'<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>My options (You can download video, photo, and audio from all Social Media):</b>\n\n'
-            f'<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | <b>Tiktok & Likee: videos & photos</b>\n'
-            f'<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | <b>Pinterest & Instagram: reels, photos & stories</b>\n'
-            f'<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | <b>YouTube: videos & music (Full & Shorts)</b>\n'
-            f'<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | <b>Twitter (X): videos & voice</b>\n'
-            f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>Facebook, Reddit, Twitch, Vimeo & Others</b>\n'
-            f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Video to Audio Converter: Convert video to audio!</b>\n\n'
-            f'<b>And other Social Media:</b> <tg-emoji emoji-id="5305466057278923962">📥</tg-emoji>'
+            'Hello <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
+            '<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>My options (You can download video, photo, and audio from all Social Media):</b>\n\n'
+            '<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | <b>Tiktok & Likee: videos & photos</b>\n'
+            '<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | <b>Pinterest & Instagram: reels, photos & stories</b>\n'
+            '<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | <b>YouTube: videos & music (Full & Shorts)</b>\n'
+            '<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | <b>Twitter (X): videos & voice</b>\n'
+            '<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>Facebook, Reddit, Twitch, Vimeo & Others</b>\n'
+            '<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Video to Audio Converter: Convert video to audio!</b>\n\n'
+            '<b>And other Social Media:</b> <tg-emoji emoji-id="5305466057278923962">📥</tg-emoji>'
         ),
         "price": (
-            f'<tg-emoji emoji-id="5447458260200214425">💰</tg-emoji> <b>Advertising Rates</b>\n\n'
-            f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 12 Hours — <b>Negotiable ETB</b>\n'
-            f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 24 Hours — <b>500 ETB</b>\n'
-            f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 48 Hours — <b>700 ETB</b>\n\n'
-            f'Choose your plan and proceed to Payment Method <tg-emoji emoji-id="5463249828450424568">🤝</tg-emoji>'
+            '<tg-emoji emoji-id="5447458260200214425">💰</tg-emoji> <b>Advertising Rates</b>\n\n'
+            '<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 12 Hours — <b>Negotiable ETB</b>\n'
+            '<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 24 Hours — <b>500 ETB</b>\n'
+            '<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 48 Hours — <b>700 ETB</b>\n\n'
+            'Choose your plan and proceed to Payment Method <tg-emoji emoji-id="5463249828450424568">🤝</tg-emoji>'
         ),
         "order": (
-            f'<tg-emoji emoji-id="5197304993920616826">📢</tg-emoji> <b>To Advertise on @mame_posts Channel</b>\n\n'
-            f'<tg-emoji emoji-id="5305634553140912174">👇</tg-emoji> Please send your promo post below and view our rates <tg-emoji emoji-id="5305739801314501775">ℹ️</tg-emoji>'
+            '<tg-emoji emoji-id="5197304993920616826">📢</tg-emoji> <b>To Advertise on @mame_posts Channel</b>\n\n'
+            '<tg-emoji emoji-id="5305634553140912174">👇</tg-emoji> Please send your promo post below and view our rates <tg-emoji emoji-id="5305739801314501775">ℹ️</tg-emoji>'
         ),
         "payment": (
-            f'<tg-emoji emoji-id="5186349709169525403">💳</tg-emoji> <b>Payment Method</b>\n\n'
-            f'<tg-emoji emoji-id="5961054379350955385">🏦</tg-emoji> <b>Commercial Bank of Ethiopia (CBE)</b>\n'
-            f'<code>1000528274394</code>\n\n'
-            f'Mohammed Seid\n\n'
-            f'<tg-emoji emoji-id="5960632377339285724">📱</tg-emoji> <b>TELEBIRR</b>\n'
-            f'<code>+251963266849</code>\n\n'
-            f'<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Please send receipt screenshot after payment!</b>'
+            '<tg-emoji emoji-id="5186349709169525403">💳</tg-emoji> <b>Payment Method</b>\n\n'
+            '<tg-emoji emoji-id="5961054379350955385">🏦</tg-emoji> <b>Commercial Bank of Ethiopia (CBE)</b>\n'
+            '<code>1000528274394</code>\n\n'
+            'Mohammed Seid\n\n'
+            '<tg-emoji emoji-id="5960632377339285724">📱</tg-emoji> <b>TELEBIRR</b>\n'
+            '<code>+251963266849</code>\n\n'
+            '<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Please send receipt screenshot after payment!</b>'
         ),
         "support": (
-            f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
-            f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>To Download Video/Photo:</b> Send links from Tiktok, Instagram, Facebook, Reddit, Twitch, Vimeo, SoundCloud, Threads, etc.\n\n'
-            f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Video to Audio:</b> Send any video to convert it to MP3 audio.\n\n'
-            f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> You can write messages here to reach out to the Admin.'
+            '<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
+            '<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>To Download Video/Photo:</b> Send links from Tiktok, Instagram, Facebook, Reddit, Twitch, Vimeo, SoundCloud, Threads, etc.\n\n'
+            '<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Video to Audio:</b> Send any video to convert it to MP3 audio.\n\n'
+            '<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> You can write messages here to reach out to the Admin.'
         )
     },
     "ar": {
@@ -255,50 +255,49 @@ TRANSLATIONS = {
         "video_converted": '<tg-emoji emoji-id="5305534793935527938">🎵</tg-emoji> <b>الصوت المستخرج</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>تم التحويل بواسطة</b> @{bot_username}',
         "size_limit": "⚠️ <b>حجم الملف أكبر من 50 ميغابايت! تجاوز حد التليجرام.</b>",
         "fail_download": "💔 <b>تعذر تحميل الملف! يرجى التأكد من أن الرابط عام.</b>",
-        "photo_download": "📸 <b>الصورة المحملة</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>تم التحميل بواسطة</b> @{bot_username}",
+        "photo_download": "📸 <b>الصورة المحملة</b>\n\n<tg-emoji emoji-id=\"5260463209562776385\">✅</tg-emoji> <b>تم التحميل بواسطة</b> @{bot_username}",
         "welcome": (
-            f'مرحباً <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
-            f'<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>خياراتي (يمكنك تحميل الفيديوهات والصور والصوتيات من جميع وسائل التواصل الاجتماعي):</b>\n\n'
-            f'<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | <b>تيك توك ولايكي: فيديوهات وصور</b>\n'
-            f'<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | <b>بينتريست وإنستغرام: ريلز وصور والستوري</b>\n'
-            f'<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | <b>يوتيوب: فيديوهات وموسيقى</b>\n'
-            f'<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | <b>تويتر (X): فيديوهات وصوت</b>\n'
-            f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>فيسبوك وريديت وغيرها</b>\n'
-            f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>محول الفيديو إلى صوت</b>\n\n'
-            f'<b>وغيرها من وسائل التواصل الاجتماعي:</b> <tg-emoji emoji-id="5305466057278923962">📥</tg-emoji>'
+            'مرحباً <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
+            '<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>خياراتي (يمكنك تحميل الفيديوهات والصور والصوتيات من جميع وسائل التواصل الاجتماعي):</b>\n\n'
+            '<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | <b>تيك توك ولايكي: فيديوهات وصور</b>\n'
+            '<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | <b>بينتريست وإنستغرام: ريلز وصور والستوري</b>\n'
+            '<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | <b>يوتيوب: فيديوهات وموسيقى</b>\n'
+            '<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | <b>تويتر (X): فيديوهات وصوت</b>\n'
+            '<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>فيسبوك وريديت وغيرها</b>\n'
+            '<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>محول الفيديو إلى صوت</b>\n\n'
+            '<b>وغيرها من وسائل التواصل الاجتماعي:</b> <tg-emoji emoji-id="5305466057278923962">📥</tg-emoji>'
         ),
         "price": (
-            f'<tg-emoji emoji-id="5447458260200214425">💰</tg-emoji> <b>أسعار الإعلانات</b>\n\n'
-            f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 12 ساعة — <b>حسب الاتفاق</b>\n'
-            f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 24 ساعة — <b>500 ETB</b>\n'
-            f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 48 ساعة — <b>700 ETB</b>\n\n'
-            f'اختر الخطة وراجع طرق الدفع <tg-emoji emoji-id="5463249828450424568">🤝</tg-emoji>'
+            '<tg-emoji emoji-id="5447458260200214425">💰</tg-emoji> <b>أسعار الإعلانات</b>\n\n'
+            '<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 12 ساعة — <b>حسب الاتفاق</b>\n'
+            '<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 24 ساعة — <b>500 ETB</b>\n'
+            '<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 48 ساعة — <b>700 ETB</b>\n\n'
+            'اختر الخطة وراجع طرق الدفع <tg-emoji emoji-id="5463249828450424568">🤝</tg-emoji>'
         ),
         "order": (
-            f'<tg-emoji emoji-id="5197304993920616826">📢</tg-emoji> <b>للإعلان على قناة @mame_posts</b>\n\n'
-            f'<tg-emoji emoji-id="5305634553140912174">👇</tg-emoji> يرجى إرسال الإعلان المطلوب وتحقق من الأسعار <tg-emoji emoji-id="5305739801314501775">ℹ️</tg-emoji>'
+            '<tg-emoji emoji-id="5197304993920616826">📢</tg-emoji> <b>للإعلان على قناة @mame_posts</b>\n\n'
+            '<tg-emoji emoji-id="5305634553140912174">👇</tg-emoji> يرجى إرسال الإعلان المطلوب وتحقق من الأسعار <tg-emoji emoji-id="5305739801314501775">ℹ️</tg-emoji>'
         ),
         "payment": (
-            f'<tg-emoji emoji-id="5186349709169525403">💳</tg-emoji> <b>طرق الدفع</b>\n\n'
-            f'<tg-emoji emoji-id="5961054379350955385">🏦</tg-emoji> <b>البنك التجاري الإثيوبي (CBE)</b>\n'
-            f'<code>1000528274394</code>\n\n'
-            f'Mohammed Seid\n\n'
-            f'<tg-emoji emoji-id="5960632377339285724">📱</tg-emoji> <b>تليبر (TELEBIRR)</b>\n'
-            f'<code>+251963266849</code>\n\n'
-            f'<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>يرجى إرسال لقطة الشاشة بعد الإتمام!</b>'
+            '<tg-emoji emoji-id="5186349709169525403">💳</tg-emoji> <b>طرق الدفع</b>\n\n'
+            '<tg-emoji emoji-id="5961054379350955385">🏦</tg-emoji> <b>البنك التجاري الإثيوبي (CBE)</b>\n'
+            '<code>1000528274394</code>\n\n'
+            'Mohammed Seid\n\n'
+            '<tg-emoji emoji-id="5960632377339285724">📱</tg-emoji> <b>تليبر (TELEBIRR)</b>\n'
+            '<code>+251963266849</code>\n\n'
+            '<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>يرجى إرسال لقطة الشاشة بعد الإتمام!</b>'
         ),
         "support": (
-            f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>الدعم والتعليمات</b>\n\n'
-            f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>للتحميل:</b> أرسل الروابط من تيك توك، إنستغرام، يوتيوب، فيسبوك وغيرها.\n\n'
-            f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>تحويل الفيديو إلى صوت:</b> أرسل أي فيديو لتحويله إلى MP3.\n\n'
-            f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> يمكنك كتابة رسالتك هنا للتواصل مع الأدمن.'
+            '<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>الدعم والتعليمات</b>\n\n'
+            '<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>للتحميل:</b> أرسل الروابط من تيك توك، إنستغرام، يوتيوب، فيسبوك وغيرها.\n\n'
+            '<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>تحويل الفيديو إلى صوت:</b> أرسل أي فيديو لتحويله إلى MP3.\n\n'
+            '<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> يمكنك كتابة رسالتك هنا للتواصل مع الأدمن.'
         )
     }
 }
 
 def get_trans(user_id, key):
     lang = get_user_language(user_id)
-    # ለሌሎች ቋንቋዎች የእንግሊዘኛ Default ይሆናል
     return TRANSLATIONS.get(lang, TRANSLATIONS.get("en", TRANSLATIONS["am"])).get(key, TRANSLATIONS["am"].get(key, ""))
 
 # ==================================================
