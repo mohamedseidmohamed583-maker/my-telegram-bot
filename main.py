@@ -33,6 +33,7 @@ import yt_dlp
 
 COOKIES_ENV = os.environ.get("YOUTUBE_COOKIES")
 if COOKIES_ENV:
+    # \n ችግር እንዳይኖር አድርጎ ኩኪሱን መጻፍ
     formatted_cookies = COOKIES_ENV.replace("\\n", "\n")
     with open("cookies.txt", "w", encoding="utf-8") as f:
         f.write(formatted_cookies)
@@ -61,9 +62,11 @@ def keep_alive():
 # CONFIGURATION
 # ==================================================
 
+# TOKEN በ Render Environment Variables ብቻ ይነበባል
 TOKEN = os.environ.get("BOT_TOKEN")
 ADMIN_ID = int(os.environ.get("ADMIN_ID", 6753546651))
 
+# Force Join Channel
 FORCE_CHANNEL = "@mame_posts"
 FORCE_CHANNEL_LINK = "https://t.me/mame_posts"
 
@@ -96,27 +99,13 @@ def record_user_activity(user_id):
     if uid_str not in data:    
         data[uid_str] = {    
             "msg_count": 0,    
-            "started": True,
-            "lang": "am"
+            "started": True    
         }    
 
     data[uid_str]["msg_count"] = data[uid_str].get("msg_count", 0) + 1    
     data[uid_str]["started"] = True    
 
     save_data(data)
-
-def set_user_language(user_id, lang_code):
-    data = load_data()
-    uid_str = str(user_id)
-    if uid_str not in data:
-        data[uid_str] = {"msg_count": 1, "started": True, "lang": lang_code}
-    else:
-        data[uid_str]["lang"] = lang_code
-    save_data(data)
-
-def get_user_language(user_id):
-    data = load_data()
-    return data.get(str(user_id), {}).get("lang", "am")
 
 def get_user_stats(user_id):
     data = load_data()
@@ -164,11 +153,6 @@ def get_main_menu_keyboard(bot_username):
                 text="My Status & Stats",
                 icon_custom_emoji_id="5431577498364158238",
                 callback_data="cmd_status"
-            ),
-            InlineKeyboardButton(
-                text="Change language",
-                icon_custom_emoji_id="5431577498364158238",
-                callback_data="cmd_change_lang"
             )
         ],
         [
@@ -180,23 +164,6 @@ def get_main_menu_keyboard(bot_username):
         ]
     ]
 
-    return InlineKeyboardMarkup(keyboard)
-
-def get_language_keyboard():
-    keyboard = [
-        [InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru"), InlineKeyboardButton("🇬🇧 English", callback_data="lang_en")],
-        [InlineKeyboardButton("🇫🇷 Français", callback_data="lang_fr"), InlineKeyboardButton("🇪🇸 Español", callback_data="lang_es")],
-        [InlineKeyboardButton("🇮🇷 ایران", callback_data="lang_fa"), InlineKeyboardButton("🇮🇳 भारत", callback_data="lang_hi")],
-        [InlineKeyboardButton("🇺🇿 O'zbek", callback_data="lang_uz"), InlineKeyboardButton("🇵🇹 Português", callback_data="lang_pt")],
-        [InlineKeyboardButton("🇨🇳 中文", callback_data="lang_zh"), InlineKeyboardButton("🇸🇦 العربية", callback_data="lang_ar")],
-        [InlineKeyboardButton("🇧🇩 বাংলা", callback_data="lang_bn"), InlineKeyboardButton("🇮🇩 Indonesia", callback_data="lang_id")],
-        [InlineKeyboardButton("🇩🇪 Deutsch", callback_data="lang_de"), InlineKeyboardButton("🇺🇦 Українська", callback_data="lang_uk")],
-        [InlineKeyboardButton("🇹🇷 Türkçe", callback_data="lang_tr"), InlineKeyboardButton("🇰🇷 한국어", callback_data="lang_ko")],
-        [InlineKeyboardButton("🇮🇹 Italiano", callback_data="lang_it"), InlineKeyboardButton("🇵🇱 Polski", callback_data="lang_pl")],
-        [InlineKeyboardButton("🇻🇳 Tiếng Việt", callback_data="lang_vi"), InlineKeyboardButton("🇰🇿 Қазақша", callback_data="lang_kk")],
-        [InlineKeyboardButton("🇪🇹 አማርኛ", callback_data="lang_am")],
-        [InlineKeyboardButton("← Back", callback_data="cmd_back")]
-    ]
     return InlineKeyboardMarkup(keyboard)
 
 def get_back_keyboard():
@@ -284,44 +251,7 @@ async def show_force_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # START & MENU COMMAND
 # ==================================================
 
-def get_welcome_text(lang="am"):
-    if lang == "en":
-        return (
-            f'Hello <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
-            f'<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>My options (You can download video, photo, and audio from all Social Media):</b>\n\n'
-            f'<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | <b>Tiktok & Likee: videos & photos</b>\n'
-            f'<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | <b>Pinterest & Instagram: reels, photos & stories</b>\n'
-            f'<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | <b>YouTube: videos & music (Full & Shorts)</b>\n'
-            f'<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | <b>Twitter (X): videos & voice</b>\n'
-            f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>Facebook, Reddit, Twitch, Vimeo & Others</b>\n'
-            f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Video to Audio Converter: Convert video to audio!</b>\n\n'
-            f'<b>And other Social Media:</b> <tg-emoji emoji-id="5305466057278923962">📥</tg-emoji>'
-        )
-    elif lang == "ru":
-        return (
-            f'Привет <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
-            f'<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>Мои возможности (Скачивайте видео, фото и аудио из всех соцсетей):</b>\n\n'
-            f'<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | <b>Tiktok & Likee: видео и фото</b>\n'
-            f'<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | <b>Pinterest & Instagram: reels, фото и истории</b>\n'
-            f'<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | <b>YouTube: видео и музыка</b>\n'
-            f'<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | <b>Twitter (X): видео и голосовые</b>\n'
-            f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>Facebook, Reddit, Twitch, Vimeo и другие</b>\n'
-            f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Конвертер видео в аудио</b>\n\n'
-            f'<b>И другие соцсети:</b> <tg-emoji emoji-id="5305466057278923962">📥</tg-emoji>'
-        )
-    elif lang == "ar":
-        return (
-            f'مرحباً <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
-            f'<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>خياراتي (يمكنك تحميل الفيديوهات والصور والصوتيات من جميع وسائل التواصل الاجتماعي):</b>\n\n'
-            f'<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | <b>تيك توك ولايكي: فيديوهات وصور</b>\n'
-            f'<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | <b>بينتريست وإنستغرام: ريلز وصور والستوري</b>\n'
-            f'<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | <b>يوتيوب: فيديوهات وموسيقى</b>\n'
-            f'<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | <b>تويتر (X): فيديوهات وصوت</b>\n'
-            f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>فيسبوك وريديت وغيرها</b>\n'
-            f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>محول الفيديو إلى صوت</b>\n\n'
-            f'<b>وغيرها من وسائل التواصل الاجتماعي:</b> <tg-emoji emoji-id="5305466057278923962">📥</tg-emoji>'
-        )
-
+def get_welcome_text():
     return (
         f'Hello <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
         f'<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>My options (ከሁሉም Social Media ላይ video, photo እና audio ማውረድና መቀየር ይችላሉ!) :</b>\n\n'
@@ -337,7 +267,6 @@ def get_welcome_text(lang="am"):
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     record_user_activity(user_id)
-    lang = get_user_language(user_id)
 
     bot_username = context.bot.username or "mame_posts_bot"    
         
@@ -354,7 +283,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )    
 
     await update.message.reply_text(    
-        get_welcome_text(lang),    
+        get_welcome_text(),    
         reply_markup=get_main_menu_keyboard(bot_username),    
         parse_mode="HTML"    
     )
@@ -573,8 +502,10 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
         'outtmpl': output_template,
         'merge_output_format': 'mp4',
 
+        # ጓደኛህ የላከው ተለዋዋጭ ፎርማት (bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b)
         'format': 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b',
 
+        # ጓደኛህ የላከው የ Player Client ማስተካከያ (android, web)
         'extractor_args': {
             'youtube': {
                 'player_client': ['android', 'web']
@@ -740,28 +671,10 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = query.data    
     user = query.from_user    
 
-    if data.startswith("lang_"):
-        lang_code = data.split("_")[1]
-        set_user_language(user.id, lang_code)
-        bot_username = context.bot.username or "mame_posts_bot"
-        await query.edit_message_text(
-            get_welcome_text(lang_code),
-            reply_markup=get_main_menu_keyboard(bot_username),
-            parse_mode="HTML"
-        )
-
-    elif data == "cmd_change_lang":
-        await query.edit_message_text(
-            "<b>Please select your language / እባክዎ ቋንቋ ይምረጡ፦</b>",
-            reply_markup=get_language_keyboard(),
-            parse_mode="HTML"
-        )
-
-    elif data == "cmd_back":    
+    if data == "cmd_back":    
         bot_username = context.bot.username or "mame_posts_bot"    
-        lang = get_user_language(user.id)
         await query.edit_message_text(    
-            get_welcome_text(lang),    
+            get_welcome_text(),    
             reply_markup=get_main_menu_keyboard(bot_username),    
             parse_mode="HTML"    
         )    
@@ -799,7 +712,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 
             f'<tg-emoji emoji-id="5307979128543158051">🤖</tg-emoji> <b>የቦቱ አጠቃላይ መረጃ፦</b>\n'    
             f'<tg-emoji emoji-id="5465638272648617243">✈️</tg-emoji> <b>ሁኔታ:</b> Active <tg-emoji emoji-id="5307976826440687996">🔥</tg-emoji>\n'    
-            f'<tg-emoji emoji-id="5465638272648617243">✈️</tg-emoji> <b>ጠቅላላ Users:</b> <code>{total_users}</code> <tg-emoji emoji-id="5305466057278923962">👥</tg-emoji>'    
+            f'<tg-emoji emoji-id="5465638272648617243">✈</tg-emoji> <b>ጠቅላላ Users:</b> <code>{total_users}</code> <tg-emoji emoji-id="5305466057278923962">👥</tg-emoji>'    
         )    
             
         await query.edit_message_text(    
@@ -1003,7 +916,7 @@ def main():
     app.add_handler(CommandHandler("broadcast", broadcast_command))    
 
     app.add_handler(CallbackQueryHandler(check_join, pattern="^check_join$"))    
-    app.add_handler(CallbackQueryHandler(button_callback, pattern="^(cmd_|lang_)"))    
+    app.add_handler(CallbackQueryHandler(button_callback, pattern="^cmd_"))    
         
     admin_filter = filters.User(user_id=ADMIN_ID) & filters.REPLY & ~filters.COMMAND    
     app.add_handler(MessageHandler(admin_filter, admin_reply))    
