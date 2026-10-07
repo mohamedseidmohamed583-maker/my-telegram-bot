@@ -271,16 +271,18 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         input_field_placeholder="Send link 🔗"    
     )    
 
-    await update.message.reply_text(    
-        "<b> @ads_poster1bot !</b>",    
-        reply_markup=setup_keyboard,    
-        parse_mode="HTML"    
-    )    
-
+    # 1. መጀመሪያ ዌልካም ቴክስቱን እና ኢንላይን በተኖቹን እንልካለን
     await update.message.reply_text(    
         get_welcome_text(),    
         reply_markup=get_main_menu_keyboard(bot_username),    
         parse_mode="HTML"    
+    )
+
+    # 2. በመቀጠል ከታች የሚታየውን የ "🏠 Menu" ኪቦርድ በተን እንልካለን
+    await update.message.reply_text(
+        "👇 <b>ከታች ካሉት አማራጮች ይምረጡ፦</b>",
+        reply_markup=setup_keyboard,
+        parse_mode="HTML"
     )
 
 # ==================================================
@@ -895,7 +897,7 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
 # MAIN EXECUTION
 # ==================================================
 
-def main():
+def main():    
     keep_alive()
 
     app = ApplicationBuilder().token(TOKEN).post_init(post_init).build()    
