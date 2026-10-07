@@ -128,7 +128,7 @@ def get_user_stats(user_id):
     return total_users, user_msg_count
 
 # ==================================================
-# COMPLETE MULTI-LANGUAGE TRANSLATIONS
+# TRANSLATIONS DICTIONARY
 # ==================================================
 
 TRANSLATIONS = {
@@ -138,7 +138,7 @@ TRANSLATIONS = {
         "btn_price": "Price | ዋጋ",
         "btn_payment": "Payment Method",
         "btn_status": "My Status & Stats",
-        "btn_lang": "Change language",
+        "btn_lang": "Language | ቋንቋ",
         "btn_support": "Support | ድጋፍ",
         "btn_back": "Back to Menu",
         "loading": '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>Loading|ይጠብቁ...</b>',
@@ -192,7 +192,7 @@ TRANSLATIONS = {
         "btn_price": "Price & Rates",
         "btn_payment": "Payment Method",
         "btn_status": "My Status & Stats",
-        "btn_lang": "Change language",
+        "btn_lang": "Language | ቋንቋ",
         "btn_support": "Support & Help",
         "btn_back": "Back to Menu",
         "loading": '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>Loading|Please wait...</b>',
@@ -246,7 +246,7 @@ TRANSLATIONS = {
         "btn_price": "أسعار الإعلانات",
         "btn_payment": "طرق الدفع",
         "btn_status": "حسابي وإحصائياتي",
-        "btn_lang": "تغيير اللغة",
+        "btn_lang": "Language | ቋንቋ",
         "btn_support": "الدعم والتعليمات",
         "btn_back": "العودة للالقائمة",
         "loading": '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> <b>جاري التحميل...</b>',
@@ -298,7 +298,8 @@ TRANSLATIONS = {
 
 def get_trans(user_id, key):
     lang = get_user_language(user_id)
-    return TRANSLATIONS.get(lang, TRANSLATIONS.get("en", TRANSLATIONS["am"])).get(key, TRANSLATIONS["am"].get(key, ""))
+    lang_dict = TRANSLATIONS.get(lang, TRANSLATIONS.get("en", TRANSLATIONS["am"]))
+    return lang_dict.get(key, TRANSLATIONS["en"].get(key, TRANSLATIONS["am"].get(key, "")))
 
 # ==================================================
 # MAIN MENU KEYBOARD
