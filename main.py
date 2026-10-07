@@ -33,6 +33,7 @@ import yt_dlp
 
 COOKIES_ENV = os.environ.get("YOUTUBE_COOKIES")
 if COOKIES_ENV:
+    # \n ችግር እንዳይኖር አድርጎ ኩኪሱን መጻፍ
     formatted_cookies = COOKIES_ENV.replace("\\n", "\n")
     with open("cookies.txt", "w", encoding="utf-8") as f:
         f.write(formatted_cookies)
@@ -61,9 +62,11 @@ def keep_alive():
 # CONFIGURATION
 # ==================================================
 
+# TOKEN በ Render Environment Variables ብቻ ይነበባል
 TOKEN = os.environ.get("BOT_TOKEN")
 ADMIN_ID = int(os.environ.get("ADMIN_ID", 6753546651))
 
+# Force Join Channel
 FORCE_CHANNEL = "@mame_posts"
 FORCE_CHANNEL_LINK = "https://t.me/mame_posts"
 
@@ -128,204 +131,52 @@ def get_user_stats(user_id):
     return total_users, user_msg_count
 
 # ==================================================
-# TRANSLATION DATA DICTIONARY
-# ==================================================
-
-TRANSLATIONS = {
-    "am": {
-        "btn_add": "Add a bot to the chat",
-        "btn_order": "ማስታወቂያ ለማሰራት",
-        "btn_price": "Price | ዋጋ",
-        "btn_payment": "Payment Method",
-        "btn_status": "My Status & Stats",
-        "btn_lang": "Change language",
-        "btn_support": "Support | ድጋፍ",
-        "btn_back": "Back to Menu",
-        "welcome": (
-            f'Hello <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
-            f'<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>My options (ከሁሉም Social Media ላይ video, photo እና audio ማውረድና መቀየር ይችላሉ!) :</b>\n\n'
-            f'<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | <b>Tiktok & Likee: videos & photos</b>\n'
-            f'<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | <b>Pinterest & Instagram: reels, photos & stories</b>\n'
-            f'<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | <b>YouTube: videos & music (Full & Shorts)</b>\n'
-            f'<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | <b>Twitter (X): videos & voice</b>\n'
-            f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>Facebook, Reddit, Twitch, Vimeo & Others</b>\n'
-            f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Video to Audio Converter: ቪዲዮ ወደ ኦዲዮ መቀየር ይችላሉ! </b>\n\n'
-            f'<b>And others Social Media | ሌሎችንም ሶሻል ሚድያ ማውረድ ይችላሉ!:</b> <tg-emoji emoji-id="5305466057278923962">📥</tg-emoji>'
-        ),
-        "price": (
-            f'<tg-emoji emoji-id="5447458260200214425">💰</tg-emoji> <b>የማስታወቂያ ዋጋዎች</b>\n\n'
-            f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 12 Hours — <b>በስምምነት ETB</b>\n'
-            f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 24 Hours — <b>500 ETB</b>\n'
-            f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 48 Hours — <b>700 ETB</b>\n\n'
-            f'የፈለጉትን ምርጫ አሳውቀው የክፍያ አማራጮችን (payment method) ይጎብኙ <tg-emoji emoji-id="5463249828450424568">🤝</tg-emoji>'
-        ),
-        "order": (
-            f'<tg-emoji emoji-id="5197304993920616826">📢</tg-emoji> <b> @mame_posts ቻናል ላይ ማስታወቂያ ለማሰራት</b>\n\n'
-            f'<tg-emoji emoji-id="5305634553140912174">👇</tg-emoji> እባክዎ ማስታወቂያ ማሰራት የሚፈልጉትን Post ከስር ልከው የማስታወቂያ ዋጋዎችን ይመልከቱ <tg-emoji emoji-id="5305739801314501775">ℹ️</tg-emoji>'
-        ),
-        "payment": (
-            f'<tg-emoji emoji-id="5186349709169525403">💳</tg-emoji> <b>Payment Method</b>\n\n'
-            f'<tg-emoji emoji-id="5961054379350955385">🏦</tg-emoji> <b>ንግድ ባንክ (CBE)</b>\n'
-            f'<code>1000528274394</code>\n\n'
-            f'Mohammed Seid\n\n'
-            f'<tg-emoji emoji-id="5960632377339285724">📱</tg-emoji> <b>ቴሌ ብር (TELE BIRR)</b>\n'
-            f'<code>+251963266849</code>\n\n'
-            f'<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>ክፍያውን ሲፈጽሙ ስክሪን ሹቱን ከስር ይላኩ!</b>'
-        ),
-        "support": (
-            f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
-            f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ/ፎቶ ለማውረድ:</b> የ Tiktok, Instagram, Facebook, Reddit, Twitch, Vimeo, SoundCloud, Threads እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
-            f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Video to Audio:</b> ማናቸውንም ቪዲዮ ከስልክዎ ይላኩ፣ ወደ MP3 Audio ቀይሮ ይልክልዎታል።\n\n'
-            f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።'
-        )
-    },
-    "en": {
-        "btn_add": "Add a bot to the chat",
-        "btn_order": "Promote / Advertise",
-        "btn_price": "Price & Rates",
-        "btn_payment": "Payment Method",
-        "btn_status": "My Status & Stats",
-        "btn_lang": "Change language",
-        "btn_support": "Support & Help",
-        "btn_back": "Back to Menu",
-        "welcome": (
-            f'Hello <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
-            f'<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>My options (You can download video, photo, and audio from all Social Media):</b>\n\n'
-            f'<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | <b>Tiktok & Likee: videos & photos</b>\n'
-            f'<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | <b>Pinterest & Instagram: reels, photos & stories</b>\n'
-            f'<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | <b>YouTube: videos & music (Full & Shorts)</b>\n'
-            f'<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | <b>Twitter (X): videos & voice</b>\n'
-            f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>Facebook, Reddit, Twitch, Vimeo & Others</b>\n'
-            f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Video to Audio Converter: Convert video to audio!</b>\n\n'
-            f'<b>And other Social Media:</b> <tg-emoji emoji-id="5305466057278923962">📥</tg-emoji>'
-        ),
-        "price": (
-            f'<tg-emoji emoji-id="5447458260200214425">💰</tg-emoji> <b>Advertising Rates</b>\n\n'
-            f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 12 Hours — <b>Negotiable ETB</b>\n'
-            f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 24 Hours — <b>500 ETB</b>\n'
-            f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 48 Hours — <b>700 ETB</b>\n\n'
-            f'Choose your plan and proceed to Payment Method <tg-emoji emoji-id="5463249828450424568">🤝</tg-emoji>'
-        ),
-        "order": (
-            f'<tg-emoji emoji-id="5197304993920616826">📢</tg-emoji> <b>To Advertise on @mame_posts Channel</b>\n\n'
-            f'<tg-emoji emoji-id="5305634553140912174">👇</tg-emoji> Please send your promo post below and view our rates <tg-emoji emoji-id="5305739801314501775">ℹ️</tg-emoji>'
-        ),
-        "payment": (
-            f'<tg-emoji emoji-id="5186349709169525403">💳</tg-emoji> <b>Payment Method</b>\n\n'
-            f'<tg-emoji emoji-id="5961054379350955385">🏦</tg-emoji> <b>Commercial Bank of Ethiopia (CBE)</b>\n'
-            f'<code>1000528274394</code>\n\n'
-            f'Mohammed Seid\n\n'
-            f'<tg-emoji emoji-id="5960632377339285724">📱</tg-emoji> <b>TELEBIRR</b>\n'
-            f'<code>+251963266849</code>\n\n'
-            f'<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Please send receipt screenshot after payment!</b>'
-        ),
-        "support": (
-            f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
-            f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>To Download Video/Photo:</b> Send links from Tiktok, Instagram, Facebook, Reddit, Twitch, Vimeo, SoundCloud, Threads, etc.\n\n'
-            f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Video to Audio:</b> Send any video to convert it to MP3 audio.\n\n'
-            f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> You can write messages here to reach out to the Admin.'
-        )
-    },
-    "ar": {
-        "btn_add": "إضافة البوت إلى المجموعة",
-        "btn_order": "طلب إعلان",
-        "btn_price": "أسعار الإعلانات",
-        "btn_payment": "طرق الدفع",
-        "btn_status": "حسابي وإحصائياتي",
-        "btn_lang": "تغيير اللغة",
-        "btn_support": "الدعم والتعليمات",
-        "btn_back": "العودة للالقائمة",
-        "welcome": (
-            f'مرحباً <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
-            f'<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>خياراتي (يمكنك تحميل الفيديوهات والصور والصوتيات من جميع وسائل التواصل الاجتماعي):</b>\n\n'
-            f'<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | <b>تيك توك ولايكي: فيديوهات وصور</b>\n'
-            f'<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | <b>بينتريست وإنستغرام: ريلز وصور والستوري</b>\n'
-            f'<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | <b>يوتيوب: فيديوهات وموسيقى</b>\n'
-            f'<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | <b>تويتر (X): فيديوهات وصوت</b>\n'
-            f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>فيسبوك وريديت وغيرها</b>\n'
-            f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>محول الفيديو إلى صوت</b>\n\n'
-            f'<b>وغيرها من وسائل التواصل الاجتماعي:</b> <tg-emoji emoji-id="5305466057278923962">📥</tg-emoji>'
-        ),
-        "price": (
-            f'<tg-emoji emoji-id="5447458260200214425">💰</tg-emoji> <b>أسعار الإعلانات</b>\n\n'
-            f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 12 ساعة — <b>حسب الاتفاق</b>\n'
-            f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 24 ساعة — <b>500 ETB</b>\n'
-            f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 48 ساعة — <b>700 ETB</b>\n\n'
-            f'اختر الخطة وراجع طرق الدفع <tg-emoji emoji-id="5463249828450424568">🤝</tg-emoji>'
-        ),
-        "order": (
-            f'<tg-emoji emoji-id="5197304993920616826">📢</tg-emoji> <b>للإعلان على قناة @mame_posts</b>\n\n'
-            f'<tg-emoji emoji-id="5305634553140912174">👇</tg-emoji> يرجى إرسال الإعلان المطلوب وتحقق من الأسعار <tg-emoji emoji-id="5305739801314501775">ℹ️</tg-emoji>'
-        ),
-        "payment": (
-            f'<tg-emoji emoji-id="5186349709169525403">💳</tg-emoji> <b>طرق الدفع</b>\n\n'
-            f'<tg-emoji emoji-id="5961054379350955385">🏦</tg-emoji> <b>البنك التجاري الإثيوبي (CBE)</b>\n'
-            f'<code>1000528274394</code>\n\n'
-            f'Mohammed Seid\n\n'
-            f'<tg-emoji emoji-id="5960632377339285724">📱</tg-emoji> <b>تليبر (TELEBIRR)</b>\n'
-            f'<code>+251963266849</code>\n\n'
-            f'<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>يرجى إرسال لقطة الشاشة بعد الإتمام!</b>'
-        ),
-        "support": (
-            f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>الدعم والتعليمات</b>\n\n'
-            f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>للتحميل:</b> أرسل الروابط من تيك توك، إنستغرام، يوتيوب، فيسبوك وغيرها.\n\n'
-            f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>تحويل الفيديو إلى صوت:</b> أرسل أي فيديو لتحويله إلى MP3.\n\n'
-            f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> يمكنك كتابة رسالتك هنا للتواصل مع الأدمن.'
-        )
-    }
-}
-
-def get_trans(user_id, key):
-    lang = get_user_language(user_id)
-    return TRANSLATIONS.get(lang, TRANSLATIONS["am"]).get(key, TRANSLATIONS["am"].get(key, ""))
-
-# ==================================================
 # MAIN MENU KEYBOARD
 # ==================================================
 
-def get_main_menu_keyboard(bot_username, user_id):
+def get_main_menu_keyboard(bot_username):
     keyboard = [
         [
             InlineKeyboardButton(
-                text=get_trans(user_id, "btn_add"),
+                text="Add a bot to the chat",
                 icon_custom_emoji_id="5305545479814161889",
                 url=f"https://t.me/{bot_username}?startgroup=true"
             )
         ],
         [
             InlineKeyboardButton(
-                text=get_trans(user_id, "btn_order"),
+                text="ማስታወቂያ ለማሰራት",
                 icon_custom_emoji_id="5267442591548320083",
                 callback_data="cmd_order"
             )
         ],
         [
             InlineKeyboardButton(
-                text=get_trans(user_id, "btn_price"),
+                text="Price | ዋጋ",
                 icon_custom_emoji_id="5447458260200214425",
                 callback_data="cmd_price"
             ),
             InlineKeyboardButton(
-                text=get_trans(user_id, "btn_payment"),
+                text="Payment Method",
                 icon_custom_emoji_id="5186349709169525403",
                 callback_data="cmd_payment"
             )
         ],
         [
             InlineKeyboardButton(
-                text=get_trans(user_id, "btn_status"),
+                text="My Status & Stats",
                 icon_custom_emoji_id="5431577498364158238",
                 callback_data="cmd_status"
             ),
             InlineKeyboardButton(
-                text=get_trans(user_id, "btn_lang"),
+                text="Change language",
                 icon_custom_emoji_id="5431577498364158238",
                 callback_data="cmd_change_lang"
             )
         ],
         [
             InlineKeyboardButton(
-                text=get_trans(user_id, "btn_support"),
+                text="Support | ድጋፍ",
                 icon_custom_emoji_id="5949327894567195412",
                 callback_data="cmd_support"
             )
@@ -385,11 +236,11 @@ def get_language_keyboard():
     ]
     return InlineKeyboardMarkup(keyboard)
 
-def get_back_keyboard(user_id):
+def get_back_keyboard():
     keyboard = [
         [
             InlineKeyboardButton(
-                text=get_trans(user_id, "btn_back"),
+                text="Back to Menu",
                 icon_custom_emoji_id="5248948801674159296",
                 callback_data="cmd_back"
             )
@@ -470,9 +321,48 @@ async def show_force_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # START & MENU COMMAND
 # ==================================================
 
+def get_welcome_text(lang="am"):
+    if lang == "en":
+        return (
+            f'Hello <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
+            f'<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>My options (You can download video, photo, and audio from all Social Media):</b>\n\n'
+            f'<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | <b>Tiktok & Likee: videos & photos</b>\n'
+            f'<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | <b>Pinterest & Instagram: reels, photos & stories</b>\n'
+            f'<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | <b>YouTube: videos & music (Full & Shorts)</b>\n'
+            f'<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | <b>Twitter (X): videos & voice</b>\n'
+            f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>Facebook, Reddit, Twitch, Vimeo & Others</b>\n'
+            f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Video to Audio Converter: Convert video to audio!</b>\n\n'
+            f'<b>And others Social Media:</b> <tg-emoji emoji-id="5305466057278923962">📥</tg-emoji>'
+        )
+    elif lang == "ar":
+        return (
+            f'Hello <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
+            f'<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>خياراتي (يمكنك تحميل الفيديوهات والصور والصوتيات من جميع وسائل التواصل الاجتماعي):</b>\n\n'
+            f'<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | <b>تيك توك ولايكي: فيديوهات وصور</b>\n'
+            f'<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | <b>بينتريست وإنستغرام: ريلز وصور والستوري</b>\n'
+            f'<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | <b>يوتيوب: فيديوهات وموسيقى</b>\n'
+            f'<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | <b>تويتر (X): فيديوهات وصوت</b>\n'
+            f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>فيسبوك وريديت وغيرها</b>\n'
+            f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>محول الفيديو إلى صوت</b>\n\n'
+            f'<b>وغيرها من وسائل التواصل الاجتماعي:</b> <tg-emoji emoji-id="5305466057278923962">📥</tg-emoji>'
+        )
+
+    return (
+        f'Hello <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
+        f'<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> <b>My options (ከሁሉም Social Media ላይ video, photo እና audio ማውረድና መቀየር ይችላሉ!) :</b>\n\n'
+        f'<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | <b>Tiktok & Likee: videos & photos</b>\n'
+        f'<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | <b>Pinterest & Instagram: reels, photos & stories</b>\n'
+        f'<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | <b>YouTube: videos & music (Full & Shorts)</b>\n'
+        f'<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | <b>Twitter (X): videos & voice</b>\n'
+        f'<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | <b>Facebook, Reddit, Twitch, Vimeo & Others</b>\n'
+        f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Video to Audio Converter: ቪዲዮ ወደ ኦዲዮ መቀየር ይችላሉ! </b>\n\n'
+        f'<b>And others Social Media | ሌሎችንም ሶሻል ሚድያ ማውረድ ይችላሉ!:</b> <tg-emoji emoji-id="5305466057278923962">📥</tg-emoji>'
+    )
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     record_user_activity(user_id)
+    lang = get_user_language(user_id)
 
     bot_username = context.bot.username or "mame_posts_bot"    
         
@@ -489,8 +379,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )    
 
     await update.message.reply_text(    
-        get_trans(user_id, "welcome"),    
-        reply_markup=get_main_menu_keyboard(bot_username, user_id),    
+        get_welcome_text(lang),    
+        reply_markup=get_main_menu_keyboard(bot_username),    
         parse_mode="HTML"    
     )
 
@@ -574,26 +464,36 @@ async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ==================================================
 
 async def rates_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    record_user_activity(user_id)
+    record_user_activity(update.effective_user.id)
     await update.message.reply_text(
-        get_trans(user_id, "price"),
+        f'<tg-emoji emoji-id="5447458260200214425">💰</tg-emoji> <b>የማስታወቂያ ዋጋዎች</b>\n\n'
+        f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 12 Hours — <b>በስምምነት ETB</b>\n'
+        f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 24 Hours — <b>500 ETB</b>\n'
+        f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 48 Hours — <b>700 ETB</b>\n\n'
+        f'የፈለጉትን ምርጫ አሳውቀው የክፍያ አማራጮችን (payment method) ይጎብኙ! <tg-emoji emoji-id="5463249828450424568">🤝</tg-emoji>',
         parse_mode="HTML"
     )
 
 async def payment_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    record_user_activity(user_id)
+    record_user_activity(update.effective_user.id)
     await update.message.reply_text(
-        get_trans(user_id, "payment"),
+        f'<tg-emoji emoji-id="5186349709169525403">💳</tg-emoji> <b>Payment Method</b>\n\n'
+        f'<tg-emoji emoji-id="5961054379350955385">🏦</tg-emoji> <b>ንግድ ባንክ (CBE)</b>\n'
+        f'<code>1000528274394</code>\n\n'
+        f'Mohammed Seid\n\n'
+        f'<tg-emoji emoji-id="5960632377339285724">📱</tg-emoji> <b>ቴሌ ብር (TELE BIRR)</b>\n'
+        f'<code>+251963266849</code>\n\n'
+        f'<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>ክፍያውን ሲፈጽሙ ስክሪን ሹቱን ከስር ይላኩ!</b>',
         parse_mode="HTML"
     )
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    record_user_activity(user_id)
+    record_user_activity(update.effective_user.id)
     await update.message.reply_text(
-        get_trans(user_id, "support"),
+        f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'
+        f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ/ፎቶ ለማውረድ:</b> የ Tiktok, Instagram, Facebook, Reddit, Twitch, Vimeo, SoundCloud, Threads እና ሌሎችን ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'
+        f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Video to Audio:</b> ማናቸውንም ቪዲዮ ከስልክዎ ይላኩ፣ ወደ MP3 Audio ቀይሮ ይልክልዎታል።\n\n'
+        f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',
         parse_mode="HTML"
     )
 
@@ -698,8 +598,10 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
         'outtmpl': output_template,
         'merge_output_format': 'mp4',
 
+        # ጓደኛህ የላከው ተለዋዋጭ ፎርማት (bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b)
         'format': 'bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b',
 
+        # ጓደኛህ የላከው የ Player Client ማስተካከያ (android, web)
         'extractor_args': {
             'youtube': {
                 'player_client': ['android', 'web']
@@ -864,14 +766,14 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     data = query.data    
     user = query.from_user    
-    bot_username = context.bot.username or "mame_posts_bot"
 
     if data.startswith("lang_"):
         lang_code = data.split("_")[1]
         set_user_language(user.id, lang_code)
+        bot_username = context.bot.username or "mame_posts_bot"
         await query.edit_message_text(
-            get_trans(user.id, "welcome"),
-            reply_markup=get_main_menu_keyboard(bot_username, user.id),
+            get_welcome_text(lang_code),
+            reply_markup=get_main_menu_keyboard(bot_username),
             parse_mode="HTML"
         )
 
@@ -883,23 +785,30 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
     elif data == "cmd_back":    
+        bot_username = context.bot.username or "mame_posts_bot"    
+        lang = get_user_language(user.id)
         await query.edit_message_text(    
-            get_trans(user.id, "welcome"),    
-            reply_markup=get_main_menu_keyboard(bot_username, user.id),    
+            get_welcome_text(lang),    
+            reply_markup=get_main_menu_keyboard(bot_username),    
             parse_mode="HTML"    
         )    
 
     elif data == "cmd_price":    
         await query.edit_message_text(    
-            get_trans(user.id, "price"),    
-            reply_markup=get_back_keyboard(user.id),    
+            f'<tg-emoji emoji-id="5447458260200214425">💰</tg-emoji> <b>የማስታወቂያ ዋጋዎች</b>\n\n'    
+            f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 12 Hours — <b>በስምምነት ETB</b>\n'    
+            f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 24 Hours — <b>500 ETB</b>\n'    
+            f'<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> 48 Hours — <b>700 ETB</b>\n\n'    
+            f'የፈለጉትን ምርጫ አሳውቀው የክፍያ አማራጮችን (payment method) ይጎብኙ <tg-emoji emoji-id="5463249828450424568">🤝</tg-emoji>',    
+            reply_markup=get_back_keyboard(),    
             parse_mode="HTML"    
         )    
 
     elif data == "cmd_order":    
         await query.edit_message_text(    
-            get_trans(user.id, "order"),    
-            reply_markup=get_back_keyboard(user.id),    
+            f'<tg-emoji emoji-id="5197304993920616826">📢</tg-emoji> <b> @mame_posts ቻናል ላይ ማስታወቂያ ለማሰራት</b>\n\n'    
+            f'<tg-emoji emoji-id="5305634553140912174">👇</tg-emoji> እባክዎ ማስታወቂያ ማሰራት የሚፈልጉትን Post ከስር ልከው የማስታወቂያ ዋጋዎችን ይመልከቱ <tg-emoji emoji-id="5305739801314501775">ℹ️</tg-emoji>',    
+            reply_markup=get_back_keyboard(),    
             parse_mode="HTML"    
         )    
 
@@ -922,21 +831,30 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
         await query.edit_message_text(    
             msg,     
-            reply_markup=get_back_keyboard(user.id),    
+            reply_markup=get_back_keyboard(),    
             parse_mode="HTML"    
         )    
 
     elif data == "cmd_payment":    
         await query.edit_message_text(    
-            get_trans(user.id, "payment"),    
-            reply_markup=get_back_keyboard(user.id),    
+            f'<tg-emoji emoji-id="5186349709169525403">💳</tg-emoji> <b>Payment Method</b>\n\n'    
+            f'<tg-emoji emoji-id="5961054379350955385">🏦</tg-emoji> <b>ንግድ ባንክ (CBE)</b>\n'    
+            f'<code>1000528274394</code>\n\n'    
+            f'Mohammed Seid\n\n'    
+            f'<tg-emoji emoji-id="5960632377339285724">📱</tg-emoji> <b>ቴሌ ብር (TELE BIRR)</b>\n'    
+            f'<code>+251963266849</code>\n\n'    
+            f'<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>ክፍያውን ሲፈጽሙ ስክሪን ሹቱን ከስር ይላኩ!</b>',    
+            reply_markup=get_back_keyboard(),    
             parse_mode="HTML"    
         )    
 
     elif data == "cmd_support":    
         await query.edit_message_text(    
-            get_trans(user.id, "support"),    
-            reply_markup=get_back_keyboard(user.id),    
+            f'<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> <b>Support & Downloader Help</b>\n\n'    
+            f'<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> <b>ቪዲዮ/ፎቶ ለማውረድ:</b> የ Tiktok, Instagram, Facebook, Reddit, Twitch, Vimeo, SoundCloud, Threads እና ሌሎች ሊንክ ቀጥታ ለቦቱ ይላኩ።\n\n'    
+            f'<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> <b>Video to Audio:</b> ማናቸውንም ቪዲዮ ከስልክዎ ይላኩ፣ ወደ MP3 Audio ቀይሮ ይልክልዎታል።\n\n'    
+            f'<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> ለአድሚን መልዕክት ለመላክም እዚሁ መጻፍ ይችላሉ።',    
+            reply_markup=get_back_keyboard(),    
             parse_mode="HTML"    
         )
 
