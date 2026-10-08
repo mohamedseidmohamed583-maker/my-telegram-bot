@@ -1,6 +1,5 @@
 yt-dlp
-yt-dlp-ejs
-python-telegram-bot==22.3
+python-telegram-bot>=22.7
 flask
 static-ffmpeg
 requests
