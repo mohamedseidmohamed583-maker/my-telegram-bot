@@ -1443,11 +1443,9 @@ async def show_force_join(update, context):
         '<tg-emoji emoji-id="6034962180875490251">🔒</tg-emoji> '
         '<b>ቦቱን ለመጠቀም ከታች ያለውን ቻናል '
         'መቀላቀል አለብዎት!</b>\n\n'
-
         '1️⃣ '
         '<tg-emoji emoji-id="5267442591548320083">📢</tg-emoji> '
         '<b>Join Channel የሚለውን ይጫኑ::</b>\n'
-
         '2️⃣ '
         '<tg-emoji emoji-id="5305749202997911340">✅</tg-emoji> '
         '<b>I've Joined የሚለውን ተጭነው የላኩትን '
@@ -1459,19 +1457,14 @@ async def show_force_join(update, context):
         [
             InlineKeyboardButton(
                 text="Join Channel",
-                icon_custom_emoji_id=(
-                    "5767358836134382747"
-                ),
+                icon_custom_emoji_id="5767358836134382747",
                 url=FORCE_CHANNEL_LINK
             )
         ],
-
         [
             InlineKeyboardButton(
                 text="I've Joined",
-                icon_custom_emoji_id=(
-                    "5895288332581082241"
-                ),
+                icon_custom_emoji_id="5895288332581082241",
                 callback_data="check_join"
             )
         ]
@@ -1484,7 +1477,6 @@ async def show_force_join(update, context):
                 url=FORCE_CHANNEL_LINK
             )
         ],
-
         [
             InlineKeyboardButton(
                 text="✅ I've Joined",
@@ -1493,36 +1485,28 @@ async def show_force_join(update, context):
         ]
     ]
 
-    reply_markup = InlineKeyboardMarkup(
-        keyboard_custom
-    )
+    try:
+        await update.message.reply_text(
+            text=text,
+            reply_markup=InlineKeyboardMarkup(keyboard_custom),
+            parse_mode="HTML"
+        )
 
-    if update.message:
+    except Exception as e:
+        print("Custom force-join keyboard failed:", e)
 
         try:
-
             await update.message.reply_text(
                 text=text,
-                reply_markup=reply_markup,
+                reply_markup=InlineKeyboardMarkup(keyboard_normal),
                 parse_mode="HTML"
             )
-
-        except Exception as e:
-
+        except Exception as fallback_error:
             print(
-                "Custom force-join keyboard failed:",
-                e
+                "Normal force-join keyboard failed:",
+                fallback_error
             )
-
-            await update.message.reply_text(
-                text=text,
-                reply_markup=InlineKeyboardMarkup(
-                    keyboard_normal
-                ),
-                parse_mode="HTML"
-            )
-
-
+            
 # ============================================================
 # SEND MAIN MENU SAFELY
 # ============================================================
