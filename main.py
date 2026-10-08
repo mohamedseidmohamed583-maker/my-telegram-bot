@@ -2334,7 +2334,7 @@ def pinterest_direct_image(url):
             r'(?:originals|736x)/[^"\']+',
 
             r'https:\\/\\/i\.pinimg\.com\\/'
-            r'(?:originals|736x)\\/[^"\\']+'
+            r"""(?:originals|736x)\\/[^"']+"""
         ]
 
 
