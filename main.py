@@ -1432,7 +1432,6 @@ async def is_joined(update, context):
         # if Telegram cannot verify, don't block the user.
         return True
 
-
 # ============================================================
 # SHOW FORCE JOIN
 # ============================================================
@@ -1448,11 +1447,12 @@ async def show_force_join(update, context):
         '<b>Join Channel የሚለውን ይጫኑ::</b>\n'
         '2️⃣ '
         '<tg-emoji emoji-id="5305749202997911340">✅</tg-emoji> '
-        '<b>I've Joined የሚለውን ተጭነው የላኩትን '
+        '<b>I\'ve Joined የሚለውን ተጭነው የላኩትን '
         'ደግመው ይላኩ '
         '<tg-emoji emoji-id="5217449524410199951">🙂</tg-emoji>::</b>'
     )
 
+    
     keyboard_custom = [
         [
             InlineKeyboardButton(
