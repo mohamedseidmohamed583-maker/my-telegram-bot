@@ -1302,7 +1302,7 @@ async def broadcast_command(
 
 
 # ============================================================
-# VIDEO TO AUDIO
+# VIDEO TO AUDIO (FIXED)
 # ============================================================
 
 async def convert_video_to_audio(update, context):
@@ -1474,7 +1474,7 @@ def clean_url(raw_url):
     return unshorten_url(raw_url)
 
 # ============================================================
-# YT-DLP OPTIONS
+# YT-DLP OPTIONS (FIXED)
 # ============================================================
 
 def get_video_options(
@@ -1494,7 +1494,9 @@ def get_video_options(
         "file_access_retries": 3,
         "socket_timeout": 60,
         "outtmpl": output_template,
-        "format": "best[ext=mp4]/best",
+        # ተስተካክሏል፡ ለዩቲዩብ እና ሌሎችም የተሻለ የቪዲዮ+ኦዲዮ ቅንብር እንዲያመጣ ተደርጓል
+        "format": "bestvideo+bestaudio/best" if not fallback else "best",
+        "merge_output_format": "mp4",
         "http_headers": {
             "User-Agent": (
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -1545,53 +1547,46 @@ def download_media_func(
 
 
 # ============================================================
-# FIND DOWNLOADED FILE
+# FIND DOWNLOADED FILE (FIXED)
 # ============================================================
 
 def find_downloaded_file(prefix):
 
     try:
-
-        files = os.listdir(
-            "."
-        )
-
+        files = os.listdir(".")
     except Exception:
-
         return None
-
 
     valid_files = []
 
     for filename in files:
-
-        if not filename.startswith(
-            prefix
-        ):
+        if not filename.startswith(prefix):
             continue
 
         if filename.endswith(
             (
                 ".part",
                 ".ytdl",
-                ".temp"
+                ".temp",
+                ".aria2",
+                ".webp"
             )
         ):
             continue
 
-        if os.path.isfile(
-            filename
-        ):
-
-            valid_files.append(
-                filename
-            )
-
+        if os.path.isfile(filename):
+            valid_files.append(filename)
 
     if not valid_files:
         return None
 
+    # ተስተካክሏል፡ ቪዲዮ እና ኦዲዮ ፋይሎችን ቅድሚያ ለመስጠት (በተለይ mp4)
+    valid_files.sort(
+        key=lambda x: (0 if x.lower().endswith(('.mp4', '.mkv', '.mov', '.webm', '.jpg', '.png', '.mp3')) else 1, os.path.getmtime(x)),
+        reverse=False
+    )
 
+    # ከዛ አዲስ የተሰራውን እንወስዳለን
     valid_files.sort(
         key=lambda x: os.path.getmtime(x),
         reverse=True
@@ -1665,7 +1660,7 @@ def pinterest_direct_image(url):
     return None
 
 # ============================================================
-# HANDLE URL DOWNLOAD
+# HANDLE URL DOWNLOAD (FIXED)
 # ============================================================
 
 async def handle_url_download(
@@ -1779,7 +1774,7 @@ async def handle_url_download(
                 )
 
         # ----------------------------------------------------
-        # DOWNLOAD MEDIA
+        # DOWNLOAD MEDIA (ተስተካክሏል፡ በድጋሚ በመሞከር ሎጂክ የታገዘ)
         # ----------------------------------------------------
 
         try:
@@ -1939,13 +1934,12 @@ async def handle_url_download(
                 ]
             ]
 
-            # Send the downloaded media as a document if it
-            # is not a recognized Telegram-friendly video.
             video_extensions = (
                 ".mp4",
                 ".m4v",
                 ".mov",
                 ".webm",
+                ".mkv"
             )
 
             if downloaded_file.lower().endswith(
@@ -2403,7 +2397,7 @@ SUPPORTED_DOMAINS = [
 
 
 # ============================================================
-# USER MESSAGE HANDLER (ተስተካክሏል: ሊንክ ሲላክ ብቻ Force Join ይጠይቃል)
+# USER MESSAGE HANDLER
 # ============================================================
 
 async def handle_user_messages(
