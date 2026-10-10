@@ -196,7 +196,7 @@ def get_user_stats(user_id):
 
 
 # ============================================================
-# TRANSLATIONS
+# TRANSLATIONS (AMHARIC, ENGLISH & ARABIC)
 # ============================================================
 
 TRANSLATIONS = {
@@ -206,7 +206,7 @@ TRANSLATIONS = {
     # ========================================================
 
     "am": {
-        "btn_add": "Add a bot to the chat",
+        "btn_add": "ቦቱን ወደ ቻትዎ ለመጨመር",
         "btn_order": "ማስታወቂያ ለማሰራት",
         "btn_price": "Price | ዋጋ",
         "btn_payment": "Payment Method",
@@ -227,6 +227,12 @@ TRANSLATIONS = {
             '<b>ከቪዲዮ የተቀየረው (Extracted Audio)</b>\n\n'
             '<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> '
             '<b>Converted with</b> @{bot_username} & @mame_posts',
+
+        "video_downloaded":
+            '<tg-emoji emoji-id="530762354187772738">🚀</tg-emoji> '
+            '<b>Downloaded with</b> @{bot_username} & @mame_posts\n\n'
+            '<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> '
+            '<b>Enjoy!</b>',
 
         "size_limit":
             "⚠️ <b>ቪዲዮው ከ 50MB በላይ ስለሆነ "
@@ -365,7 +371,13 @@ TRANSLATIONS = {
             '<tg-emoji emoji-id="5305534793935527938">🎵</tg-emoji> '
             '<b>Extracted Audio</b>\n\n'
             '<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> '
-            '<b>Converted with</b> @{bot_username}',
+            '<b>Converted with</b> @{bot_username} & @mame_posts',
+
+        "video_downloaded":
+            '<tg-emoji emoji-id="530762354187772738">🚀</tg-emoji> '
+            '<b>Downloaded with</b> @{bot_username} & @mame_posts\n\n'
+            '<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> '
+            '<b>Enjoy!</b>',
 
         "size_limit":
             "⚠️ <b>File is larger than 50MB! Telegram limit exceeded.</b>",
@@ -497,562 +509,112 @@ TRANSLATIONS = {
             '<tg-emoji emoji-id="5305534793935527938">🎵</tg-emoji> '
             '<b>الصوت المستخرج</b>\n\n'
             '<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> '
-            '<b>تم التحويل بواسطة</b> @{bot_username}',
+            '<b>تم التحويل بواسطة</b> @{bot_username} & @mame_posts',
+
+        "video_downloaded":
+            '<tg-emoji emoji-id="530762354187772738">🚀</tg-emoji> '
+            '<b>تم التحميل بواسطة</b> @{bot_username} & @mame_posts\n\n'
+            '<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> '
+            '<b>استمتع!</b>',
 
         "size_limit":
             "⚠️ <b>حجم الملف أكبر من 50 ميغابايت!</b>",
 
         "fail_download":
-            "💔 <b>تعذر تحميل الملف!</b>",
+            "💔 <b>تعذر تحميل الملف! يرجى التأكد من أن الرابط عام.</b>",
 
         "photo_download":
             '📸 <b>الصورة المحملة</b>\n\n'
             '<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> '
             '<b>تم التحميل بواسطة</b> @{bot_username}',
 
-        "welcome":
-            'مرحباً <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
-            'يمكنك تحميل الفيديوهات والصور.',
+        "welcome": (
+            'مرحباً بك <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>\n\n'
 
-        "price":
-            '<b>أسعار الإعلانات</b>',
+            '<tg-emoji emoji-id="5305739801314501775">✅</tg-emoji> '
+            '<b>خياراتي (يمكنك تحميل وتعديل الفيديوهات والصور والصوتيات من جميع منصات التواصل الاجتماعي):</b>\n\n'
 
-        "order":
-            '<b>للإعلان على القناة</b>',
+            '<tg-emoji emoji-id="5305290882742788410">🎵</tg-emoji> | '
+            '<b>Tiktok & Likee: مقاطع وصور</b>\n'
 
-        "payment":
-            '<b>طرق الدفع</b>',
+            '<tg-emoji emoji-id="5305551797711053969">📸</tg-emoji> | '
+            '<b>Pinterest & Instagram: ريلز، صور وستوري</b>\n'
 
-        "support":
-            '<b>الدعم والتعليمات</b>'
-    },
+            '<tg-emoji emoji-id="5305777524012262308">▶️</tg-emoji> | '
+            '<b>YouTube: فيديوهات وموسيقى (كامل وShorts)</b>\n'
 
+            '<tg-emoji emoji-id="5305474827602140530">✖️</tg-emoji> | '
+            '<b>Twitter (X): فيديوهات وتغريدات صوتية</b>\n'
 
-    # ========================================================
-    # RUSSIAN
-    # ========================================================
+            '<tg-emoji emoji-id="5305311717629142471">📘</tg-emoji> | '
+            '<b>Facebook, Reddit, Twitch, Vimeo وغيرها</b>\n'
 
-    "ru": {
-        "btn_add": "Добавить бота в чат",
-        "btn_order": "Заказать рекламу",
-        "btn_price": "Цены и тарифы",
-        "btn_payment": "Способ оплаты",
-        "btn_status": "Мой статус",
-        "btn_lang": "Language | Язык",
-        "btn_support": "Помощь",
-        "btn_back": "Назад",
+            '<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> '
+            '<b>تحويل الفيديو إلى صوت: يمكنك تحويل أي فيديو إلى ملف صوتي MP3!</b>\n\n'
 
-        "done_msg":
-            "✅ <b>Готово! Ваш язык установлен.</b>",
+            '<b>والمزيد من منصات التواصل الاجتماعي:</b> '
+            '<tg-emoji emoji-id="5305466057278923962">📥</tg-emoji>'
+        ),
 
-        "loading":
-            '<tg-emoji emoji-id="5305254783542667121">⏳</tg-emoji> '
-            '<b>Загрузка...</b>',
+        "price": (
+            '<tg-emoji emoji-id="5447458260200214425">💰</tg-emoji> '
+            '<b>أسعار الإعلانات</b>\n\n'
 
-        "video_converted":
-            'Сконвертировано через @{bot_username}',
+            '<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> '
+            '12 ساعة — <b>حسب الاتفاق ETB</b>\n'
 
-        "size_limit":
-            "⚠️ <b>Файл превышает 50 МБ!</b>",
+            '<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> '
+            '24 ساعة — <b>500 ETB</b>\n'
 
-        "fail_download":
-            "💔 <b>Не удалось скачать!</b>",
+            '<tg-emoji emoji-id="5199628545457923796">📌</tg-emoji> '
+            '48 ساعة — <b>700 ETB</b>\n\n'
 
-        "photo_download":
-            'Фото скачано',
+            'اختر خطتك ثم انتقل إلى طرق الدفع '
+            '<tg-emoji emoji-id="5463249828450424568">🤝</tg-emoji>'
+        ),
 
-        "welcome":
-            'Привет <tg-emoji emoji-id="5305577086478489521">🚨</tg-emoji>',
+        "order": (
+            '<tg-emoji emoji-id="5197304993920616826">📢</tg-emoji> '
+            '<b>للإعلان على قناة @mame_posts</b>\n\n'
 
-        "price":
-            'Цены',
+            '<tg-emoji emoji-id="5305634553140912174">👇</tg-emoji> '
+            'يرجى إرسال المنشور الذي تريد الإعلان عنه أدناه لعرض الأسعار '
+            '<tg-emoji emoji-id="5305739801314501775">ℹ️</tg-emoji>'
+        ),
 
-        "order":
-            'Заказ рекламы',
+        "payment": (
+            '<tg-emoji emoji-id="5186349709169525403">💳</tg-emoji> '
+            '<b>طرق الدفع</b>\n\n'
 
-        "payment":
-            'Оплата',
+            '<tg-emoji emoji-id="5961054379350955385">🏦</tg-emoji> '
+            '<b>البنك التجاري الإثيوبي (CBE)</b>\n'
 
-        "support":
-            'Помощь'
-    },
+            '<code>1000528274394</code>\n\n'
 
+            'Mohammed Seid\n\n'
 
-    # ========================================================
-    # FRENCH
-    # ========================================================
+            '<tg-emoji emoji-id="5960632377339285724">📱</tg-emoji> '
+            '<b>تلي بر (TELE BIRR)</b>\n'
 
-    "fr": {
-        "btn_add": "Ajouter le bot au groupe",
-        "btn_order": "Publicité",
-        "btn_price": "Tarifs",
-        "btn_payment": "Mode de paiement",
-        "btn_status": "Mon statut",
-        "btn_lang": "Language | Langue",
-        "btn_support": "Aide",
-        "btn_back": "Retour",
+            '<code>+251963266849</code>\n\n'
 
-        "done_msg":
-            "✅ <b>Terminé ! Votre langue a été définie.</b>",
+            '<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> '
+            '<b>يرجى إرسال صورة إيصال الدفع بعد التحويل!</b>'
+        ),
 
-        "loading": "Chargement...",
-        "video_converted": "Converti",
-        "size_limit": "Limite de 50 Mo dépassée",
-        "fail_download": "Échec",
-        "photo_download": "Photo",
-        "welcome": "Bonjour",
-        "price": "Tarifs",
-        "order": "Pub",
-        "payment": "Paiement",
-        "support": "Aide"
-    },
+        "support": (
+            '<tg-emoji emoji-id="5305545479814161889">💬</tg-emoji> '
+            '<b>الدعم والمساعدة في التحميل</b>\n\n'
 
+            '<tg-emoji emoji-id="5305655375142364109">📺</tg-emoji> '
+            '<b>لتحميل الفيديوهات/الصور:</b> أرسل روابط تيك توك، إنستغرام، فيسبوك، ريديت، تويتش وغيرها مباشرة.\n\n'
 
-    # ========================================================
-    # SPANISH
-    # ========================================================
+            '<tg-emoji emoji-id="5305289658677108341">📹</tg-emoji> '
+            '<b>تحويل الفيديو إلى صوت:</b> أرسل أي فيديو لتحويله إلى ملف صوتي MP3.\n\n'
 
-    "es": {
-        "btn_add": "Añadir bot al chat",
-        "btn_order": "Publicidad",
-        "btn_price": "Precios",
-        "btn_payment": "Método de pago",
-        "btn_status": "Mi estado",
-        "btn_lang": "Language | Idioma",
-        "btn_support": "Soporte",
-        "btn_back": "Volver",
-        "done_msg":
-            "✅ <b>¡Listo! Tu idioma ha sido configurado.</b>",
-        "loading": "Cargando...",
-        "video_converted": "Convertido",
-        "size_limit": "Supera 50MB",
-        "fail_download": "Error",
-        "photo_download": "Foto",
-        "welcome": "Hola",
-        "price": "Precios",
-        "order": "Anuncio",
-        "payment": "Pago",
-        "support": "Soporte"
-    },
-
-
-    # ========================================================
-    # PERSIAN
-    # ========================================================
-
-    "fa": {
-        "btn_add": "افزودن ربات به گروه",
-        "btn_order": "سفارش تبلیغات",
-        "btn_price": "قیمت‌ها",
-        "btn_payment": "روش پرداخت",
-        "btn_status": "وضعیت من",
-        "btn_lang": "Language | زبان",
-        "btn_support": "پشتیبانی",
-        "btn_back": "بازگشت",
-        "done_msg":
-            "✅ <b>انجام شد! زبان شما تنظیم شد.</b>",
-        "loading": "در حال بارگذاری...",
-        "video_converted": "تبدیل شد",
-        "size_limit": "حجم بیش از حد",
-        "fail_download": "خطا",
-        "photo_download": "تصویر",
-        "welcome": "سلام",
-        "price": "قیمت",
-        "order": "تبلیغ",
-        "payment": "پرداخت",
-        "support": "پشتیبانی"
-    },
-
-
-    # ========================================================
-    # HINDI
-    # ========================================================
-
-    "hi": {
-        "btn_add": "चैट में बोट जोड़ें",
-        "btn_order": "विज्ञापन दें",
-        "btn_price": "कीमत और दरें",
-        "btn_payment": "भुगतान का तरीका",
-        "btn_status": "मेरा स्टेटस",
-        "btn_lang": "Language | भाषा",
-        "btn_support": "सहायता",
-        "btn_back": "वापस",
-        "done_msg":
-            "✅ <b>हो गया! आपकी भाषा सेट कर दी गई है।</b>",
-        "loading": "लोड हो रहा है...",
-        "video_converted": "कन्वर्ट किया गया",
-        "size_limit": "फाइल बड़ी है",
-        "fail_download": "त्रुटि",
-        "photo_download": "फोटो",
-        "welcome": "नमस्ते",
-        "price": "कीमत",
-        "order": "विज्ञापन",
-        "payment": "भुगतान",
-        "support": "सहायता"
-    },
-
-
-    # ========================================================
-    # UZBEK
-    # ========================================================
-
-    "uz": {
-        "btn_add": "Botni guruhga qo'shish",
-        "btn_order": "Reklama berish",
-        "btn_price": "Narxlar",
-        "btn_payment": "To'lov usuli",
-        "btn_status": "Mening statusim",
-        "btn_lang": "Language | Til",
-        "btn_support": "Yordam",
-        "btn_back": "Qaytish",
-        "done_msg":
-            "✅ <b>Tayyor! Tilingiz o'rnatildi.</b>",
-        "loading": "Yuklanmoqda...",
-        "video_converted": "Konvert qilindi",
-        "size_limit": "Hajmi katta",
-        "fail_download": "Xato",
-        "photo_download": "Rasm",
-        "welcome": "Salom",
-        "price": "Narx",
-        "order": "Reklama",
-        "payment": "To'lov",
-        "support": "Yordam"
-    },
-
-
-    # ========================================================
-    # PORTUGUESE
-    # ========================================================
-
-    "pt": {
-        "btn_add": "Adicionar bot ao grupo",
-        "btn_order": "Anunciar",
-        "btn_price": "Preços",
-        "btn_payment": "Método de pagamento",
-        "btn_status": "Meu status",
-        "btn_lang": "Language | Idioma",
-        "btn_support": "Suporte",
-        "btn_back": "Voltar",
-        "done_msg":
-            "✅ <b>Concluído! Seu idioma foi definido.</b>",
-        "loading": "Carregando...",
-        "video_converted": "Convertido",
-        "size_limit": "Arquivo grande",
-        "fail_download": "Falha",
-        "photo_download": "Foto",
-        "welcome": "Olá",
-        "price": "Preços",
-        "order": "Anúncio",
-        "payment": "Pagamento",
-        "support": "Suporte"
-    },
-
-
-    # ========================================================
-    # CHINESE
-    # ========================================================
-
-    "zh": {
-        "btn_add": "添加机器人到群组",
-        "btn_order": "刊登广告",
-        "btn_price": "价格与费率",
-        "btn_payment": "付款方式",
-        "btn_status": "我的状态",
-        "btn_lang": "Language | 语言",
-        "btn_support": "帮助与支持",
-        "btn_back": "返回",
-        "done_msg":
-            "✅ <b>完成！您的语言已设置。</b>",
-        "loading": "加载中...",
-        "video_converted": "已转换",
-        "size_limit": "文件过大",
-        "fail_download": "失败",
-        "photo_download": "照片",
-        "welcome": "你好",
-        "price": "价格",
-        "order": "广告",
-        "payment": "付款",
-        "support": "支持"
-    },
-
-
-    # ========================================================
-    # BENGALI
-    # ========================================================
-
-    "bn": {
-        "btn_add": "বোট চ্যাটে যুক্ত করুন",
-        "btn_order": "বিজ্ঞাপন দিন",
-        "btn_price": "মূল্য এবং হার",
-        "btn_payment": "পেমেন্ট মাধ্যম",
-        "btn_status": "আমার স্ট্যাটাস",
-        "btn_lang": "Language | ভাষা",
-        "btn_support": "সহায়তা",
-        "btn_back": "ফিরে যান",
-        "done_msg":
-            "✅ <b>সম্পন্ন হয়েছে! আপনার ভাষা সেট করা হয়েছে।</b>",
-        "loading": "লোড হচ্ছে...",
-        "video_converted": "রূপান্তরিত",
-        "size_limit": "বড় ফাইল",
-        "fail_download": "ব্যর্থ",
-        "photo_download": "ছবি",
-        "welcome": "হ্যালো",
-        "price": "মূল্য",
-        "order": "বিজ্ঞাপন",
-        "payment": "পেমেন্ট",
-        "support": "সহায়তা"
-    },
-
-
-    # ========================================================
-    # INDONESIAN
-    # ========================================================
-
-    "id": {
-        "btn_add": "Tambahkan bot ke grup",
-        "btn_order": "Iklan",
-        "btn_price": "Harga & Tarif",
-        "btn_payment": "Metode Pembayaran",
-        "btn_status": "Status Saya",
-        "btn_lang": "Language | Bahasa",
-        "btn_support": "Bantuan",
-        "btn_back": "Kembali",
-        "done_msg":
-            "✅ <b>Selesai! Bahasa Anda telah disetel.</b>",
-        "loading": "Memuat...",
-        "video_converted": "Dikonversi",
-        "size_limit": "File terlalu besar",
-        "fail_download": "Gagal",
-        "photo_download": "Foto",
-        "welcome": "Halo",
-        "price": "Harga",
-        "order": "Iklan",
-        "payment": "Pembayaran",
-        "support": "Bantuan"
-    },
-
-
-    # ========================================================
-    # GERMAN
-    # ========================================================
-
-    "de": {
-        "btn_add": "Bot zur Gruppe hinzufügen",
-        "btn_order": "Werbung buchen",
-        "btn_price": "Preise",
-        "btn_payment": "Zahlungsmethode",
-        "btn_status": "Mein Status",
-        "btn_lang": "Language | Sprache",
-        "btn_support": "Hilfe",
-        "btn_back": "Zurück",
-        "done_msg":
-            "✅ <b>Fertig! Ihre Sprache wurde eingestellt.</b>",
-        "loading": "Laden...",
-        "video_converted": "Konvertiert",
-        "size_limit": "Datei zu groß",
-        "fail_download": "Fehler",
-        "photo_download": "Foto",
-        "welcome": "Hallo",
-        "price": "Preise",
-        "order": "Werbung",
-        "payment": "Zahlung",
-        "support": "Hilfe"
-    },
-
-
-    # ========================================================
-    # UKRAINIAN
-    # ========================================================
-
-    "uk": {
-        "btn_add": "Додати бота в чат",
-        "btn_order": "Замовити рекламу",
-        "btn_price": "Ціни та тарифи",
-        "btn_payment": "Спосіб оплати",
-        "btn_status": "Мій статус",
-        "btn_lang": "Language | Мова",
-        "btn_support": "Допомога",
-        "btn_back": "Назад",
-        "done_msg":
-            "✅ <b>Готово! Вашу мову встановлено.</b>",
-        "loading": "Завантаження...",
-        "video_converted": "Конвертовано",
-        "size_limit": "Великий файл",
-        "fail_download": "Помилка",
-        "photo_download": "Фото",
-        "welcome": "Привіт",
-        "price": "Ціни",
-        "order": "Реклама",
-        "payment": "Оплата",
-        "support": "Допомога"
-    },
-
-
-    # ========================================================
-    # TURKISH
-    # ========================================================
-
-    "tr": {
-        "btn_add": "Botu gruba ekle",
-        "btn_order": "Reklam ver",
-        "btn_price": "Fiyatlar",
-        "btn_payment": "Ödeme Yöntemi",
-        "btn_status": "Durumum",
-        "btn_lang": "Language | Dil",
-        "btn_support": "Destek",
-        "btn_back": "Geri",
-        "done_msg":
-            "✅ <b>Tamamlandı! Diliniz ayarlandı.</b>",
-        "loading": "Yükleniyor",
-        "video_converted": "Dönüştürüldü",
-        "size_limit": "Dosya büyük",
-        "fail_download": "Hata",
-        "photo_download": "Fotoğraf",
-        "welcome": "Merhaba",
-        "price": "Fiyatlar",
-        "order": "Reklam",
-        "payment": "Ödeme",
-        "support": "Destek"
-    },
-
-
-    # ========================================================
-    # KOREAN
-    # ========================================================
-
-    "ko": {
-        "btn_add": "그룹에 봇 추가",
-        "btn_order": "광고 문의",
-        "btn_price": "가격 및 요금",
-        "btn_payment": "결제 방법",
-        "btn_status": "내 상태",
-        "btn_lang": "Language | 언어",
-        "btn_support": "지원",
-        "btn_back": "돌아가기",
-        "done_msg":
-            "✅ <b>완료되었습니다! 언어가 설정되었습니다.</b>",
-        "loading": "로딩 중...",
-        "video_converted": "변환됨",
-        "size_limit": "파일이 큽니다",
-        "fail_download": "실패",
-        "photo_download": "사진",
-        "welcome": "안녕하세요",
-        "price": "가격",
-        "order": "광고",
-        "payment": "결제",
-        "support": "지원"
-    },
-
-
-    # ========================================================
-    # ITALIAN
-    # ========================================================
-
-    "it": {
-        "btn_add": "Aggiungi bot al gruppo",
-        "btn_order": "Pubblicità",
-        "btn_price": "Prezzi",
-        "btn_payment": "Metodo di pagamento",
-        "btn_status": "Mio Stato",
-        "btn_lang": "Language | Lingua",
-        "btn_support": "Supporto",
-        "btn_back": "Indietro",
-        "done_msg":
-            "✅ <b>Fatto! La tua lingua è stata impostata.</b>",
-        "loading": "Caricamento...",
-        "video_converted": "Convertito",
-        "size_limit": "File troppo grande",
-        "fail_download": "Errore",
-        "photo_download": "Foto",
-        "welcome": "Ciao",
-        "price": "Prezzi",
-        "order": "Pubblicità",
-        "payment": "Pagamento",
-        "support": "Supporto"
-    },
-
-
-    # ========================================================
-    # POLISH
-    # ========================================================
-
-    "pl": {
-        "btn_add": "Dodaj bota do grupy",
-        "btn_order": "Reklama",
-        "btn_price": "Cennik",
-        "btn_payment": "Metoda płatności",
-        "btn_status": "Mój status",
-        "btn_lang": "Language | Język",
-        "btn_support": "Pomoc",
-        "btn_back": "Wróć",
-        "done_msg":
-            "✅ <b>Gotowe! Twój język został ustawiony.</b>",
-        "loading": "Ładowanie...",
-        "video_converted": "Skonwertowano",
-        "size_limit": "Za duży plik",
-        "fail_download": "Błąd",
-        "photo_download": "Zdjęcie",
-        "welcome": "Cześć",
-        "price": "Cennik",
-        "order": "Reklama",
-        "payment": "Płatność",
-        "support": "Pomoc"
-    },
-
-
-    # ========================================================
-    # VIETNAMESE
-    # ========================================================
-
-    "vi": {
-        "btn_add": "Thêm bot vào nhóm",
-        "btn_order": "Đặt quảng cáo",
-        "btn_price": "Bảng giá",
-        "btn_payment": "Phương thức thanh toán",
-        "btn_status": "Trạng thái",
-        "btn_lang": "Language | Ngôn ngữ",
-        "btn_support": "Hỗ trợ",
-        "btn_back": "Quay lại",
-        "done_msg":
-            "✅ <b>Hoàn tất! Ngôn ngữ của bạn đã được đặt.</b>",
-        "loading": "Đang tải...",
-        "video_converted": "Đã chuyển đổi",
-        "size_limit": "Tệp quá lớn",
-        "fail_download": "Lỗi",
-        "photo_download": "Ảnh",
-        "welcome": "Xin chào",
-        "price": "Giá",
-        "order": "Quảng cáo",
-        "payment": "Thanh toán",
-        "support": "Hỗ trợ"
-    },
-
-
-    # ========================================================
-    # KAZAKH
-    # ========================================================
-
-    "kk": {
-        "btn_add": "Ботты топқа қосу",
-        "btn_order": "Жарнама беру",
-        "btn_price": "Бағалар",
-        "btn_payment": "Төлем әдісі",
-        "btn_status": "Мәртебем",
-        "btn_lang": "Language | Тіл",
-        "btn_support": "Көмек",
-        "btn_back": "Қайту",
-        "done_msg":
-            "✅ <b>Дайын! Тіліңіз орнатылды.</b>",
-        "loading": "Жүктелуде",
-        "video_converted": "Айырбасталды",
-        "size_limit": "Файл тым үлкен",
-        "fail_download": "Қате",
-        "photo_download": "Сурет",
-        "welcome": "Сәлем",
-        "price": "Бағалар",
-        "order": "Жарнама",
-        "payment": "Төлем",
-        "support": "Көмек"
+            '<tg-emoji emoji-id="5949327894567195412">👩‍💻</tg-emoji> '
+            'يمكنك كتابة رسائلك هنا للتواصل مع المسؤول مباشرة.'
+        )
     }
 }
 
@@ -1192,137 +754,26 @@ def get_main_menu_keyboard(
 
 
 # ============================================================
-# LANGUAGE KEYBOARD
+# LANGUAGE KEYBOARD (Amharic, English & Arabic only)
 # ============================================================
 
 def get_language_keyboard():
 
     keyboard = [
-
         [
-            InlineKeyboardButton(
-                "🇬🇧 English",
-                callback_data="lang_en"
-            ),
-
             InlineKeyboardButton(
                 "🇪🇹 አማርኛ",
                 callback_data="lang_am"
+            ),
+            InlineKeyboardButton(
+                "🇬🇧 English",
+                callback_data="lang_en"
             )
         ],
-
         [
             InlineKeyboardButton(
                 "🇸🇦 العربية",
                 callback_data="lang_ar"
-            )
-        ],
-
-        [
-            InlineKeyboardButton(
-                "🇷🇺 Русский",
-                callback_data="lang_ru"
-            ),
-
-            InlineKeyboardButton(
-                "🇫🇷 Français",
-                callback_data="lang_fr"
-            )
-        ],
-
-        [
-            InlineKeyboardButton(
-                "🇪🇸 Español",
-                callback_data="lang_es"
-            ),
-
-            InlineKeyboardButton(
-                "🇮🇷 ایران",
-                callback_data="lang_fa"
-            )
-        ],
-
-        [
-            InlineKeyboardButton(
-                "🇮🇳 भारत",
-                callback_data="lang_hi"
-            ),
-
-            InlineKeyboardButton(
-                "🇺🇿 O'zbek",
-                callback_data="lang_uz"
-            )
-        ],
-
-        [
-            InlineKeyboardButton(
-                "🇵🇹 Português",
-                callback_data="lang_pt"
-            ),
-
-            InlineKeyboardButton(
-                "🇨🇳 中文",
-                callback_data="lang_zh"
-            )
-        ],
-
-        [
-            InlineKeyboardButton(
-                "🇧🇩 বাংলা",
-                callback_data="lang_bn"
-            ),
-
-            InlineKeyboardButton(
-                "🇮🇩 Indonesia",
-                callback_data="lang_id"
-            )
-        ],
-
-        [
-            InlineKeyboardButton(
-                "🇩🇪 Deutsch",
-                callback_data="lang_de"
-            ),
-
-            InlineKeyboardButton(
-                "🇺🇦 Українська",
-                callback_data="lang_uk"
-            )
-        ],
-
-        [
-            InlineKeyboardButton(
-                "🇹🇷 Türkçe",
-                callback_data="lang_tr"
-            ),
-
-            InlineKeyboardButton(
-                "🇰🇷 한국어",
-                callback_data="lang_ko"
-            )
-        ],
-
-        [
-            InlineKeyboardButton(
-                "🇮🇹 Italiano",
-                callback_data="lang_it"
-            ),
-
-            InlineKeyboardButton(
-                "🇵🇱 Polski",
-                callback_data="lang_pl"
-            )
-        ],
-
-        [
-            InlineKeyboardButton(
-                "🇻🇳 Tiếng Việt",
-                callback_data="lang_vi"
-            ),
-
-            InlineKeyboardButton(
-                "🇰🇿 Қазақша",
-                callback_data="lang_kk"
             )
         ]
     ]
@@ -1428,8 +879,6 @@ async def is_joined(update, context):
             e
         )
 
-        # Keep original behavior:
-        # if Telegram cannot verify, don't block the user.
         return True
 
 # ============================================================
@@ -1437,33 +886,68 @@ async def is_joined(update, context):
 # ============================================================
 
 async def show_force_join(update, context):
+    user_id = update.effective_user.id
+    lang = get_user_language(user_id)
 
-    text = (
-        '<tg-emoji emoji-id="6034962180875490251">🔒</tg-emoji> '
-        '<b>ቦቱን ለመጠቀም ከታች ያለውን ቻናል '
-        'መቀላቀል አለብዎት!</b>\n\n'
-        '1️⃣ '
-        '<tg-emoji emoji-id="5267442591548320083">📢</tg-emoji> '
-        '<b>Join Channel የሚለውን ይጫኑ::</b>\n'
-        '2️⃣ '
-        '<tg-emoji emoji-id="5305749202997911340">✅</tg-emoji> '
-        '<b>I\'ve Joined የሚለውን ተጭነው የላኩትን '
-        'ደግመው ይላኩ '
-        '<tg-emoji emoji-id="5217449524410199951">🙂</tg-emoji>::</b>'
-    )
+    if lang == "en":
+        text = (
+            '<tg-emoji emoji-id="6034962180875490251">🔒</tg-emoji> '
+            '<b>You must join the channel below to use the bot!</b>\n\n'
+            '1️⃣ '
+            '<tg-emoji emoji-id="5267442591548320083">📢</tg-emoji> '
+            '<b>Click Join Channel::</b>\n'
+            '2️⃣ '
+            '<tg-emoji emoji-id="5305749202997911340">✅</tg-emoji> '
+            '<b>Click I\'ve Joined and resend your link '
+            '<tg-emoji emoji-id="5217449524410199951">🙂</tg-emoji>::</b>'
+        )
+        btn_join_text = "Join Channel"
+        btn_joined_text = "I've Joined"
+
+    elif lang == "ar":
+        text = (
+            '<tg-emoji emoji-id="6034962180875490251">🔒</tg-emoji> '
+            '<b>يجب عليك الاشتراك في القناة أدناه لاستخدام البوت!</b>\n\n'
+            '1️⃣ '
+            '<tg-emoji emoji-id="5267442591548320083">📢</tg-emoji> '
+            '<b>اضغط على انضمام للقناة::</b>\n'
+            '2️⃣ '
+            '<tg-emoji emoji-id="5305749202997911340">✅</tg-emoji> '
+            '<b>اضغط على تم الانضمام وأعد إرسال الرابط '
+            '<tg-emoji emoji-id="5217449524410199951">🙂</tg-emoji>::</b>'
+        )
+        btn_join_text = "انضمام للقناة"
+        btn_joined_text = "تم الانضمام"
+
+    else:
+        text = (
+            '<tg-emoji emoji-id="6034962180875490251">🔒</tg-emoji> '
+            '<b>ቦቱን ለመጠቀም ከታች ያለውን ቻናል '
+            'መቀላቀል አለብዎት!</b>\n\n'
+            '1️⃣ '
+            '<tg-emoji emoji-id="5267442591548320083">📢</tg-emoji> '
+            '<b>Join Channel የሚለውን ይጫኑ::</b>\n'
+            '2️⃣ '
+            '<tg-emoji emoji-id="5305749202997911340">✅</tg-emoji> '
+            '<b>I\'ve Joined የሚለውን ተጭነው የላኩትን '
+            'ደግመው ይላኩ '
+            '<tg-emoji emoji-id="5217449524410199951">🙂</tg-emoji>::</b>'
+        )
+        btn_join_text = "Join Channel"
+        btn_joined_text = "I've Joined"
 
     
     keyboard_custom = [
         [
             InlineKeyboardButton(
-                text="Join Channel",
+                text=btn_join_text,
                 icon_custom_emoji_id="5767358836134382747",
                 url=FORCE_CHANNEL_LINK
             )
         ],
         [
             InlineKeyboardButton(
-                text="I've Joined",
+                text=btn_joined_text,
                 icon_custom_emoji_id="5895288332581082241",
                 callback_data="check_join"
             )
@@ -1473,13 +957,13 @@ async def show_force_join(update, context):
     keyboard_normal = [
         [
             InlineKeyboardButton(
-                text="📢 Join Channel",
+                text=f"📢 {btn_join_text}",
                 url=FORCE_CHANNEL_LINK
             )
         ],
         [
             InlineKeyboardButton(
-                text="✅ I've Joined",
+                text=f"✅ {btn_joined_text}",
                 callback_data="check_join"
             )
         ]
@@ -1506,6 +990,7 @@ async def show_force_join(update, context):
                 "Normal force-join keyboard failed:",
                 fallback_error
             )
+
             
 # ============================================================
 # SEND MAIN MENU SAFELY
@@ -1544,7 +1029,6 @@ async def send_main_menu(
             e
         )
 
-        # Fallback without icon_custom_emoji_id
         await context.bot.send_message(
             chat_id=chat_id,
             text=text,
@@ -1586,7 +1070,7 @@ async def start(update, context):
 
         await update.message.reply_text(
             "<b>Please select your language / "
-            "እባክዎ ቋንቋ ይምረጡ፦</b>",
+            "እባክዎ ቋንቋ ይምረጡ / اختر لغتك፦</b>",
             reply_markup=get_language_keyboard(),
             parse_mode="HTML"
         )
@@ -1594,14 +1078,12 @@ async def start(update, context):
         return
 
 
-    # Give the persistent Menu keyboard
     await update.message.reply_text(
         "🏠",
         reply_markup=setup_keyboard
     )
 
 
-    # Force join
     if not await is_joined(
         update,
         context
@@ -1864,7 +1346,6 @@ async def convert_video_to_audio(
     )
 
 
-    # Support video documents too
     if not video:
 
         document = update.message.document
@@ -2150,17 +1631,10 @@ def get_video_options(
     }
 
 
-    # --------------------------------------------------------
-    # YouTube
-    # --------------------------------------------------------
-
     if (
         "youtube.com" in url.lower()
         or "youtu.be" in url.lower()
     ):
-
-        # Do NOT force a specific player client here.
-        # yt-dlp's current defaults are safer.
 
         opts["format"] = (
             "bestvideo[ext=mp4]+"
@@ -2170,10 +1644,6 @@ def get_video_options(
             "best"
         )
 
-
-    # --------------------------------------------------------
-    # Likee
-    # --------------------------------------------------------
 
     elif (
         "likee" in url.lower()
@@ -2185,10 +1655,6 @@ def get_video_options(
         )
 
 
-    # --------------------------------------------------------
-    # Vimeo
-    # --------------------------------------------------------
-
     elif "vimeo.com" in url.lower():
 
         opts["http_headers"]["Referer"] = (
@@ -2196,20 +1662,12 @@ def get_video_options(
         )
 
 
-    # --------------------------------------------------------
-    # Fallback
-    # --------------------------------------------------------
-
     if fallback:
 
         opts["format"] = (
             "best[ext=mp4]/best"
         )
 
-
-    # --------------------------------------------------------
-    # YouTube Cookies
-    # --------------------------------------------------------
 
     if os.path.exists(
         "cookies.txt"
@@ -2416,10 +1874,6 @@ async def handle_url_download(
 
     try:
 
-        # ----------------------------------------------------
-        # Clean URL
-        # ----------------------------------------------------
-
         target_url = target_url.strip()
 
         target_url = target_url.rstrip(
@@ -2430,10 +1884,6 @@ async def handle_url_download(
             target_url
         )
 
-
-        # ----------------------------------------------------
-        # Pinterest special handling
-        # ----------------------------------------------------
 
         if (
             "pinterest.com" in target_url.lower()
@@ -2518,10 +1968,6 @@ async def handle_url_download(
                     )
 
 
-        # ----------------------------------------------------
-        # Download attempt #1
-        # ----------------------------------------------------
-
         try:
 
             await asyncio.to_thread(
@@ -2538,10 +1984,6 @@ async def handle_url_download(
                 e
             )
 
-            # ------------------------------------------------
-            # Download attempt #2
-            # ------------------------------------------------
-
             await asyncio.to_thread(
                 download_media_func,
                 target_url,
@@ -2549,10 +1991,6 @@ async def handle_url_download(
                 True
             )
 
-
-        # ----------------------------------------------------
-        # Find downloaded media
-        # ----------------------------------------------------
 
         downloaded_file = (
             find_downloaded_file(
@@ -2579,20 +2017,12 @@ async def handle_url_download(
             return
 
 
-        # ----------------------------------------------------
-        # File size
-        # ----------------------------------------------------
-
         file_size = os.path.getsize(
             downloaded_file
         )
 
         max_size = 50 * 1024 * 1024
 
-
-        # ----------------------------------------------------
-        # 50 MB limit
-        # ----------------------------------------------------
 
         if file_size > max_size:
 
@@ -2611,10 +2041,6 @@ async def handle_url_download(
 
             return
 
-
-        # ----------------------------------------------------
-        # IMAGE
-        # ----------------------------------------------------
 
         image_extensions = (
             ".jpg",
@@ -2655,10 +2081,6 @@ async def handle_url_download(
             sent_any = True
 
 
-        # ----------------------------------------------------
-        # AUDIO
-        # ----------------------------------------------------
-
         elif downloaded_file.lower().endswith(
             (
                 ".mp3",
@@ -2698,10 +2120,6 @@ async def handle_url_download(
             sent_any = True
 
 
-        # ----------------------------------------------------
-        # VIDEO
-        # ----------------------------------------------------
-
         else:
 
             bot_username = get_bot_username(
@@ -2726,6 +2144,14 @@ async def handle_url_download(
             ]
 
 
+            caption_video = get_trans(
+                user_id,
+                "video_downloaded"
+            ).format(
+                bot_username=bot_username
+            )
+
+
             with open(
                 downloaded_file,
                 "rb"
@@ -2733,6 +2159,8 @@ async def handle_url_download(
 
                 await update.message.reply_video(
                     video=video_file,
+                    caption=caption_video,
+                    parse_mode="HTML",
                     supports_streaming=True,
                     reply_markup=InlineKeyboardMarkup(
                         keyboard_share
@@ -2742,10 +2170,6 @@ async def handle_url_download(
 
             sent_any = True
 
-
-            # ------------------------------------------------
-            # Extract MP3 from downloaded video
-            # ------------------------------------------------
 
             audio_output = (
                 media_prefix
@@ -2848,10 +2272,6 @@ async def handle_url_download(
 
     finally:
 
-        # ----------------------------------------------------
-        # Clean temporary files
-        # ----------------------------------------------------
-
         try:
 
             for filename in os.listdir(
@@ -2906,10 +2326,6 @@ async def button_callback(
         context
     )
 
-
-    # ========================================================
-    # LANGUAGE
-    # ========================================================
 
     if data.startswith(
         "lang_"
@@ -2966,7 +2382,6 @@ async def button_callback(
         )
 
 
-        # Force join after selecting language
         try:
 
             member = await context.bot.get_chat_member(
@@ -3067,27 +2482,19 @@ async def button_callback(
         return
 
 
-    # ========================================================
-    # CHANGE LANGUAGE
-    # ========================================================
-
     if data == "cmd_change_lang":
 
         await query.answer()
 
         await query.edit_message_text(
             "<b>Please select your language / "
-            "እባክዎ ቋንቋ ይምረጡ፦</b>",
+            "እባክዎ ቋንቋ ይምረጡ / اختر لغتك፦</b>",
             reply_markup=get_language_keyboard(),
             parse_mode="HTML"
         )
 
         return
 
-
-    # ========================================================
-    # BACK
-    # ========================================================
 
     if data == "cmd_back":
 
@@ -3130,10 +2537,6 @@ async def button_callback(
         return
 
 
-    # ========================================================
-    # PRICE
-    # ========================================================
-
     if data == "cmd_price":
 
         await query.answer()
@@ -3172,10 +2575,6 @@ async def button_callback(
 
         return
 
-
-    # ========================================================
-    # ORDER
-    # ========================================================
 
     if data == "cmd_order":
 
@@ -3216,10 +2615,6 @@ async def button_callback(
         return
 
 
-    # ========================================================
-    # PAYMENT
-    # ========================================================
-
     if data == "cmd_payment":
 
         await query.answer()
@@ -3259,10 +2654,6 @@ async def button_callback(
         return
 
 
-    # ========================================================
-    # SUPPORT
-    # ========================================================
-
     if data == "cmd_support":
 
         await query.answer()
@@ -3301,10 +2692,6 @@ async def button_callback(
 
         return
 
-
-    # ========================================================
-    # STATUS
-    # ========================================================
 
     if data == "cmd_status":
 
@@ -3393,7 +2780,6 @@ async def check_join(
             "creator"
         ]:
 
-            # Answer ONCE
             await query.answer()
 
             try:
@@ -3414,7 +2800,6 @@ async def check_join(
 
         else:
 
-            # Answer ONCE with alert
             await query.answer(
                 "❌ እባክዎ መጀመሪያ Channel ይቀላቀሉ!",
                 show_alert=True
@@ -3504,10 +2889,6 @@ async def handle_user_messages(
     )
 
 
-    # --------------------------------------------------------
-    # Video document -> Video to Audio
-    # --------------------------------------------------------
-
     document = update.message.document
 
     if (
@@ -3526,20 +2907,12 @@ async def handle_user_messages(
         return
 
 
-    # --------------------------------------------------------
-    # Text / Caption
-    # --------------------------------------------------------
-
     text = (
         update.message.text
         or update.message.caption
         or ""
     )
 
-
-    # --------------------------------------------------------
-    # Main Menu button
-    # --------------------------------------------------------
 
     if text.strip() == "🏠 Menu":
 
@@ -3564,10 +2937,6 @@ async def handle_user_messages(
 
         return
 
-
-    # --------------------------------------------------------
-    # Check supported social-media URL
-    # --------------------------------------------------------
 
     text_lower = text.lower()
 
@@ -3618,10 +2987,6 @@ async def handle_user_messages(
 
         return
 
-
-    # ========================================================
-    # SUPPORT / ADMIN MESSAGE
-    # ========================================================
 
     username = (
         f"@{update.effective_user.username}"
@@ -3735,10 +3100,6 @@ async def admin_reply(
     target_user_id = None
 
 
-    # --------------------------------------------------------
-    # Mapping by message ID
-    # --------------------------------------------------------
-
     replied_id_str = str(
         replied_msg.message_id
     )
@@ -3751,10 +3112,6 @@ async def admin_reply(
         ]
 
 
-    # --------------------------------------------------------
-    # Try forward_from
-    # --------------------------------------------------------
-
     if (
         not target_user_id
         and replied_msg.forward_from
@@ -3764,10 +3121,6 @@ async def admin_reply(
             replied_msg.forward_from.id
         )
 
-
-    # --------------------------------------------------------
-    # Try ID from text
-    # --------------------------------------------------------
 
     if (
         not target_user_id
@@ -3787,10 +3140,6 @@ async def admin_reply(
             )
 
 
-    # --------------------------------------------------------
-    # Try ID from caption
-    # --------------------------------------------------------
-
     if (
         not target_user_id
         and replied_msg.caption
@@ -3808,10 +3157,6 @@ async def admin_reply(
                 match.group(1)
             )
 
-
-    # --------------------------------------------------------
-    # Send reply
-    # --------------------------------------------------------
 
     if target_user_id:
 
@@ -3876,7 +3221,6 @@ def main():
         )
 
 
-    # Start Flask before Telegram polling
     keep_alive()
 
 
@@ -3887,10 +3231,6 @@ def main():
         .build()
     )
 
-
-    # --------------------------------------------------------
-    # Commands
-    # --------------------------------------------------------
 
     application.add_handler(
         CommandHandler(
@@ -3956,10 +3296,6 @@ def main():
     )
 
 
-    # --------------------------------------------------------
-    # Force Join callback
-    # --------------------------------------------------------
-
     application.add_handler(
         CallbackQueryHandler(
             check_join,
@@ -3968,10 +3304,6 @@ def main():
     )
 
 
-    # --------------------------------------------------------
-    # Main menu callbacks
-    # --------------------------------------------------------
-
     application.add_handler(
         CallbackQueryHandler(
             button_callback,
@@ -3979,10 +3311,6 @@ def main():
         )
     )
 
-
-    # --------------------------------------------------------
-    # Admin replies
-    # --------------------------------------------------------
 
     admin_filter = (
         filters.User(
@@ -4001,10 +3329,6 @@ def main():
     )
 
 
-    # --------------------------------------------------------
-    # Video -> Audio
-    # --------------------------------------------------------
-
     application.add_handler(
         MessageHandler(
             filters.VIDEO
@@ -4013,10 +3337,6 @@ def main():
         )
     )
 
-
-    # --------------------------------------------------------
-    # Other messages
-    # --------------------------------------------------------
 
     type_filter = (
         filters.TEXT
@@ -4035,10 +3355,6 @@ def main():
         )
     )
 
-
-    # --------------------------------------------------------
-    # Error handler
-    # --------------------------------------------------------
 
     application.add_error_handler(
         error_handler
