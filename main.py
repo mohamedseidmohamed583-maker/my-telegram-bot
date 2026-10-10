@@ -1,4 +1,7 @@
 import os
+import shutil
+import asyncio
+import yt_dlp
 import re
 import json
 import asyncio
@@ -1480,47 +1483,71 @@ def clean_url(raw_url):
 # ============================================================
 
 def get_video_options(
-    url: str,
+        url: str,
     output_template: str,
-    fallback=False
+    fallback: bool = False,
+    max_height: int = 720,
 ):
-    ffmpeg_location = os.path.dirname(FFMPEG_PATH) if FFMPEG_PATH else None
+    u = url.lower()
+    is_youtube = "youtube.com" in u or "youtu.be" in u
 
     opts = {
-        "quiet": True,
-        "no_warnings": True,
+        "quiet": False,
+        "no_warnings": False,
+
         "nocheckcertificate": True,
         "geo_bypass": True,
         "noplaylist": True,
-        "retries": 15,
-        "fragment_retries": 15,
-        "extractor_retries": 10,
-        "file_access_retries": 5,
-        "socket_timeout": 60,
+        "continuedl": True,
+
+        "retries": 10,
+        "fragment_retries": 10,
+        "file_access_retries": 3,
+        "extractor_retries": 3,
+        "socket_timeout": 30,
+        "concurrent_fragment_downloads": 4,
+
         "outtmpl": output_template,
-        # ተስተካክሏል፡ ቴሌግራም ላይ ያለምንም ስህተት እንዲጫን ሁልጊዜ ቀጥተኛውን best ፎርማት መጠቀም
-        "format": "best",
+        "merge_output_format": "mp4",
+
+        "format": (
+            f"bv*[height<={max_height}]+ba/"
+            f"b[height<={max_height}]/"
+            "bv*+ba/b"
+        ),
+        "format_sort": ["res", "ext:mp4:m4a"],
+
         "http_headers": {
             "User-Agent": (
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                 "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/131.0.0.0 Safari/537.36"
+                "Chrome/128.0.0.0 Safari/537.36"
             ),
             "Accept-Language": "en-US,en;q=0.9",
         },
     }
 
-    if ffmpeg_location:
-        opts["ffmpeg_location"] = ffmpeg_location
+    if is_youtube:
+        runtimes = {}
+        if shutil.which("deno"):
+            runtimes["deno"] = {}
+        if shutil.which("node"):
+            runtimes["node"] = {}
+        if runtimes:
+            opts["js_runtimes"] = runtimes
+            opts["remote_components"] = ["ejs:github"]
 
-    if "tiktok.com" in url.lower():
-        opts["extractor_args"] = {"tiktok": {"webpage_download": True}}
-
-    elif "likee" in url.lower() or "likee.video" in url.lower():
+    elif "likee" in u:
         opts["http_headers"]["Referer"] = "https://likee.video/"
-
-    elif "vimeo.com" in url.lower():
+    elif "vimeo.com" in u:
         opts["http_headers"]["Referer"] = "https://vimeo.com/"
+
+    if fallback:
+        opts["format"] = "b[height<=480]/b"
+        if is_youtube:
+            opts["extractor_args"] = {
+                "youtube": {"player_client": ["android_vr", "tv"]}
+            }
 
     if os.path.exists("cookies.txt"):
         opts["cookiefile"] = "cookies.txt"
