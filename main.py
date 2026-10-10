@@ -1476,7 +1476,7 @@ def clean_url(raw_url):
 
 
 # ============================================================
-# YT-DLP OPTIONS (FULLY FIXED FOR TIKTOK, YOUTUBE & OTHERS)
+# YT-DLP OPTIONS (SIMPLIFIED & HIGHLY STABLE)
 # ============================================================
 
 def get_video_options(
@@ -1498,9 +1498,8 @@ def get_video_options(
         "file_access_retries": 5,
         "socket_timeout": 60,
         "outtmpl": output_template,
-        # ተስተካክሏል፡ ቪዲዮዎችን ያለችግር ለማውረድ ቀላል እና ፕራይመሪ የሆነውን format መጠቀም
-        "format": "best" if fallback else "bestvideo+bestaudio/best",
-        "merge_output_format": "mp4",
+        # ተስተካክሏል፡ ቴሌግራም ላይ ያለምንም ስህተት እንዲጫን ሁልጊዜ ቀጥተኛውን best ፎርማት መጠቀም
+        "format": "best",
         "http_headers": {
             "User-Agent": (
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -1515,7 +1514,6 @@ def get_video_options(
         opts["ffmpeg_location"] = ffmpeg_location
 
     if "tiktok.com" in url.lower():
-        # ለቲክቶክ የተለየ ኢምፐርሰኔሽን እና ማለፊያ ቅንብር
         opts["extractor_args"] = {"tiktok": {"webpage_download": True}}
 
     elif "likee" in url.lower() or "likee.video" in url.lower():
@@ -1523,9 +1521,6 @@ def get_video_options(
 
     elif "vimeo.com" in url.lower():
         opts["http_headers"]["Referer"] = "https://vimeo.com/"
-
-    if fallback:
-        opts["format"] = "best"
 
     if os.path.exists("cookies.txt"):
         opts["cookiefile"] = "cookies.txt"
@@ -1646,7 +1641,7 @@ def pinterest_direct_image(url):
 
 
 # ============================================================
-# HANDLE URL DOWNLOAD
+# HANDLE URL DOWNLOAD (FIXED FOR DOCUMENT_INVALID)
 # ============================================================
 
 async def handle_url_download(
@@ -1727,22 +1722,13 @@ async def handle_url_download(
             except Exception as e:
                 print("Pinterest direct download failed:", repr(e))
 
-        # Download with fallback options
-        try:
-            await asyncio.to_thread(
-                download_media_func,
-                target_url,
-                output_template,
-                False
-            )
-        except Exception as first_error:
-            print("Download attempt 1 failed:", repr(first_error))
-            await asyncio.to_thread(
-                download_media_func,
-                target_url,
-                output_template,
-                True
-            )
+        # Download media
+        await asyncio.to_thread(
+            download_media_func,
+            target_url,
+            output_template,
+            False
+        )
 
         downloaded_file = find_downloaded_file(media_prefix)
 
@@ -1818,7 +1804,8 @@ async def handle_url_download(
                 )
             ]]
 
-            video_extensions = (".mp4", ".m4v", ".mov", ".webm", ".mkv")
+            # ፋይሉን እንደ ቪዲዮ ወይም ዶክመንት ሲልክ እንዳይሳሳት ትክክለኛውን ማረጋገጫ መስጠት
+            video_extensions = (".mp4", ".m4v", ".mov", ".webm", ".mkv", ".avi")
 
             if downloaded_file.lower().endswith(video_extensions):
                 with open(downloaded_file, "rb") as video_file:
@@ -1830,6 +1817,7 @@ async def handle_url_download(
                         reply_markup=InlineKeyboardMarkup(keyboard_share)
                     )
             else:
+                # ቪዲዮ ያልሆነ ሌላ ፎርማት ከሆነ በዶክመንት መልክ መላክ
                 with open(downloaded_file, "rb") as media_file:
                     await update.message.reply_document(
                         document=media_file,
