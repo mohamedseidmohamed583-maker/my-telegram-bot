@@ -4,20 +4,16 @@ import json
 import asyncio
 import subprocess
 import requests
-
-# 1. FFmpeg በስርዓቱ ውስጥ መኖሩን በጠንካራ ሁኔታ ለማረጋገጥ እና ዱካውን ለመሙላት
 import shutil
 import static_ffmpeg
 
+# FFmpeg ዱካዎችን በትክክል ማዘጋጀት
 try:
     static_ffmpeg.add_paths()
 except Exception as e:
     print("Static FFmpeg setup warning:", e)
 
-# FFmpeg በአካባቢው (Environment) ውስጥ መኖሩን ማረጋገጫ
 FFMPEG_PATH = shutil.which("ffmpeg")
-if not FFMPEG_PATH:
-    print("⚠️ Warning: ffmpeg not found in PATH via shutil.which")
 
 from threading import Thread
 from urllib.parse import quote
@@ -1307,7 +1303,7 @@ async def broadcast_command(
 
 
 # ============================================================
-# VIDEO TO AUDIO (FIXED & FULLY STABLE)
+# VIDEO TO AUDIO (FIXED ChatAction Error)
 # ============================================================
 
 async def convert_video_to_audio(update, context):
@@ -1347,7 +1343,7 @@ async def convert_video_to_audio(update, context):
     try:
         await context.bot.send_chat_action(
             chat_id=update.effective_chat.id,
-            action=ChatAction.UPLOAD_AUDIO
+            action=ChatAction.RECORD_VOICE
         )
 
         status_msg = await update.message.reply_text(
@@ -1364,7 +1360,6 @@ async def convert_video_to_audio(update, context):
         ):
             raise RuntimeError("Downloaded video file is empty or missing")
 
-        # የ ffmpeg ትዕዛዝ ከተስተካከለው መንገድ ጋር
         ffmpeg_bin = FFMPEG_PATH if FFMPEG_PATH else "ffmpeg"
         cmd = [
             ffmpeg_bin, "-y",
@@ -1481,7 +1476,7 @@ def clean_url(raw_url):
 
 
 # ============================================================
-# YT-DLP OPTIONS (FULLY OPTIMIZED FOR ALL SOCIAL MEDIA)
+# YT-DLP OPTIONS
 # ============================================================
 
 def get_video_options(
@@ -1489,7 +1484,6 @@ def get_video_options(
     output_template: str,
     fallback=False
 ):
-    # ፋየርዎል ወይም ሬንደር ፖሊሲ ላይ ችግር እንዳይፈጥር FFmpeg ዱካን ማካተት
     ffmpeg_location = os.path.dirname(FFMPEG_PATH) if FFMPEG_PATH else None
 
     opts = {
@@ -1504,8 +1498,7 @@ def get_video_options(
         "file_access_retries": 5,
         "socket_timeout": 60,
         "outtmpl": output_template,
-        # ከዩቲዩብ እና ሌሎችም ሊንኮች ጋር እንከን የለሽ እንዲወርድ
-        "format": "bestvideo+bestaudio/best" if not fallback else "best",
+        "format": "best[ext=mp4]/best" if fallback else "bestvideo+bestaudio/best",
         "merge_output_format": "mp4",
         "http_headers": {
             "User-Agent": (
@@ -1577,7 +1570,8 @@ def find_downloaded_file(prefix):
                 ".ytdl",
                 ".temp",
                 ".aria2",
-                ".webp"
+                ".webp",
+                ".json"
             )
         ):
             continue
@@ -1588,7 +1582,6 @@ def find_downloaded_file(prefix):
     if not valid_files:
         return None
 
-    # ፋይሎቹን በቅርብ ሰዓት የተሰሩትን ቅድሚያ በመስጠት መደርደር
     valid_files.sort(
         key=lambda x: os.path.getmtime(x),
         reverse=True
@@ -1648,7 +1641,7 @@ def pinterest_direct_image(url):
 
 
 # ============================================================
-# HANDLE URL DOWNLOAD (ROBUST ERROR HANDLING)
+# HANDLE URL DOWNLOAD
 # ============================================================
 
 async def handle_url_download(
@@ -2353,6 +2346,7 @@ def main():
 
     print("🤖 Mame Posts Bot is running...")
 
+    # drop_pending_updates=True ከሌሎች የተከፈቱ ኢנስታንሶች ጋር የሚፈጠር ግጭትን ያስወግዳል
     application.run_polling(drop_pending_updates=True)
 
 
