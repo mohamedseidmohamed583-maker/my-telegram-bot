@@ -1399,9 +1399,13 @@ async def convert_video_to_audio(
 
         tg_file = await video.get_file()
 
+        # ፋይሉን በትክክል ማውረዱን ማረጋገጥ
         await tg_file.download_to_drive(
             input_path
         )
+
+        if not os.path.exists(input_path) or os.path.getsize(input_path) == 0:
+            raise RuntimeError("Downloaded video file is empty or missing")
 
 
         cmd = [
@@ -1430,8 +1434,10 @@ async def convert_video_to_audio(
         if (
             result.returncode != 0
             or not os.path.exists(output_path)
+            or os.path.getsize(output_path) == 0
         ):
 
+            print("FFmpeg stderr:", result.stderr)
             raise RuntimeError(
                 "FFmpeg conversion failed"
             )
@@ -1523,6 +1529,7 @@ async def convert_video_to_audio(
 
             except Exception:
                 pass
+
 
 
 # ============================================================
