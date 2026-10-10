@@ -4,13 +4,20 @@ import json
 import asyncio
 import subprocess
 import requests
+
+# 1. FFmpeg በስርዓቱ ውስጥ መኖሩን በጠንካራ ሁኔታ ለማረጋገጥ እና ዱካውን ለመሙላት
+import shutil
 import static_ffmpeg
 
-# FFmpeg ዱካዎችን በትክክል ማዘጋጀት
 try:
     static_ffmpeg.add_paths()
 except Exception as e:
     print("Static FFmpeg setup warning:", e)
+
+# FFmpeg በአካባቢው (Environment) ውስጥ መኖሩን ማረጋገጫ
+FFMPEG_PATH = shutil.which("ffmpeg")
+if not FFMPEG_PATH:
+    print("⚠️ Warning: ffmpeg not found in PATH via shutil.which")
 
 from threading import Thread
 from urllib.parse import quote
@@ -758,7 +765,7 @@ def get_main_menu_keyboard(
 
 
 # ============================================================
-# LANGUAGE KEYBOARD (Amharic, English & Arabic only)
+# LANGUAGE KEYBOARD
 # ============================================================
 
 def get_language_keyboard():
@@ -886,7 +893,7 @@ async def is_joined(update, context):
         return True
 
 # ============================================================
-# SHOW FORCE JOIN (3ቱም ቋንቋዎች ከተጠበቁ Emojis ጋር)
+# SHOW FORCE JOIN
 # ============================================================
 
 async def show_force_join(update, context):
@@ -1046,7 +1053,7 @@ async def send_main_menu(
 
 
 # ============================================================
-# START (ተስተካክሏል: በ START ወቅት ቻናል ማስገደድ ተነስቷል)
+# START
 # ============================================================
 
 async def start(update, context):
@@ -1087,8 +1094,6 @@ async def start(update, context):
         reply_markup=setup_keyboard
     )
 
-
-    # START ሲል ቀጥታ ሜኑውን እንዲያይ ይደረጋል
     await send_main_menu(
         update.effective_chat.id,
         context,
@@ -1302,7 +1307,7 @@ async def broadcast_command(
 
 
 # ============================================================
-# VIDEO TO AUDIO (FIXED)
+# VIDEO TO AUDIO (FIXED & FULLY STABLE)
 # ============================================================
 
 async def convert_video_to_audio(update, context):
@@ -1359,8 +1364,10 @@ async def convert_video_to_audio(update, context):
         ):
             raise RuntimeError("Downloaded video file is empty or missing")
 
+        # የ ffmpeg ትዕዛዝ ከተስተካከለው መንገድ ጋር
+        ffmpeg_bin = FFMPEG_PATH if FFMPEG_PATH else "ffmpeg"
         cmd = [
-            "ffmpeg", "-y",
+            ffmpeg_bin, "-y",
             "-i", input_path,
             "-vn",
             "-acodec", "libmp3lame",
@@ -1440,7 +1447,6 @@ async def convert_video_to_audio(update, context):
                 pass
 
 
-
 # ============================================================
 # URL CLEANING
 # ============================================================
@@ -1473,8 +1479,9 @@ def clean_url(raw_url):
     raw_url = raw_url.strip().rstrip(".,!?;:)]}")
     return unshorten_url(raw_url)
 
+
 # ============================================================
-# YT-DLP OPTIONS (FIXED)
+# YT-DLP OPTIONS (FULLY OPTIMIZED FOR ALL SOCIAL MEDIA)
 # ============================================================
 
 def get_video_options(
@@ -1482,19 +1489,22 @@ def get_video_options(
     output_template: str,
     fallback=False
 ):
+    # ፋየርዎል ወይም ሬንደር ፖሊሲ ላይ ችግር እንዳይፈጥር FFmpeg ዱካን ማካተት
+    ffmpeg_location = os.path.dirname(FFMPEG_PATH) if FFMPEG_PATH else None
+
     opts = {
         "quiet": True,
         "no_warnings": False,
         "nocheckcertificate": True,
         "geo_bypass": True,
         "noplaylist": True,
-        "retries": 5,
-        "fragment_retries": 5,
-        "extractor_retries": 3,
-        "file_access_retries": 3,
+        "retries": 10,
+        "fragment_retries": 10,
+        "extractor_retries": 5,
+        "file_access_retries": 5,
         "socket_timeout": 60,
         "outtmpl": output_template,
-        # ተስተካክሏል፡ ለዩቲዩብ እና ሌሎችም የተሻለ የቪዲዮ+ኦዲዮ ቅንብር እንዲያመጣ ተደርጓል
+        # ከዩቲዩብ እና ሌሎችም ሊንኮች ጋር እንከን የለሽ እንዲወርድ
         "format": "bestvideo+bestaudio/best" if not fallback else "best",
         "merge_output_format": "mp4",
         "http_headers": {
@@ -1506,6 +1516,9 @@ def get_video_options(
             "Accept-Language": "en-US,en;q=0.9",
         },
     }
+
+    if ffmpeg_location:
+        opts["ffmpeg_location"] = ffmpeg_location
 
     if "likee" in url.lower() or "likee.video" in url.lower():
         opts["http_headers"]["Referer"] = "https://likee.video/"
@@ -1521,6 +1534,7 @@ def get_video_options(
 
     return opts
 
+
 # ============================================================
 # DOWNLOAD FUNCTION
 # ============================================================
@@ -1530,24 +1544,18 @@ def download_media_func(
     output_template,
     fallback=False
 ):
-
     options = get_video_options(
         url,
         output_template,
         fallback=fallback
     )
 
-    with yt_dlp.YoutubeDL(
-        options
-    ) as ydl:
-
-        ydl.download([
-            url
-        ])
+    with yt_dlp.YoutubeDL(options) as ydl:
+        ydl.download([url])
 
 
 # ============================================================
-# FIND DOWNLOADED FILE (FIXED)
+# FIND DOWNLOADED FILE
 # ============================================================
 
 def find_downloaded_file(prefix):
@@ -1580,13 +1588,7 @@ def find_downloaded_file(prefix):
     if not valid_files:
         return None
 
-    # ተስተካክሏል፡ ቪዲዮ እና ኦዲዮ ፋይሎችን ቅድሚያ ለመስጠት (በተለይ mp4)
-    valid_files.sort(
-        key=lambda x: (0 if x.lower().endswith(('.mp4', '.mkv', '.mov', '.webm', '.jpg', '.png', '.mp3')) else 1, os.path.getmtime(x)),
-        reverse=False
-    )
-
-    # ከዛ አዲስ የተሰራውን እንወስዳለን
+    # ፋይሎቹን በቅርብ ሰዓት የተሰሩትን ቅድሚያ በመስጠት መደርደር
     valid_files.sort(
         key=lambda x: os.path.getmtime(x),
         reverse=True
@@ -1602,7 +1604,6 @@ def find_downloaded_file(prefix):
 def pinterest_direct_image(url):
 
     try:
-
         response = requests.get(
             url,
             headers={
@@ -1615,12 +1616,9 @@ def pinterest_direct_image(url):
         if response.status_code != 200:
             return None
 
-
         html = response.text
 
-
         patterns = [
-
             r'https://i\.pinimg\.com/'
             r'(?:originals|736x)/[^"\']+',
 
@@ -1628,39 +1626,29 @@ def pinterest_direct_image(url):
             r"""(?:originals|736x)\\/[^"']+"""
         ]
 
-
         for pattern in patterns:
-
             match = re.search(
                 pattern,
                 html
             )
 
             if match:
-
                 image_url = match.group(0)
-
                 image_url = (
                     image_url
                     .replace("\\/", "/")
                     .replace("\\u002F", "/")
                 )
-
                 return image_url
 
-
     except Exception as e:
-
-        print(
-            "Pinterest Error:",
-            e
-        )
-
+        print("Pinterest Error:", e)
 
     return None
 
+
 # ============================================================
-# HANDLE URL DOWNLOAD (FIXED)
+# HANDLE URL DOWNLOAD (ROBUST ERROR HANDLING)
 # ============================================================
 
 async def handle_url_download(
@@ -1672,7 +1660,6 @@ async def handle_url_download(
         return
 
     user_id = update.effective_user.id
-
     record_user_activity(user_id)
 
     status_msg = await update.message.reply_text(
@@ -1693,36 +1680,23 @@ async def handle_url_download(
     sent_any = False
 
     try:
-        # ----------------------------------------------------
-        # CLEAN URL
-        # ----------------------------------------------------
-
         target_url = target_url.strip().rstrip(".,!?)]}")
-
         target_url = clean_url(target_url)
 
         if not target_url:
             raise ValueError("Empty URL")
 
-        # ----------------------------------------------------
-        # PINTEREST DIRECT IMAGE
-        # ----------------------------------------------------
-
+        # Pinterest Check
         if (
             "pinterest.com" in target_url.lower()
             or "pin.it" in target_url.lower()
         ):
             try:
-                image_url = pinterest_direct_image(
-                    target_url
-                )
-
+                image_url = pinterest_direct_image(target_url)
                 if image_url:
                     image_response = requests.get(
                         image_url,
-                        headers={
-                            "User-Agent": "Mozilla/5.0"
-                        },
+                        headers={"User-Agent": "Mozilla/5.0"},
                         timeout=30
                     )
 
@@ -1730,53 +1704,32 @@ async def handle_url_download(
                         image_response.status_code == 200
                         and image_response.content
                     ):
-                        temp_image = (
-                            media_prefix + "pinterest.jpg"
-                        )
-
+                        temp_image = media_prefix + "pinterest.jpg"
                         with open(temp_image, "wb") as f:
                             f.write(image_response.content)
 
                         try:
-                            bot_username = get_bot_username(
-                                context
-                            )
-
+                            bot_username = get_bot_username(context)
                             caption = get_trans(
                                 user_id,
                                 "photo_download"
-                            ).format(
-                                bot_username=bot_username
-                            )
+                            ).format(bot_username=bot_username)
 
-                            with open(
-                                temp_image,
-                                "rb"
-                            ) as photo:
+                            with open(temp_image, "rb") as photo:
                                 await update.message.reply_photo(
                                     photo=photo,
                                     caption=caption,
                                     parse_mode="HTML"
                                 )
-
                             sent_any = True
-
                         finally:
                             if os.path.exists(temp_image):
                                 os.remove(temp_image)
-
                         return
-
             except Exception as e:
-                print(
-                    "Pinterest direct download failed:",
-                    repr(e)
-                )
+                print("Pinterest direct download failed:", repr(e))
 
-        # ----------------------------------------------------
-        # DOWNLOAD MEDIA (ተስተካክሏል፡ በድጋሚ በመሞከር ሎጂክ የታገዘ)
-        # ----------------------------------------------------
-
+        # Download with fallback options
         try:
             await asyncio.to_thread(
                 download_media_func,
@@ -1784,13 +1737,8 @@ async def handle_url_download(
                 output_template,
                 False
             )
-
         except Exception as first_error:
-            print(
-                "Download attempt 1 failed:",
-                repr(first_error)
-            )
-
+            print("Download attempt 1 failed:", repr(first_error))
             await asyncio.to_thread(
                 download_media_func,
                 target_url,
@@ -1798,32 +1746,19 @@ async def handle_url_download(
                 True
             )
 
-        # ----------------------------------------------------
-        # FIND DOWNLOADED FILE
-        # ----------------------------------------------------
-
-        downloaded_file = find_downloaded_file(
-            media_prefix
-        )
+        downloaded_file = find_downloaded_file(media_prefix)
 
         if (
             not downloaded_file
             or not os.path.isfile(downloaded_file)
         ):
-            raise RuntimeError(
-                "Download completed without a usable output file"
-            )
+            raise RuntimeError("Download completed without a usable output file")
 
-        file_size = os.path.getsize(
-            downloaded_file
-        )
-
+        file_size = os.path.getsize(downloaded_file)
         max_size = 50 * 1024 * 1024
 
         if file_size <= 0:
-            raise RuntimeError(
-                "Downloaded file is empty"
-            )
+            raise RuntimeError("Downloaded file is empty")
 
         if file_size > max_size:
             await status_msg.edit_text(
@@ -1832,91 +1767,44 @@ async def handle_url_download(
             )
             return
 
-        # ----------------------------------------------------
-        # BOT INFORMATION
-        # ----------------------------------------------------
-
-        bot_username = get_bot_username(
-            context
-        )
+        bot_username = get_bot_username(context)
 
         caption_photo = get_trans(
             user_id,
             "photo_download"
-        ).format(
-            bot_username=bot_username
-        )
+        ).format(bot_username=bot_username)
 
         caption_video = get_trans(
             user_id,
             "video_downloaded"
-        ).format(
-            bot_username=bot_username
-        )
+        ).format(bot_username=bot_username)
 
         caption_audio = get_trans(
             user_id,
             "video_converted"
-        ).format(
-            bot_username=bot_username
-        )
+        ).format(bot_username=bot_username)
 
-        # ----------------------------------------------------
-        # PHOTO
-        # ----------------------------------------------------
+        image_extensions = (".jpg", ".jpeg", ".png", ".webp")
 
-        image_extensions = (
-            ".jpg",
-            ".jpeg",
-            ".png",
-            ".webp",
-        )
-
-        if downloaded_file.lower().endswith(
-            image_extensions
-        ):
-            with open(
-                downloaded_file,
-                "rb"
-            ) as photo:
+        if downloaded_file.lower().endswith(image_extensions):
+            with open(downloaded_file, "rb") as photo:
                 await update.message.reply_photo(
                     photo=photo,
                     caption=caption_photo,
                     parse_mode="HTML"
                 )
-
             sent_any = True
 
-        # ----------------------------------------------------
-        # AUDIO
-        # ----------------------------------------------------
-
         elif downloaded_file.lower().endswith(
-            (
-                ".mp3",
-                ".m4a",
-                ".aac",
-                ".wav",
-                ".ogg",
-                ".opus",
-                ".flac",
-            )
+            (".mp3", ".m4a", ".aac", ".wav", ".ogg", ".opus", ".flac")
         ):
-            with open(
-                downloaded_file,
-                "rb"
-            ) as audio:
+            with open(downloaded_file, "rb") as audio:
                 await update.message.reply_audio(
                     audio=audio,
                     caption=caption_audio,
                     parse_mode="HTML"
                 )
-
             sent_any = True
-
-        # ----------------------------------------------------
-        # VIDEO / OTHER MEDIA
-        # ----------------------------------------------------
 
         else:
             share_url = (
@@ -1925,69 +1813,41 @@ async def handle_url_download(
                 f"&text={quote('Try this awesome Downloader Bot!🔥')}"
             )
 
-            keyboard_share = [
-                [
-                    InlineKeyboardButton(
-                        "🔗 Share Bot 🚀",
-                        url=share_url
-                    )
-                ]
-            ]
+            keyboard_share = [[
+                InlineKeyboardButton(
+                    "🔗 Share Bot 🚀",
+                    url=share_url
+                )
+            ]]
 
-            video_extensions = (
-                ".mp4",
-                ".m4v",
-                ".mov",
-                ".webm",
-                ".mkv"
-            )
+            video_extensions = (".mp4", ".m4v", ".mov", ".webm", ".mkv")
 
-            if downloaded_file.lower().endswith(
-                video_extensions
-            ):
-                with open(
-                    downloaded_file,
-                    "rb"
-                ) as video_file:
+            if downloaded_file.lower().endswith(video_extensions):
+                with open(downloaded_file, "rb") as video_file:
                     await update.message.reply_video(
                         video=video_file,
                         caption=caption_video,
                         parse_mode="HTML",
                         supports_streaming=True,
-                        reply_markup=InlineKeyboardMarkup(
-                            keyboard_share
-                        )
+                        reply_markup=InlineKeyboardMarkup(keyboard_share)
                     )
-
             else:
-                with open(
-                    downloaded_file,
-                    "rb"
-                ) as media_file:
+                with open(downloaded_file, "rb") as media_file:
                     await update.message.reply_document(
                         document=media_file,
                         caption=caption_video,
                         parse_mode="HTML",
-                        reply_markup=InlineKeyboardMarkup(
-                            keyboard_share
-                        )
+                        reply_markup=InlineKeyboardMarkup(keyboard_share)
                     )
 
             sent_any = True
 
-            # ------------------------------------------------
-            # EXTRACT AUDIO FROM VIDEO
-            # ------------------------------------------------
-
-            if downloaded_file.lower().endswith(
-                video_extensions
-            ):
-                audio_output = (
-                    media_prefix + "audio.mp3"
-                )
-
+            # Extract Audio if video
+            if downloaded_file.lower().endswith(video_extensions):
+                audio_output = media_prefix + "audio.mp3"
+                ffmpeg_bin = FFMPEG_PATH if FFMPEG_PATH else "ffmpeg"
                 ffmpeg_cmd = [
-                    "ffmpeg",
+                    ffmpeg_bin,
                     "-y",
                     "-i",
                     downloaded_file,
@@ -2014,71 +1874,36 @@ async def handle_url_download(
                         and os.path.isfile(audio_output)
                         and os.path.getsize(audio_output) > 0
                     ):
-                        with open(
-                            audio_output,
-                            "rb"
-                        ) as audio_file:
+                        with open(audio_output, "rb") as audio_file:
                             await update.message.reply_audio(
                                 audio=audio_file,
                                 caption=caption_audio,
                                 parse_mode="HTML"
                             )
-
-                    else:
-                        print(
-                            "Audio extraction failed:",
-                            result.stderr[-2000:]
-                            if result.stderr
-                            else "No FFmpeg error details"
-                        )
-
                 except Exception as audio_error:
-                    print(
-                        "Audio extraction error:",
-                        repr(audio_error)
-                    )
+                    print("Audio extraction error:", repr(audio_error))
 
     except Exception as e:
-        print(
-            "Download Error:",
-            repr(e)
-        )
-
+        print("Download Error:", repr(e))
         if not sent_any:
             try:
                 await status_msg.edit_text(
-                    get_trans(
-                        user_id,
-                        "fail_download"
-                    ),
+                    get_trans(user_id, "fail_download"),
                     parse_mode="HTML"
                 )
-            except Exception as status_error:
-                print(
-                    "Status update error:",
-                    repr(status_error)
-                )
+            except Exception:
+                pass
 
     finally:
-        # ----------------------------------------------------
-        # CLEAN TEMPORARY FILES
-        # ----------------------------------------------------
-
         try:
             for filename in os.listdir("."):
                 if filename.startswith(media_prefix):
                     try:
                         os.remove(filename)
-                    except Exception as cleanup_error:
-                        print(
-                            "File cleanup error:",
-                            repr(cleanup_error)
-                        )
-        except Exception as cleanup_error:
-            print(
-                "Cleanup error:",
-                repr(cleanup_error)
-            )
+                    except Exception:
+                        pass
+        except Exception:
+            pass
 
         if sent_any:
             try:
@@ -2095,34 +1920,19 @@ async def button_callback(
     update,
     context
 ):
-
     query = update.callback_query
-
     data = query.data
-
     user = query.from_user
-
     user_id = user.id
-
     bot_username = get_bot_username(context)
 
-
     if data.startswith("lang_"):
-
         lang_code = data.split("_", 1)[1]
-
         if lang_code not in TRANSLATIONS:
-
-            await query.answer(
-                "Language unavailable.",
-                show_alert=True
-            )
-
+            await query.answer("Language unavailable.", show_alert=True)
             return
 
-
         set_user_language(user_id, lang_code)
-
         await query.answer()
 
         try:
@@ -2130,13 +1940,11 @@ async def button_callback(
         except Exception:
             pass
 
-
         setup_keyboard = ReplyKeyboardMarkup(
             [["🏠 Menu"]],
             resize_keyboard=True,
             input_field_placeholder="Send link 🔗"
         )
-
 
         await context.bot.send_message(
             chat_id=user_id,
@@ -2145,155 +1953,106 @@ async def button_callback(
             parse_mode="HTML"
         )
 
-
         await send_main_menu(user_id, context, user_id)
         return
 
-
     if data == "cmd_change_lang":
-
         await query.answer()
-
         await query.edit_message_text(
             "<b>Please select your language / እባክዎ ቋንቋ ይምረጡ / اختر لغتك፦</b>",
             reply_markup=get_language_keyboard(),
             parse_mode="HTML"
         )
-
         return
 
-
     if data == "cmd_back":
-
         await query.answer()
-
         text = get_trans(user_id, "welcome")
-
         try:
-
             await query.edit_message_text(
                 text=text,
                 reply_markup=get_main_menu_keyboard(bot_username, user_id, True),
                 parse_mode="HTML"
             )
-
         except Exception:
-
             await query.edit_message_text(
                 text=text,
                 reply_markup=get_main_menu_keyboard(bot_username, user_id, False),
                 parse_mode="HTML"
             )
-
         return
-
 
     if data == "cmd_price":
-
         await query.answer()
-
         text = get_trans(user_id, "price")
-
         try:
-
             await query.edit_message_text(
                 text=text,
                 reply_markup=get_back_keyboard(user_id, True),
                 parse_mode="HTML"
             )
-
         except Exception:
-
             await query.edit_message_text(
                 text=text,
                 reply_markup=get_back_keyboard(user_id, False),
                 parse_mode="HTML"
             )
-
         return
-
 
     if data == "cmd_order":
-
         await query.answer()
-
         text = get_trans(user_id, "order")
-
         try:
-
             await query.edit_message_text(
                 text=text,
                 reply_markup=get_back_keyboard(user_id, True),
                 parse_mode="HTML"
             )
-
         except Exception:
-
             await query.edit_message_text(
                 text=text,
                 reply_markup=get_back_keyboard(user_id, False),
                 parse_mode="HTML"
             )
-
         return
-
 
     if data == "cmd_payment":
-
         await query.answer()
-
         text = get_trans(user_id, "payment")
-
         try:
-
             await query.edit_message_text(
                 text=text,
                 reply_markup=get_back_keyboard(user_id, True),
                 parse_mode="HTML"
             )
-
         except Exception:
-
             await query.edit_message_text(
                 text=text,
                 reply_markup=get_back_keyboard(user_id, False),
                 parse_mode="HTML"
             )
-
         return
-
 
     if data == "cmd_support":
-
         await query.answer()
-
         text = get_trans(user_id, "support")
-
         try:
-
             await query.edit_message_text(
                 text=text,
                 reply_markup=get_back_keyboard(user_id, True),
                 parse_mode="HTML"
             )
-
         except Exception:
-
             await query.edit_message_text(
                 text=text,
                 reply_markup=get_back_keyboard(user_id, False),
                 parse_mode="HTML"
             )
-
         return
 
-
     if data == "cmd_status":
-
         await query.answer()
-
         total_users, user_msg_count = get_user_stats(user_id)
-
         username_text = f"@{user.username}" if user.username else "የለውም"
 
         msg = (
@@ -2308,23 +2067,18 @@ async def button_callback(
 
             '🔥 <b>Engagment: Active</b>'
         )
-
         try:
-
             await query.edit_message_text(
                 text=msg,
                 reply_markup=get_back_keyboard(user_id, True),
                 parse_mode="HTML"
             )
-
         except Exception:
-
             await query.edit_message_text(
                 text=msg,
                 reply_markup=get_back_keyboard(user_id, False),
                 parse_mode="HTML"
             )
-
         return
 
 
@@ -2336,43 +2090,32 @@ async def check_join(
     update,
     context
 ):
-
     query = update.callback_query
-
     user_id = query.from_user.id
 
     try:
-
         member = await context.bot.get_chat_member(
             chat_id=FORCE_CHANNEL,
             user_id=user_id
         )
 
         if member.status in ["member", "administrator", "creator"]:
-
             await query.answer()
-
             try:
-
                 await query.edit_message_text(
                     '<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> '
                     '<b>አሁን ቻናሉን ተቀላቅለዋል።</b>\n\n'
                     'እባክዎ የላኩትን ሊንክ ወይም ቪዲዮ ደግመው ይላኩ።',
                     parse_mode="HTML"
                 )
-
             except Exception:
                 pass
-
         else:
-
             await query.answer(
                 "❌ እባክዎ መጀመሪያ Channel ይቀላቀሉ!",
                 show_alert=True
             )
-
     except Exception:
-
         await query.answer(
             "⚠️ Channel membership could not be verified.",
             show_alert=True
@@ -2404,20 +2147,17 @@ async def handle_user_messages(
     update,
     context
 ):
-
     if not update.message:
         return
 
     user_id = update.effective_user.id
     record_user_activity(user_id)
 
-    # ቪዲዮ ወይም የቪዲዮ ፋይል ከሆነ
     if update.message.video or update.message.video_note:
         await convert_video_to_audio(update, context)
         return
 
     document = update.message.document
-
     if (
         document
         and document.mime_type
@@ -2426,36 +2166,28 @@ async def handle_user_messages(
         await convert_video_to_audio(update, context)
         return
 
-
     text = (
         update.message.text
         or update.message.caption
         or ""
     )
 
-
     if text.strip() == "🏠 Menu":
         await send_main_menu(update.effective_chat.id, context, user_id)
         return
 
-
     text_lower = text.lower()
-
     is_supported_link = any(
         domain in text_lower
         for domain in SUPPORTED_DOMAINS
     )
 
-
-    # የቪዲዮ/ፎቶ ሊንክ ሲልክ ብቻ ቻናሉን መቀላቀሉን ማረጋገጥ
     if is_supported_link:
-
         if not await is_joined(update, context):
             await show_force_join(update, context)
             return
 
         url_match = re.search(r"https?://[^\s]+", text)
-
         if url_match:
             target_url = url_match.group(0).rstrip(".,!?)]}")
         else:
@@ -2464,8 +2196,6 @@ async def handle_user_messages(
         await handle_url_download(update, context, target_url)
         return
 
-
-    # ለአድሚን የመልዕክት ማስተላለፊያ
     username = (
         f"@{update.effective_user.username}"
         if update.effective_user.username
@@ -2480,7 +2210,6 @@ async def handle_user_messages(
     )
 
     try:
-
         header_msg = await context.bot.send_message(
             chat_id=ADMIN_ID,
             text=header_text,
@@ -2493,14 +2222,12 @@ async def handle_user_messages(
             context.bot_data["user_mapping"] = {}
 
         user_mapping = context.bot_data["user_mapping"]
-
         user_mapping[str(header_msg.message_id)] = user_id
         user_mapping[str(forwarded_msg.message_id)] = user_id
 
         await update.message.reply_text(
             "✅ መልዕክትዎ ተቀብለናል። Admin ያነበበውን መልስ ይልክልዎታል።"
         )
-
     except Exception as e:
         print("Admin forwarding error:", e)
 
@@ -2513,7 +2240,6 @@ async def admin_reply(
     update,
     context
 ):
-
     if not update.message:
         return
 
@@ -2521,14 +2247,11 @@ async def admin_reply(
         return
 
     replied_msg = update.message.reply_to_message
-
     if not replied_msg:
         return
 
     user_mapping = context.bot_data.get("user_mapping", {})
-
     target_user_id = None
-
     replied_id_str = str(replied_msg.message_id)
 
     if replied_id_str in user_mapping:
@@ -2548,15 +2271,12 @@ async def admin_reply(
             target_user_id = int(match.group(1))
 
     if target_user_id:
-
         try:
             await update.message.copy(chat_id=target_user_id)
             await update.message.reply_text("✅ Reply sent to the user.")
         except Exception as e:
             await update.message.reply_text(f"❌ Could not send reply.\n{e}")
-
     else:
-
         await update.message.reply_text(
             "❌ User ID could not be found.\nPlease reply directly to the user's forwarded message or header."
         )
@@ -2570,7 +2290,6 @@ async def error_handler(
     update: object,
     context: ContextTypes.DEFAULT_TYPE
 ):
-
     print("❌ ERROR:", context.error)
 
 
