@@ -1554,10 +1554,8 @@ def unshorten_url(url: str) -> str:
 
         return url
 
-
-def clean_url(raw_url: str) -> str:
-
-    raw_url = raw_url.strip()
+def clean_url(raw_url):
+    return raw_url.strip().rstrip(".,!?;:)")
 
     return unshorten_url(
         raw_url
@@ -1574,44 +1572,28 @@ def get_video_options(
     fallback=False
 ):
 
-    opts = {
-
-        "quiet": True,
-
-        "no_warnings": True,
-
-        "nocheckcertificate": True,
-
-        "geo_bypass": True,
-
-        "retries": 5,
-
-        "fragment_retries": 5,
-
-        "socket_timeout": 30,
-
-        "outtmpl": output_template,
-
-        "format": "bestvideo+bestaudio/best",
-
-        "http_headers": {
-
-            "User-Agent":
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 "
-                "(KHTML, like Gecko) "
-                "Chrome/128.0.0.0 Safari/537.36",
-
-            "Accept":
-                "text/html,application/xhtml+xml,"
-                "application/xml;q=0.9,image/webp,"
-                "*/*;q=0.8",
-
-            "Accept-Language":
-                "en-US,en;q=0.9"
-        }
-    }
-
+ opts = {
+    "quiet": True,
+    "no_warnings": False,
+    "nocheckcertificate": True,
+    "geo_bypass": True,
+    "noplaylist": True,
+    "retries": 5,
+    "fragment_retries": 5,
+    "extractor_retries": 3,
+    "file_access_retries": 3,
+    "socket_timeout": 60,
+    "outtmpl": output_template,
+    "format": "best[ext=mp4]/best",
+    "http_headers": {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/131.0.0.0 Safari/537.36"
+        ),
+        "Accept-Language": "en-US,en;q=0.9",
+    },
+}
 
     if (
         "likee" in url.lower()
