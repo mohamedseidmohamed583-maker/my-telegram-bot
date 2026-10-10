@@ -1358,11 +1358,10 @@ async def convert_video_to_audio(
         return
 
 
-    await context.bot.send_chat_action(
+await context.bot.send_chat_action(
         chat_id=update.effective_chat.id,
         action=ChatAction.UPLOAD_AUDIO
     )
-
 
     status_msg = await update.message.reply_text(
         get_trans(
@@ -1373,7 +1372,7 @@ async def convert_video_to_audio(
     )
 
 
-    file_id = update.message.message_id
+file_id = update.message.message_id
 
     input_path = (
         f"input_vid_"
@@ -1386,7 +1385,6 @@ async def convert_video_to_audio(
         f"{user_id}_"
         f"{file_id}.mp3"
     )
-
 
     try:
 
@@ -1768,7 +1766,6 @@ def pinterest_direct_image(url):
 
     return None
 
-
 # ============================================================
 # HANDLE URL DOWNLOAD
 # ============================================================
@@ -1778,25 +1775,17 @@ async def handle_url_download(
     context,
     target_url
 ):
-
     if not update.message:
         return
 
     user_id = update.effective_user.id
 
-    record_user_activity(
-        user_id
-    )
-
+    record_user_activity(user_id)
 
     status_msg = await update.message.reply_text(
-        get_trans(
-            user_id,
-            "loading"
-        ),
+        get_trans(user_id, "loading"),
         parse_mode="HTML"
     )
-
 
     media_prefix = (
         f"download_"
@@ -1804,36 +1793,43 @@ async def handle_url_download(
         f"{update.message.message_id}_"
     )
 
-
     output_template = (
-        media_prefix
-        + "%(id)s.%(ext)s"
+        media_prefix + "%(id)s.%(ext)s"
     )
-
 
     sent_any = False
 
-
     try:
+        # ----------------------------------------------------
+        # CLEAN URL
+        # ----------------------------------------------------
 
         target_url = target_url.strip().rstrip(".,!?)]}")
+
         target_url = clean_url(target_url)
 
+        if not target_url:
+            raise ValueError("Empty URL")
+
+        # ----------------------------------------------------
+        # PINTEREST DIRECT IMAGE
+        # ----------------------------------------------------
 
         if (
             "pinterest.com" in target_url.lower()
             or "pin.it" in target_url.lower()
         ):
+            try:
+                image_url = pinterest_direct_image(
+                    target_url
+                )
 
-            image_url = pinterest_direct_image(target_url)
-
-            if image_url:
-
-                try:
-
+                if image_url:
                     image_response = requests.get(
                         image_url,
-                        headers={"User-Agent": "Mozilla/5.0"},
+                        headers={
+                            "User-Agent": "Mozilla/5.0"
+                        },
                         timeout=30
                     )
 
@@ -1841,40 +1837,54 @@ async def handle_url_download(
                         image_response.status_code == 200
                         and image_response.content
                     ):
-
                         temp_image = (
-                            media_prefix
-                            + "pinterest.jpg"
+                            media_prefix + "pinterest.jpg"
                         )
 
                         with open(temp_image, "wb") as f:
                             f.write(image_response.content)
 
-                        bot_username = get_bot_username(context)
-
-                        caption = get_trans(
-                            user_id,
-                            "photo_download"
-                        ).format(bot_username=bot_username)
-
-
-                        with open(temp_image, "rb") as photo:
-                            await update.message.reply_photo(
-                                photo=photo,
-                                caption=caption,
-                                parse_mode="HTML"
+                        try:
+                            bot_username = get_bot_username(
+                                context
                             )
 
-                        sent_any = True
-                        os.remove(temp_image)
+                            caption = get_trans(
+                                user_id,
+                                "photo_download"
+                            ).format(
+                                bot_username=bot_username
+                            )
+
+                            with open(
+                                temp_image,
+                                "rb"
+                            ) as photo:
+                                await update.message.reply_photo(
+                                    photo=photo,
+                                    caption=caption,
+                                    parse_mode="HTML"
+                                )
+
+                            sent_any = True
+
+                        finally:
+                            if os.path.exists(temp_image):
+                                os.remove(temp_image)
+
                         return
 
-                except Exception as e:
-                    print("Pinterest direct download failed:", e)
+            except Exception as e:
+                print(
+                    "Pinterest direct download failed:",
+                    repr(e)
+                )
 
+        # ----------------------------------------------------
+        # DOWNLOAD MEDIA
+        # ----------------------------------------------------
 
         try:
-
             await asyncio.to_thread(
                 download_media_func,
                 target_url,
@@ -1882,9 +1892,11 @@ async def handle_url_download(
                 False
             )
 
-        except Exception as e:
-
-            print("Download attempt 1 failed, retrying...", e)
+        except Exception as first_error:
+            print(
+                "Download attempt 1 failed:",
+                repr(first_error)
+            )
 
             await asyncio.to_thread(
                 download_media_func,
@@ -1893,103 +1905,132 @@ async def handle_url_download(
                 True
             )
 
+        # ----------------------------------------------------
+        # FIND DOWNLOADED FILE
+        # ----------------------------------------------------
 
-        downloaded_file = find_downloaded_file(media_prefix)
+        downloaded_file = find_downloaded_file(
+            media_prefix
+        )
 
+        if (
+            not downloaded_file
+            or not os.path.isfile(downloaded_file)
+        ):
+            raise RuntimeError(
+                "Download completed without a usable output file"
+            )
 
-        if not downloaded_file or not os.path.exists(downloaded_file):
+        file_size = os.path.getsize(
+            downloaded_file
+        )
 
-            try:
-
-                await status_msg.edit_text(
-                    get_trans(
-                        user_id,
-                        "fail_download"
-                    ),
-                    parse_mode="HTML"
-                )
-
-            except Exception:
-                pass
-
-            return
-
-
-        file_size = os.path.getsize(downloaded_file)
         max_size = 50 * 1024 * 1024
 
+        if file_size <= 0:
+            raise RuntimeError(
+                "Downloaded file is empty"
+            )
 
         if file_size > max_size:
-
-            try:
-
-                await status_msg.edit_text(
-                    get_trans(
-                        user_id,
-                        "size_limit"
-                    ),
-                    parse_mode="HTML"
-                )
-
-            except Exception:
-                pass
-
+            await status_msg.edit_text(
+                get_trans(user_id, "size_limit"),
+                parse_mode="HTML"
+            )
             return
 
+        # ----------------------------------------------------
+        # BOT INFORMATION
+        # ----------------------------------------------------
 
-        bot_username = get_bot_username(context)
+        bot_username = get_bot_username(
+            context
+        )
 
-        image_extensions = (".jpg", ".jpeg", ".png", ".webp")
+        caption_photo = get_trans(
+            user_id,
+            "photo_download"
+        ).format(
+            bot_username=bot_username
+        )
 
+        caption_video = get_trans(
+            user_id,
+            "video_downloaded"
+        ).format(
+            bot_username=bot_username
+        )
 
-        if downloaded_file.lower().endswith(image_extensions):
+        caption_audio = get_trans(
+            user_id,
+            "video_converted"
+        ).format(
+            bot_username=bot_username
+        )
 
-            caption = get_trans(
-                user_id,
-                "photo_download"
-            ).format(bot_username=bot_username)
+        # ----------------------------------------------------
+        # PHOTO
+        # ----------------------------------------------------
 
+        image_extensions = (
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".webp",
+        )
 
-            with open(downloaded_file, "rb") as photo:
-
+        if downloaded_file.lower().endswith(
+            image_extensions
+        ):
+            with open(
+                downloaded_file,
+                "rb"
+            ) as photo:
                 await update.message.reply_photo(
                     photo=photo,
-                    caption=caption,
+                    caption=caption_photo,
                     parse_mode="HTML"
                 )
 
             sent_any = True
 
+        # ----------------------------------------------------
+        # AUDIO
+        # ----------------------------------------------------
 
         elif downloaded_file.lower().endswith(
-            (".mp3", ".m4a", ".aac", ".wav", ".ogg", ".opus", ".flac")
+            (
+                ".mp3",
+                ".m4a",
+                ".aac",
+                ".wav",
+                ".ogg",
+                ".opus",
+                ".flac",
+            )
         ):
-
-            caption = get_trans(
-                user_id,
-                "video_converted"
-            ).format(bot_username=bot_username)
-
-
-            with open(downloaded_file, "rb") as audio:
-
+            with open(
+                downloaded_file,
+                "rb"
+            ) as audio:
                 await update.message.reply_audio(
                     audio=audio,
-                    caption=caption,
+                    caption=caption_audio,
                     parse_mode="HTML"
                 )
 
             sent_any = True
 
+        # ----------------------------------------------------
+        # VIDEO / OTHER MEDIA
+        # ----------------------------------------------------
 
         else:
-
             share_url = (
                 "https://t.me/share/url?"
                 f"url={quote(f'https://t.me/{bot_username}?start=share')}"
                 f"&text={quote('Try this awesome Downloader Bot!🔥')}"
             )
-
 
             keyboard_share = [
                 [
@@ -2000,84 +2041,119 @@ async def handle_url_download(
                 ]
             ]
 
+            # Send the downloaded media as a document if it
+            # is not a recognized Telegram-friendly video.
+            video_extensions = (
+                ".mp4",
+                ".m4v",
+                ".mov",
+                ".webm",
+            )
 
-            caption_video = get_trans(
-                user_id,
-                "video_downloaded"
-            ).format(bot_username=bot_username)
+            if downloaded_file.lower().endswith(
+                video_extensions
+            ):
+                with open(
+                    downloaded_file,
+                    "rb"
+                ) as video_file:
+                    await update.message.reply_video(
+                        video=video_file,
+                        caption=caption_video,
+                        parse_mode="HTML",
+                        supports_streaming=True,
+                        reply_markup=InlineKeyboardMarkup(
+                            keyboard_share
+                        )
+                    )
 
-
-            with open(downloaded_file, "rb") as video_file:
-
-                await update.message.reply_video(
-                    video=video_file,
-                    caption=caption_video,
-                    parse_mode="HTML",
-                    supports_streaming=True,
-                    reply_markup=InlineKeyboardMarkup(keyboard_share)
-                )
+            else:
+                with open(
+                    downloaded_file,
+                    "rb"
+                ) as media_file:
+                    await update.message.reply_document(
+                        document=media_file,
+                        caption=caption_video,
+                        parse_mode="HTML",
+                        reply_markup=InlineKeyboardMarkup(
+                            keyboard_share
+                        )
+                    )
 
             sent_any = True
 
+            # ------------------------------------------------
+            # EXTRACT AUDIO FROM VIDEO
+            # ------------------------------------------------
 
-            audio_output = media_prefix + "audio.mp3"
-
-            ffmpeg_cmd = [
-                "ffmpeg",
-                "-y",
-                "-i", downloaded_file,
-                "-vn",
-                "-acodec", "libmp3lame",
-                "-q:a", "2",
-                audio_output
-            ]
-
-            try:
-
-                result = await asyncio.to_thread(
-                    subprocess.run,
-                    ffmpeg_cmd,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.PIPE,
-                    text=True
+            if downloaded_file.lower().endswith(
+                video_extensions
+            ):
+                audio_output = (
+                    media_prefix + "audio.mp3"
                 )
 
-                if (
-                    result.returncode == 0
-                    and os.path.exists(audio_output)
-                    and os.path.getsize(audio_output) > 0
-                ):
+                ffmpeg_cmd = [
+                    "ffmpeg",
+                    "-y",
+                    "-i",
+                    downloaded_file,
+                    "-vn",
+                    "-acodec",
+                    "libmp3lame",
+                    "-q:a",
+                    "2",
+                    audio_output,
+                ]
 
-                    caption = get_trans(
-                        user_id,
-                        "video_converted"
-                    ).format(bot_username=bot_username)
+                try:
+                    result = await asyncio.to_thread(
+                        subprocess.run,
+                        ffmpeg_cmd,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.PIPE,
+                        text=True,
+                        timeout=300
+                    )
 
-                    with open(audio_output, "rb") as audio_file:
+                    if (
+                        result.returncode == 0
+                        and os.path.isfile(audio_output)
+                        and os.path.getsize(audio_output) > 0
+                    ):
+                        with open(
+                            audio_output,
+                            "rb"
+                        ) as audio_file:
+                            await update.message.reply_audio(
+                                audio=audio_file,
+                                caption=caption_audio,
+                                parse_mode="HTML"
+                            )
 
-                        await update.message.reply_audio(
-                            audio=audio_file,
-                            caption=caption,
-                            parse_mode="HTML"
+                    else:
+                        print(
+                            "Audio extraction failed:",
+                            result.stderr[-2000:]
+                            if result.stderr
+                            else "No FFmpeg error details"
                         )
 
-                    try:
-                        os.remove(audio_output)
-                    except Exception:
-                        pass
-
-            except Exception as e:
-                print("Audio extraction error:", e)
-
+                except Exception as audio_error:
+                    print(
+                        "Audio extraction error:",
+                        repr(audio_error)
+                    )
 
     except Exception as e:
-
-        print("Download Error:", e)
+        print(
+            "Download Error:",
+            repr(e)
+        )
 
         if not sent_any:
-
             try:
-
                 await status_msg.edit_text(
                     get_trans(
                         user_id,
@@ -2085,30 +2161,34 @@ async def handle_url_download(
                     ),
                     parse_mode="HTML"
                 )
-
-            except Exception:
-                pass
-
+            except Exception as status_error:
+                print(
+                    "Status update error:",
+                    repr(status_error)
+                )
 
     finally:
+        # ----------------------------------------------------
+        # CLEAN TEMPORARY FILES
+        # ----------------------------------------------------
 
         try:
-
             for filename in os.listdir("."):
-
                 if filename.startswith(media_prefix):
-
                     try:
                         os.remove(filename)
-                    except Exception:
-                        pass
-
-        except Exception:
-            pass
-
+                    except Exception as cleanup_error:
+                        print(
+                            "File cleanup error:",
+                            repr(cleanup_error)
+                        )
+        except Exception as cleanup_error:
+            print(
+                "Cleanup error:",
+                repr(cleanup_error)
+            )
 
         if sent_any:
-
             try:
                 await status_msg.delete()
             except Exception:
