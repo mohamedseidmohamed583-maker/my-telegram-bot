@@ -1563,7 +1563,6 @@ def clean_url(raw_url: str) -> str:
         raw_url
     )
 
-
 # ============================================================
 # YT-DLP OPTIONS
 # ============================================================
@@ -1583,16 +1582,24 @@ def get_video_options(
         "nocheckcertificate": True,
 
         "geo_bypass": True,
+        
+        "geo_bypass_country": "US",
 
-        "retries": 5,
+        "retries": 10,
 
-        "fragment_retries": 5,
+        "fragment_retries": 10,
 
         "socket_timeout": 30,
 
         "outtmpl": output_template,
 
-        "format": "bestvideo+bestaudio/best",
+        "format": "best" if fallback else "bestvideo+bestaudio/best",
+
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android", "web"]
+            }
+        },
 
         "http_headers": {
 
