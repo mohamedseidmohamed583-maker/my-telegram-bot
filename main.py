@@ -1562,6 +1562,21 @@ def clean_url(raw_url: str) -> str:
     return unshorten_url(
         raw_url
     )
+import random
+
+# የብዙ የተለያዩ ሀገራት ነፃ ፕሮክሲዎች ሊስት
+PROXIES = [
+    "http://185.199.229.156:7492",
+    "http://20.205.61.138:80",
+    "http://34.120.155.193:80",
+    "http://103.152.112.162:80",
+    "http://190.61.88.147:8080",
+    "http://45.33.2.1:3128",
+    "http://139.59.35.49:3128",
+    "http://165.22.123.119:80",
+    "http://178.62.204.183:8080",
+    "http://159.203.111.196:3128"
+]
 
 # ============================================================
 # YT-DLP OPTIONS
@@ -1573,6 +1588,9 @@ def get_video_options(
     fallback=False
 ):
 
+    # ከብዙዎቹ ፕሮክሲዎች ውስጥ በዘፈቀደ አንዱን ይመርጣል
+    selected_proxy = random.choice(PROXIES)
+
     opts = {
 
         "quiet": True,
@@ -1582,8 +1600,10 @@ def get_video_options(
         "nocheckcertificate": True,
 
         "geo_bypass": True,
-        
+
         "geo_bypass_country": "US",
+
+        "proxy": selected_proxy,
 
         "retries": 10,
 
