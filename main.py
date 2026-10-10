@@ -1570,8 +1570,26 @@ def download_media_func(
         fallback=fallback
     )
 
-    with yt_dlp.YoutubeDL(options) as ydl:
-        ydl.download([url])
+    with yt_dlp.YoutubeDL(get_video_options(url, template, fallback)) as ydl:
+        info = ydl.extract_info(url, download=True)
+        path = ydl.prepare_filename(info)
+        base = os.path.splitext(path)[0]
+        # merge ከተደረገ በኋላ ቅጥያው mp4 ይሆናል
+        if os.path.exists(base + ".mp4"):
+            return base + ".mp4"
+        return path
+
+
+async def download_video(url, template):
+    for fb in (False, True):
+        try:
+            return await asyncio.wait_for(
+                asyncio.to_thread(_download, url, template, fb),
+                timeout=600,
+            )
+        except Exception as e:
+            print("Download error:", e)
+    return None
 
 
 # ============================================================
@@ -1759,24 +1777,10 @@ async def handle_url_download(
 
         downloaded_file = find_downloaded_file(media_prefix)
 
-        if (
-            not downloaded_file
-            or not os.path.isfile(downloaded_file)
-        ):
-            raise RuntimeError("Download completed without a usable output file")
+    if not downloaded_file or not os.path.exists(downloaded_file):
+        await update.message.reply_text("😥 ማውረድ አልቻልኩም ቆይተው ይሞክሩ::")
+        return
 
-        file_size = os.path.getsize(downloaded_file)
-        max_size = 50 * 1024 * 1024
-
-        if file_size <= 0:
-            raise RuntimeError("Downloaded file is empty")
-
-        if file_size > max_size:
-            await status_msg.edit_text(
-                get_trans(user_id, "size_limit"),
-                parse_mode="HTML"
-            )
-            return
 
         bot_username = get_bot_username(context)
 
