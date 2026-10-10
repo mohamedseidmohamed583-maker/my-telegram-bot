@@ -1775,13 +1775,13 @@ async def handle_url_download(
             False
         )
 
+ 
         downloaded_file = find_downloaded_file(media_prefix)
 
-            if not downloaded_file or not os.path.exists(downloaded_file):
-        await update.message.reply_text("❌ ማውረድ አልቻልኩም:: ቆይተህ ሞክር።")
-        return
+        if not downloaded_file or not os.path.exists(downloaded_file):
+            await update.message.reply_text("❌ ማውረድ አልቻልኩም:: ቆይቶ እንደገና ይሞክሩ::")
+            return
 
-        
         bot_username = get_bot_username(context)
 
         caption_photo = get_trans(
