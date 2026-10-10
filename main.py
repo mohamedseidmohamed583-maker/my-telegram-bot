@@ -1305,138 +1305,87 @@ async def broadcast_command(
 # VIDEO TO AUDIO
 # ============================================================
 
-async def convert_video_to_audio(
-    update,
-    context
-):
+async def convert_video_to_audio(update, context):
 
     if not update.message:
         return
 
     user_id = update.effective_user.id
+    record_user_activity(user_id)
 
-    record_user_activity(
-        user_id
-    )
-
-    # ቪዲዮ ወደ ኦዲዮ ለመቀየር ሲሞክሩ ብቻ ቻናሉን ማስገደድ
-    if not await is_joined(
-        update,
-        context
-    ):
-
-        await show_force_join(
-            update,
-            context
-        )
-
+    if not await is_joined(update, context):
+        await show_force_join(update, context)
         return
 
-
-    video = (
-        update.message.video
-        or update.message.video_note
-    )
-
+    video = update.message.video or update.message.video_note
 
     if not video:
-
         document = update.message.document
 
         if (
             document
             and document.mime_type
-            and document.mime_type.startswith(
-                "video/"
-            )
+            and document.mime_type.startswith("video/")
         ):
-
             video = document
-
 
     if not video:
         return
 
+    file_id = update.message.message_id
 
-await context.bot.send_chat_action(
-        chat_id=update.effective_chat.id,
-        action=ChatAction.UPLOAD_AUDIO
-    )
+    input_path = f"input_vid_{user_id}_{file_id}.mp4"
+    output_path = f"output_aud_{user_id}_{file_id}.mp3"
 
-    status_msg = await update.message.reply_text(
-        get_trans(
-            user_id,
-            "loading"
-        ),
-        parse_mode="HTML"
-    )
-
-
-file_id = update.message.message_id
-
-    input_path = (
-        f"input_vid_"
-        f"{user_id}_"
-        f"{file_id}.mp4"
-    )
-
-    output_path = (
-        f"output_aud_"
-        f"{user_id}_"
-        f"{file_id}.mp3"
-    )
+    status_msg = None
 
     try:
-
-        tg_file = await video.get_file()
-
-        await tg_file.download_to_drive(
-            input_path
+        await context.bot.send_chat_action(
+            chat_id=update.effective_chat.id,
+            action=ChatAction.UPLOAD_AUDIO
         )
 
-        if not os.path.exists(input_path) or os.path.getsize(input_path) == 0:
+        status_msg = await update.message.reply_text(
+            get_trans(user_id, "loading"),
+            parse_mode="HTML"
+        )
+
+        tg_file = await video.get_file()
+        await tg_file.download_to_drive(input_path)
+
+        if (
+            not os.path.exists(input_path)
+            or os.path.getsize(input_path) == 0
+        ):
             raise RuntimeError("Downloaded video file is empty or missing")
 
-
         cmd = [
-            "ffmpeg",
-            "-y",
-            "-i",
-            input_path,
+            "ffmpeg", "-y",
+            "-i", input_path,
             "-vn",
-            "-acodec",
-            "libmp3lame",
-            "-q:a",
-            "2",
+            "-acodec", "libmp3lame",
+            "-q:a", "2",
             output_path
         ]
-
 
         result = await asyncio.to_thread(
             subprocess.run,
             cmd,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.PIPE,
-            text=True
+            text=True,
+            timeout=300
         )
-
 
         if (
             result.returncode != 0
             or not os.path.exists(output_path)
             or os.path.getsize(output_path) == 0
         ):
-
             print("FFmpeg stderr:", result.stderr)
-            raise RuntimeError(
-                "FFmpeg conversion failed"
-            )
+            raise RuntimeError("FFmpeg conversion failed")
 
-
-        bot_username = get_bot_username(
-            context
-        )
-
+        bot_username = get_bot_username(context)
 
         share_url = (
             "https://t.me/share/url?"
@@ -1444,81 +1393,52 @@ file_id = update.message.message_id
             f"&text={quote('Try this awesome Video to Audio Converter Bot!🔥')}"
         )
 
-
-        keyboard_share = [
-            [
-                InlineKeyboardButton(
-                    "🔗 Share Bot 🚀",
-                    url=share_url
-                )
-            ]
-        ]
-
+        keyboard_share = [[
+            InlineKeyboardButton(
+                "🔗 Share Bot 🚀",
+                url=share_url
+            )
+        ]]
 
         caption_text = get_trans(
             user_id,
             "video_converted"
-        ).format(
-            bot_username=bot_username
-        )
+        ).format(bot_username=bot_username)
 
-
-        with open(
-            output_path,
-            "rb"
-        ) as audio_file:
-
+        with open(output_path, "rb") as audio_file:
             await update.message.reply_audio(
                 audio=audio_file,
                 caption=caption_text,
                 parse_mode="HTML",
-                reply_markup=InlineKeyboardMarkup(
-                    keyboard_share
-                )
+                reply_markup=InlineKeyboardMarkup(keyboard_share)
             )
 
-
-        try:
-            await status_msg.delete()
-        except Exception:
-            pass
-
-
-    except Exception as e:
-
-        print(
-            "Video to Audio Error:",
-            e
-        )
-
-        try:
-
-            await status_msg.edit_text(
-                get_trans(
-                    user_id,
-                    "fail_download"
-                ),
-                parse_mode="HTML"
-            )
-
-        except Exception:
-            pass
-
-
-    finally:
-
-        for path in [
-            input_path,
-            output_path
-        ]:
-
+        if status_msg:
             try:
-
-                if os.path.exists(path):
-                    os.remove(path)
-
+                await status_msg.delete()
             except Exception:
                 pass
+
+    except Exception as e:
+        print("Video to Audio Error:", repr(e))
+
+        if status_msg:
+            try:
+                await status_msg.edit_text(
+                    get_trans(user_id, "fail_download"),
+                    parse_mode="HTML"
+                )
+            except Exception:
+                pass
+
+    finally:
+        for path in [input_path, output_path]:
+            try:
+                if os.path.exists(path):
+                    os.remove(path)
+            except Exception:
+                pass
+
 
 
 # ============================================================
@@ -1526,19 +1446,16 @@ file_id = update.message.message_id
 # ============================================================
 
 def unshorten_url(url: str) -> str:
-
     try:
-
         session = requests.Session()
 
         session.headers.update({
-            "User-Agent":
+            "User-Agent": (
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 "
-                "(KHTML, like Gecko) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
                 "Chrome/128.0.0.0 Safari/537.36"
+            )
         })
-
 
         response = session.head(
             url,
@@ -1549,16 +1466,12 @@ def unshorten_url(url: str) -> str:
         return response.url
 
     except Exception:
-
         return url
 
+
 def clean_url(raw_url):
-    return raw_url.strip().rstrip(".,!?;:)")
-
-    return unshorten_url(
-        raw_url
-    )
-
+    raw_url = raw_url.strip().rstrip(".,!?;:)]}")
+    return unshorten_url(raw_url)
 
 # ============================================================
 # YT-DLP OPTIONS
@@ -1569,57 +1482,42 @@ def get_video_options(
     output_template: str,
     fallback=False
 ):
+    opts = {
+        "quiet": True,
+        "no_warnings": False,
+        "nocheckcertificate": True,
+        "geo_bypass": True,
+        "noplaylist": True,
+        "retries": 5,
+        "fragment_retries": 5,
+        "extractor_retries": 3,
+        "file_access_retries": 3,
+        "socket_timeout": 60,
+        "outtmpl": output_template,
+        "format": "best[ext=mp4]/best",
+        "http_headers": {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/131.0.0.0 Safari/537.36"
+            ),
+            "Accept-Language": "en-US,en;q=0.9",
+        },
+    }
 
- opts = {
-    "quiet": True,
-    "no_warnings": False,
-    "nocheckcertificate": True,
-    "geo_bypass": True,
-    "noplaylist": True,
-    "retries": 5,
-    "fragment_retries": 5,
-    "extractor_retries": 3,
-    "file_access_retries": 3,
-    "socket_timeout": 60,
-    "outtmpl": output_template,
-    "format": "best[ext=mp4]/best",
-    "http_headers": {
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/131.0.0.0 Safari/537.36"
-        ),
-        "Accept-Language": "en-US,en;q=0.9",
-    },
-}
-
-    if (
-        "likee" in url.lower()
-        or "likee.video" in url.lower()
-    ):
-
-        opts["http_headers"]["Referer"] = (
-            "https://likee.video/"
-        )
-
+    if "likee" in url.lower() or "likee.video" in url.lower():
+        opts["http_headers"]["Referer"] = "https://likee.video/"
 
     elif "vimeo.com" in url.lower():
-
-        opts["http_headers"]["Referer"] = (
-            "https://vimeo.com/"
-        )
-
+        opts["http_headers"]["Referer"] = "https://vimeo.com/"
 
     if fallback:
         opts["format"] = "best"
 
-
     if os.path.exists("cookies.txt"):
         opts["cookiefile"] = "cookies.txt"
 
-
     return opts
-
 
 # ============================================================
 # DOWNLOAD FUNCTION
