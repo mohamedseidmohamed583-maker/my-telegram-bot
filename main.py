@@ -1303,7 +1303,7 @@ async def broadcast_command(
 
 
 # ============================================================
-# VIDEO TO AUDIO (FIXED ChatAction Error)
+# VIDEO TO AUDIO
 # ============================================================
 
 async def convert_video_to_audio(update, context):
@@ -1476,7 +1476,7 @@ def clean_url(raw_url):
 
 
 # ============================================================
-# YT-DLP OPTIONS
+# YT-DLP OPTIONS (FULLY FIXED FOR TIKTOK, YOUTUBE & OTHERS)
 # ============================================================
 
 def get_video_options(
@@ -1488,17 +1488,18 @@ def get_video_options(
 
     opts = {
         "quiet": True,
-        "no_warnings": False,
+        "no_warnings": True,
         "nocheckcertificate": True,
         "geo_bypass": True,
         "noplaylist": True,
-        "retries": 10,
-        "fragment_retries": 10,
-        "extractor_retries": 5,
+        "retries": 15,
+        "fragment_retries": 15,
+        "extractor_retries": 10,
         "file_access_retries": 5,
         "socket_timeout": 60,
         "outtmpl": output_template,
-        "format": "best[ext=mp4]/best" if fallback else "bestvideo+bestaudio/best",
+        # ተስተካክሏል፡ ቪዲዮዎችን ያለችግር ለማውረድ ቀላል እና ፕራይመሪ የሆነውን format መጠቀም
+        "format": "best" if fallback else "bestvideo+bestaudio/best",
         "merge_output_format": "mp4",
         "http_headers": {
             "User-Agent": (
@@ -1513,7 +1514,11 @@ def get_video_options(
     if ffmpeg_location:
         opts["ffmpeg_location"] = ffmpeg_location
 
-    if "likee" in url.lower() or "likee.video" in url.lower():
+    if "tiktok.com" in url.lower():
+        # ለቲክቶክ የተለየ ኢምፐርሰኔሽን እና ማለፊያ ቅንብር
+        opts["extractor_args"] = {"tiktok": {"webpage_download": True}}
+
+    elif "likee" in url.lower() or "likee.video" in url.lower():
         opts["http_headers"]["Referer"] = "https://likee.video/"
 
     elif "vimeo.com" in url.lower():
@@ -2346,7 +2351,6 @@ def main():
 
     print("🤖 Mame Posts Bot is running...")
 
-    # drop_pending_updates=True ከሌሎች የተከፈቱ ኢנስታንሶች ጋር የሚፈጠር ግጭትን ያስወግዳል
     application.run_polling(drop_pending_updates=True)
 
 
