@@ -6,7 +6,11 @@ import subprocess
 import requests
 import static_ffmpeg
 
-static_ffmpeg.add_paths()
+# FFmpeg ዱካዎችን በትክክል ማዘጋጀት
+try:
+    static_ffmpeg.add_paths()
+except Exception as e:
+    print("Static FFmpeg setup warning:", e)
 
 from threading import Thread
 from urllib.parse import quote
@@ -882,7 +886,7 @@ async def is_joined(update, context):
         return True
 
 # ============================================================
-# SHOW FORCE JOIN
+# SHOW FORCE JOIN (3ቱም ቋንቋዎች ከተጠበቁ Emojis ጋር)
 # ============================================================
 
 async def show_force_join(update, context):
@@ -1042,7 +1046,7 @@ async def send_main_menu(
 
 
 # ============================================================
-# START
+# START (ተስተካክሏል: በ START ወቅት ቻናል ማስገደድ ተነስቷል)
 # ============================================================
 
 async def start(update, context):
@@ -1084,19 +1088,7 @@ async def start(update, context):
     )
 
 
-    if not await is_joined(
-        update,
-        context
-    ):
-
-        await show_force_join(
-            update,
-            context
-        )
-
-        return
-
-
+    # START ሲል ቀጥታ ሜኑውን እንዲያይ ይደረጋል
     await send_main_menu(
         update.effective_chat.id,
         context,
@@ -1327,6 +1319,7 @@ async def convert_video_to_audio(
         user_id
     )
 
+    # ቪዲዮ ወደ ኦዲዮ ለመቀየር ሲሞክሩ ብቻ ቻናሉን ማስገደድ
     if not await is_joined(
         update,
         context
@@ -1399,7 +1392,6 @@ async def convert_video_to_audio(
 
         tg_file = await video.get_file()
 
-        # ፋይሉን በትክክል ማውረዱን ማረጋገጥ
         await tg_file.download_to_drive(
             input_path
         )
@@ -1531,7 +1523,6 @@ async def convert_video_to_audio(
                 pass
 
 
-
 # ============================================================
 # URL CLEANING
 # ============================================================
@@ -1593,31 +1584,15 @@ def get_video_options(
 
         "geo_bypass": True,
 
-        "retries": 3,
+        "retries": 5,
 
-        "fragment_retries": 3,
-
-        "file_access_retries": 3,
+        "fragment_retries": 5,
 
         "socket_timeout": 30,
 
-        "concurrent_fragment_downloads": 5,
-
-        "continuedl": True,
-
-        "noplaylist": True,
-
         "outtmpl": output_template,
 
-        "merge_output_format": "mp4",
-
-        "format": (
-            "bestvideo[ext=mp4]+"
-            "bestaudio[ext=m4a]/"
-            "bestvideo+bestaudio/"
-            "best[ext=mp4]/"
-            "best"
-        ),
+        "format": "bestvideo+bestaudio/best",
 
         "http_headers": {
 
@@ -1639,20 +1614,6 @@ def get_video_options(
 
 
     if (
-        "youtube.com" in url.lower()
-        or "youtu.be" in url.lower()
-    ):
-
-        opts["format"] = (
-            "bestvideo[ext=mp4]+"
-            "bestaudio[ext=m4a]/"
-            "bestvideo+bestaudio/"
-            "best[ext=mp4]/"
-            "best"
-        )
-
-
-    elif (
         "likee" in url.lower()
         or "likee.video" in url.lower()
     ):
@@ -1670,19 +1631,11 @@ def get_video_options(
 
 
     if fallback:
-
-        opts["format"] = (
-            "best[ext=mp4]/best"
-        )
+        opts["format"] = "best"
 
 
-    if os.path.exists(
-        "cookies.txt"
-    ):
-
-        opts["cookiefile"] = (
-            "cookies.txt"
-        )
+    if os.path.exists("cookies.txt"):
+        opts["cookiefile"] = "cookies.txt"
 
 
     return opts
@@ -1881,15 +1834,8 @@ async def handle_url_download(
 
     try:
 
-        target_url = target_url.strip()
-
-        target_url = target_url.rstrip(
-            ".,!?)]}"
-        )
-
-        target_url = clean_url(
-            target_url
-        )
+        target_url = target_url.strip().rstrip(".,!?)]}")
+        target_url = clean_url(target_url)
 
 
         if (
@@ -1897,9 +1843,7 @@ async def handle_url_download(
             or "pin.it" in target_url.lower()
         ):
 
-            image_url = pinterest_direct_image(
-                target_url
-            )
+            image_url = pinterest_direct_image(target_url)
 
             if image_url:
 
@@ -1907,10 +1851,7 @@ async def handle_url_download(
 
                     image_response = requests.get(
                         image_url,
-                        headers={
-                            "User-Agent":
-                                "Mozilla/5.0"
-                        },
+                        headers={"User-Agent": "Mozilla/5.0"},
                         timeout=30
                     )
 
@@ -1924,55 +1865,30 @@ async def handle_url_download(
                             + "pinterest.jpg"
                         )
 
-                        with open(
-                            temp_image,
-                            "wb"
-                        ) as f:
+                        with open(temp_image, "wb") as f:
+                            f.write(image_response.content)
 
-                            f.write(
-                                image_response.content
-                            )
-
-
-                        bot_username = get_bot_username(
-                            context
-                        )
-
+                        bot_username = get_bot_username(context)
 
                         caption = get_trans(
                             user_id,
                             "photo_download"
-                        ).format(
-                            bot_username=bot_username
-                        )
+                        ).format(bot_username=bot_username)
 
 
-                        with open(
-                            temp_image,
-                            "rb"
-                        ) as photo:
-
+                        with open(temp_image, "rb") as photo:
                             await update.message.reply_photo(
                                 photo=photo,
                                 caption=caption,
                                 parse_mode="HTML"
                             )
 
-
                         sent_any = True
-
-                        os.remove(
-                            temp_image
-                        )
-
+                        os.remove(temp_image)
                         return
 
                 except Exception as e:
-
-                    print(
-                        "Pinterest direct download failed:",
-                        e
-                    )
+                    print("Pinterest direct download failed:", e)
 
 
         try:
@@ -1986,10 +1902,7 @@ async def handle_url_download(
 
         except Exception as e:
 
-            print(
-                "Download attempt 1 failed:",
-                e
-            )
+            print("Download attempt 1 failed, retrying...", e)
 
             await asyncio.to_thread(
                 download_media_func,
@@ -1999,14 +1912,10 @@ async def handle_url_download(
             )
 
 
-        downloaded_file = (
-            find_downloaded_file(
-                media_prefix
-            )
-        )
+        downloaded_file = find_downloaded_file(media_prefix)
 
 
-        if not downloaded_file:
+        if not downloaded_file or not os.path.exists(downloaded_file):
 
             try:
 
@@ -2024,10 +1933,7 @@ async def handle_url_download(
             return
 
 
-        file_size = os.path.getsize(
-            downloaded_file
-        )
-
+        file_size = os.path.getsize(downloaded_file)
         max_size = 50 * 1024 * 1024
 
 
@@ -2049,34 +1955,20 @@ async def handle_url_download(
             return
 
 
-        image_extensions = (
-            ".jpg",
-            ".jpeg",
-            ".png",
-            ".webp"
-        )
+        bot_username = get_bot_username(context)
+
+        image_extensions = (".jpg", ".jpeg", ".png", ".webp")
 
 
-        if downloaded_file.lower().endswith(
-            image_extensions
-        ):
-
-            bot_username = get_bot_username(
-                context
-            )
+        if downloaded_file.lower().endswith(image_extensions):
 
             caption = get_trans(
                 user_id,
                 "photo_download"
-            ).format(
-                bot_username=bot_username
-            )
+            ).format(bot_username=bot_username)
 
 
-            with open(
-                downloaded_file,
-                "rb"
-            ) as photo:
+            with open(downloaded_file, "rb") as photo:
 
                 await update.message.reply_photo(
                     photo=photo,
@@ -2084,38 +1976,20 @@ async def handle_url_download(
                     parse_mode="HTML"
                 )
 
-
             sent_any = True
 
 
         elif downloaded_file.lower().endswith(
-            (
-                ".mp3",
-                ".m4a",
-                ".aac",
-                ".wav",
-                ".ogg",
-                ".opus",
-                ".flac"
-            )
+            (".mp3", ".m4a", ".aac", ".wav", ".ogg", ".opus", ".flac")
         ):
-
-            bot_username = get_bot_username(
-                context
-            )
 
             caption = get_trans(
                 user_id,
                 "video_converted"
-            ).format(
-                bot_username=bot_username
-            )
+            ).format(bot_username=bot_username)
 
 
-            with open(
-                downloaded_file,
-                "rb"
-            ) as audio:
+            with open(downloaded_file, "rb") as audio:
 
                 await update.message.reply_audio(
                     audio=audio,
@@ -2123,16 +1997,10 @@ async def handle_url_download(
                     parse_mode="HTML"
                 )
 
-
             sent_any = True
 
 
         else:
-
-            bot_username = get_bot_username(
-                context
-            )
-
 
             share_url = (
                 "https://t.me/share/url?"
@@ -2154,49 +2022,33 @@ async def handle_url_download(
             caption_video = get_trans(
                 user_id,
                 "video_downloaded"
-            ).format(
-                bot_username=bot_username
-            )
+            ).format(bot_username=bot_username)
 
 
-            with open(
-                downloaded_file,
-                "rb"
-            ) as video_file:
+            with open(downloaded_file, "rb") as video_file:
 
                 await update.message.reply_video(
                     video=video_file,
                     caption=caption_video,
                     parse_mode="HTML",
                     supports_streaming=True,
-                    reply_markup=InlineKeyboardMarkup(
-                        keyboard_share
-                    )
+                    reply_markup=InlineKeyboardMarkup(keyboard_share)
                 )
-
 
             sent_any = True
 
 
-            audio_output = (
-                media_prefix
-                + "audio.mp3"
-            )
-
+            audio_output = media_prefix + "audio.mp3"
 
             ffmpeg_cmd = [
                 "ffmpeg",
                 "-y",
-                "-i",
-                downloaded_file,
+                "-i", downloaded_file,
                 "-vn",
-                "-acodec",
-                "libmp3lame",
-                "-q:a",
-                "2",
+                "-acodec", "libmp3lame",
+                "-q:a", "2",
                 audio_output
             ]
-
 
             try:
 
@@ -2208,26 +2060,18 @@ async def handle_url_download(
                     text=True
                 )
 
-
                 if (
                     result.returncode == 0
-                    and os.path.exists(
-                        audio_output
-                    )
+                    and os.path.exists(audio_output)
+                    and os.path.getsize(audio_output) > 0
                 ):
 
                     caption = get_trans(
                         user_id,
                         "video_converted"
-                    ).format(
-                        bot_username=bot_username
-                    )
+                    ).format(bot_username=bot_username)
 
-
-                    with open(
-                        audio_output,
-                        "rb"
-                    ) as audio_file:
+                    with open(audio_output, "rb") as audio_file:
 
                         await update.message.reply_audio(
                             audio=audio_file,
@@ -2235,31 +2079,18 @@ async def handle_url_download(
                             parse_mode="HTML"
                         )
 
-
                     try:
-
-                        os.remove(
-                            audio_output
-                        )
-
+                        os.remove(audio_output)
                     except Exception:
                         pass
 
-
             except Exception as e:
-
-                print(
-                    "Audio extraction error:",
-                    e
-                )
+                print("Audio extraction error:", e)
 
 
     except Exception as e:
 
-        print(
-            "Download Error:",
-            e
-        )
+        print("Download Error:", e)
 
         if not sent_any:
 
@@ -2281,20 +2112,12 @@ async def handle_url_download(
 
         try:
 
-            for filename in os.listdir(
-                "."
-            ):
+            for filename in os.listdir("."):
 
-                if filename.startswith(
-                    media_prefix
-                ):
+                if filename.startswith(media_prefix):
 
                     try:
-
-                        os.remove(
-                            filename
-                        )
-
+                        os.remove(filename)
                     except Exception:
                         pass
 
@@ -2305,9 +2128,7 @@ async def handle_url_download(
         if sent_any:
 
             try:
-
                 await status_msg.delete()
-
             except Exception:
                 pass
 
@@ -2329,20 +2150,12 @@ async def button_callback(
 
     user_id = user.id
 
-    bot_username = get_bot_username(
-        context
-    )
+    bot_username = get_bot_username(context)
 
 
-    if data.startswith(
-        "lang_"
-    ):
+    if data.startswith("lang_"):
 
-        lang_code = data.split(
-            "_",
-            1
-        )[1]
-
+        lang_code = data.split("_", 1)[1]
 
         if lang_code not in TRANSLATIONS:
 
@@ -2354,19 +2167,12 @@ async def button_callback(
             return
 
 
-        set_user_language(
-            user_id,
-            lang_code
-        )
-
+        set_user_language(user_id, lang_code)
 
         await query.answer()
 
-
         try:
-
             await query.message.delete()
-
         except Exception:
             pass
 
@@ -2380,112 +2186,13 @@ async def button_callback(
 
         await context.bot.send_message(
             chat_id=user_id,
-            text=get_trans(
-                user_id,
-                "done_msg"
-            ),
+            text=get_trans(user_id, "done_msg"),
             reply_markup=setup_keyboard,
             parse_mode="HTML"
         )
 
 
-        try:
-
-            member = await context.bot.get_chat_member(
-                chat_id=FORCE_CHANNEL,
-                user_id=user_id
-            )
-
-            joined = member.status in [
-                "member",
-                "administrator",
-                "creator"
-            ]
-
-        except Exception as e:
-
-            print(
-                "Language force join check:",
-                e
-            )
-
-            joined = True
-
-
-        if not joined:
-
-            text = (
-                '<tg-emoji emoji-id="6034962180875490251">🔒</tg-emoji> '
-                '<b>ቦቱን ለመጠቀም ከታች ያለውን '
-                'ቻናል መቀላቀል አለብዎት!</b>'
-            )
-
-
-            keyboard = [
-                [
-                    InlineKeyboardButton(
-                        text="Join Channel",
-                        icon_custom_emoji_id=(
-                            "5767358836134382747"
-                        ),
-                        url=FORCE_CHANNEL_LINK
-                    )
-                ],
-
-                [
-                    InlineKeyboardButton(
-                        text="I've Joined",
-                        icon_custom_emoji_id=(
-                            "5895288332581082241"
-                        ),
-                        callback_data="check_join"
-                    )
-                ]
-            ]
-
-
-            try:
-
-                await context.bot.send_message(
-                    chat_id=user_id,
-                    text=text,
-                    reply_markup=InlineKeyboardMarkup(
-                        keyboard
-                    ),
-                    parse_mode="HTML"
-                )
-
-            except Exception:
-
-                await context.bot.send_message(
-                    chat_id=user_id,
-                    text=text,
-                    reply_markup=InlineKeyboardMarkup([
-                        [
-                            InlineKeyboardButton(
-                                "📢 Join Channel",
-                                url=FORCE_CHANNEL_LINK
-                            )
-                        ],
-                        [
-                            InlineKeyboardButton(
-                                "✅ I've Joined",
-                                callback_data="check_join"
-                            )
-                        ]
-                    ]),
-                    parse_mode="HTML"
-                )
-
-            return
-
-
-        await send_main_menu(
-            user_id,
-            context,
-            user_id
-        )
-
+        await send_main_menu(user_id, context, user_id)
         return
 
 
@@ -2494,8 +2201,7 @@ async def button_callback(
         await query.answer()
 
         await query.edit_message_text(
-            "<b>Please select your language / "
-            "እባክዎ ቋንቋ ይምረጡ / اختر لغتك፦</b>",
+            "<b>Please select your language / እባክዎ ቋንቋ ይምረጡ / اختر لغتك፦</b>",
             reply_markup=get_language_keyboard(),
             parse_mode="HTML"
         )
@@ -2507,37 +2213,21 @@ async def button_callback(
 
         await query.answer()
 
-        text = get_trans(
-            user_id,
-            "welcome"
-        )
+        text = get_trans(user_id, "welcome")
 
         try:
 
             await query.edit_message_text(
                 text=text,
-                reply_markup=get_main_menu_keyboard(
-                    bot_username,
-                    user_id,
-                    True
-                ),
+                reply_markup=get_main_menu_keyboard(bot_username, user_id, True),
                 parse_mode="HTML"
             )
 
-        except Exception as e:
-
-            print(
-                "Back custom emoji failed:",
-                e
-            )
+        except Exception:
 
             await query.edit_message_text(
                 text=text,
-                reply_markup=get_main_menu_keyboard(
-                    bot_username,
-                    user_id,
-                    False
-                ),
+                reply_markup=get_main_menu_keyboard(bot_username, user_id, False),
                 parse_mode="HTML"
             )
 
@@ -2548,35 +2238,21 @@ async def button_callback(
 
         await query.answer()
 
-        text = get_trans(
-            user_id,
-            "price"
-        )
+        text = get_trans(user_id, "price")
 
         try:
 
             await query.edit_message_text(
                 text=text,
-                reply_markup=get_back_keyboard(
-                    user_id,
-                    True
-                ),
+                reply_markup=get_back_keyboard(user_id, True),
                 parse_mode="HTML"
             )
 
-        except Exception as e:
-
-            print(
-                "Price custom emoji failed:",
-                e
-            )
+        except Exception:
 
             await query.edit_message_text(
                 text=text,
-                reply_markup=get_back_keyboard(
-                    user_id,
-                    False
-                ),
+                reply_markup=get_back_keyboard(user_id, False),
                 parse_mode="HTML"
             )
 
@@ -2587,35 +2263,21 @@ async def button_callback(
 
         await query.answer()
 
-        text = get_trans(
-            user_id,
-            "order"
-        )
+        text = get_trans(user_id, "order")
 
         try:
 
             await query.edit_message_text(
                 text=text,
-                reply_markup=get_back_keyboard(
-                    user_id,
-                    True
-                ),
+                reply_markup=get_back_keyboard(user_id, True),
                 parse_mode="HTML"
             )
 
-        except Exception as e:
-
-            print(
-                "Order custom emoji failed:",
-                e
-            )
+        except Exception:
 
             await query.edit_message_text(
                 text=text,
-                reply_markup=get_back_keyboard(
-                    user_id,
-                    False
-                ),
+                reply_markup=get_back_keyboard(user_id, False),
                 parse_mode="HTML"
             )
 
@@ -2626,35 +2288,21 @@ async def button_callback(
 
         await query.answer()
 
-        text = get_trans(
-            user_id,
-            "payment"
-        )
+        text = get_trans(user_id, "payment")
 
         try:
 
             await query.edit_message_text(
                 text=text,
-                reply_markup=get_back_keyboard(
-                    user_id,
-                    True
-                ),
+                reply_markup=get_back_keyboard(user_id, True),
                 parse_mode="HTML"
             )
 
-        except Exception as e:
-
-            print(
-                "Payment custom emoji failed:",
-                e
-            )
+        except Exception:
 
             await query.edit_message_text(
                 text=text,
-                reply_markup=get_back_keyboard(
-                    user_id,
-                    False
-                ),
+                reply_markup=get_back_keyboard(user_id, False),
                 parse_mode="HTML"
             )
 
@@ -2665,35 +2313,21 @@ async def button_callback(
 
         await query.answer()
 
-        text = get_trans(
-            user_id,
-            "support"
-        )
+        text = get_trans(user_id, "support")
 
         try:
 
             await query.edit_message_text(
                 text=text,
-                reply_markup=get_back_keyboard(
-                    user_id,
-                    True
-                ),
+                reply_markup=get_back_keyboard(user_id, True),
                 parse_mode="HTML"
             )
 
-        except Exception as e:
-
-            print(
-                "Support custom emoji failed:",
-                e
-            )
+        except Exception:
 
             await query.edit_message_text(
                 text=text,
-                reply_markup=get_back_keyboard(
-                    user_id,
-                    False
-                ),
+                reply_markup=get_back_keyboard(user_id, False),
                 parse_mode="HTML"
             )
 
@@ -2704,16 +2338,9 @@ async def button_callback(
 
         await query.answer()
 
-        total_users, user_msg_count = (
-            get_user_stats(user_id)
-        )
+        total_users, user_msg_count = get_user_stats(user_id)
 
-        username_text = (
-            f"@{user.username}"
-            if user.username
-            else "የለውም"
-        )
-
+        username_text = f"@{user.username}" if user.username else "የለውም"
 
         msg = (
             '<tg-emoji emoji-id="5431577498364158238">📊</tg-emoji> '
@@ -2728,31 +2355,19 @@ async def button_callback(
             '🔥 <b>Engagment: Active</b>'
         )
 
-
         try:
 
             await query.edit_message_text(
                 text=msg,
-                reply_markup=get_back_keyboard(
-                    user_id,
-                    True
-                ),
+                reply_markup=get_back_keyboard(user_id, True),
                 parse_mode="HTML"
             )
 
-        except Exception as e:
-
-            print(
-                "Status custom emoji failed:",
-                e
-            )
+        except Exception:
 
             await query.edit_message_text(
                 text=msg,
-                reply_markup=get_back_keyboard(
-                    user_id,
-                    False
-                ),
+                reply_markup=get_back_keyboard(user_id, False),
                 parse_mode="HTML"
             )
 
@@ -2772,7 +2387,6 @@ async def check_join(
 
     user_id = query.from_user.id
 
-
     try:
 
         member = await context.bot.get_chat_member(
@@ -2780,12 +2394,7 @@ async def check_join(
             user_id=user_id
         )
 
-
-        if member.status in [
-            "member",
-            "administrator",
-            "creator"
-        ]:
+        if member.status in ["member", "administrator", "creator"]:
 
             await query.answer()
 
@@ -2794,16 +2403,12 @@ async def check_join(
                 await query.edit_message_text(
                     '<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> '
                     '<b>አሁን ቻናሉን ተቀላቅለዋል።</b>\n\n'
-                    'እባክዎ <b>/start</b> ይጫኑ።',
+                    'እባክዎ የላኩትን ሊንክ ወይም ቪዲዮ ደግመው ይላኩ።',
                     parse_mode="HTML"
                 )
 
-            except Exception as e:
-
-                print(
-                    "Join success edit error:",
-                    e
-                )
+            except Exception:
+                pass
 
         else:
 
@@ -2812,13 +2417,7 @@ async def check_join(
                 show_alert=True
             )
 
-
-    except Exception as e:
-
-        print(
-            "Check Join Error:",
-            e
-        )
+    except Exception:
 
         await query.answer(
             "⚠️ Channel membership could not be verified.",
@@ -2831,53 +2430,20 @@ async def check_join(
 # ============================================================
 
 SUPPORTED_DOMAINS = [
-
-    "youtube.com",
-    "youtu.be",
-
-    "tiktok.com",
-
-    "likee.video",
-    "likee.com",
-
-    "pinterest.com",
-    "pin.it",
-
-    "instagram.com",
-
-    "twitter.com",
-    "x.com",
-
-    "facebook.com",
-    "fb.watch",
-
-    "reddit.com",
-    "redd.it",
-
-    "twitch.tv",
-
-    "vimeo.com",
-
-    "vk.com",
-
-    "ok.ru",
-
-    "tumblr.com",
-
-    "soundcloud.com",
-
-    "threads.net",
-
-    "spotify.com",
-
-    "open.spotify.com",
-
-    "music.apple.com"
+    "youtube.com", "youtu.be",
+    "tiktok.com", "likee.video", "likee.com",
+    "pinterest.com", "pin.it",
+    "instagram.com", "twitter.com", "x.com",
+    "facebook.com", "fb.watch",
+    "reddit.com", "redd.it",
+    "twitch.tv", "vimeo.com", "vk.com", "ok.ru",
+    "tumblr.com", "soundcloud.com", "threads.net",
+    "spotify.com", "open.spotify.com", "music.apple.com"
 ]
 
 
 # ============================================================
-# USER MESSAGE HANDLER
+# USER MESSAGE HANDLER (ተስተካክሏል: ሊንክ ሲላክ ብቻ Force Join ይጠይቃል)
 # ============================================================
 
 async def handle_user_messages(
@@ -2888,29 +2454,22 @@ async def handle_user_messages(
     if not update.message:
         return
 
-
     user_id = update.effective_user.id
+    record_user_activity(user_id)
 
-    record_user_activity(
-        user_id
-    )
-
+    # ቪዲዮ ወይም የቪዲዮ ፋይል ከሆነ
+    if update.message.video or update.message.video_note:
+        await convert_video_to_audio(update, context)
+        return
 
     document = update.message.document
 
     if (
         document
         and document.mime_type
-        and document.mime_type.startswith(
-            "video/"
-        )
+        and document.mime_type.startswith("video/")
     ):
-
-        await convert_video_to_audio(
-            update,
-            context
-        )
-
+        await convert_video_to_audio(update, context)
         return
 
 
@@ -2922,26 +2481,7 @@ async def handle_user_messages(
 
 
     if text.strip() == "🏠 Menu":
-
-        if not await is_joined(
-            update,
-            context
-        ):
-
-            await show_force_join(
-                update,
-                context
-            )
-
-            return
-
-
-        await send_main_menu(
-            update.effective_chat.id,
-            context,
-            user_id
-        )
-
+        await send_main_menu(update.effective_chat.id, context, user_id)
         return
 
 
@@ -2953,64 +2493,37 @@ async def handle_user_messages(
     )
 
 
+    # የቪዲዮ/ፎቶ ሊንክ ሲልክ ብቻ ቻናሉን መቀላቀሉን ማረጋገጥ
     if is_supported_link:
 
-        if not await is_joined(
-            update,
-            context
-        ):
-
-            await show_force_join(
-                update,
-                context
-            )
-
+        if not await is_joined(update, context):
+            await show_force_join(update, context)
             return
 
-
-        url_match = re.search(
-            r"https?://[^\s]+",
-            text
-        )
-
+        url_match = re.search(r"https?://[^\s]+", text)
 
         if url_match:
-
-            target_url = (
-                url_match.group(0)
-                .rstrip(".,!?)]}")
-            )
-
+            target_url = url_match.group(0).rstrip(".,!?)]}")
         else:
-
             target_url = text.strip()
 
-
-        await handle_url_download(
-            update,
-            context,
-            target_url
-        )
-
+        await handle_url_download(update, context, target_url)
         return
 
 
+    # ለአድሚን የመልዕክት ማስተላለፊያ
     username = (
         f"@{update.effective_user.username}"
         if update.effective_user.username
         else "No username"
     )
 
-
     header_text = (
         "📩 <b>New User Message</b>\n\n"
-        f"👤 <b>Name:</b> "
-        f"{update.effective_user.full_name}\n"
+        f"👤 <b>Name:</b> {update.effective_user.full_name}\n"
         f"🔗 <b>Username:</b> {username}\n"
-        f"🆔 <b>ID:</b> "
-        f"<code>{user_id}</code>"
+        f"🆔 <b>ID:</b> <code>{user_id}</code>"
     )
-
 
     try:
 
@@ -3020,56 +2533,22 @@ async def handle_user_messages(
             parse_mode="HTML"
         )
 
-
-        forwarded_msg = await update.message.forward(
-            chat_id=ADMIN_ID
-        )
-
+        forwarded_msg = await update.message.forward(chat_id=ADMIN_ID)
 
         if "user_mapping" not in context.bot_data:
+            context.bot_data["user_mapping"] = {}
 
-            context.bot_data[
-                "user_mapping"
-            ] = {}
+        user_mapping = context.bot_data["user_mapping"]
 
-
-        user_mapping = context.bot_data[
-            "user_mapping"
-        ]
-
-
-        user_mapping[
-            str(header_msg.message_id)
-        ] = user_id
-
-
-        user_mapping[
-            str(forwarded_msg.message_id)
-        ] = user_id
-
+        user_mapping[str(header_msg.message_id)] = user_id
+        user_mapping[str(forwarded_msg.message_id)] = user_id
 
         await update.message.reply_text(
-            "✅ መልዕክትዎ ተቀብለናል። "
-            "Admin ያነበበውን መልስ ይልክልዎታል።"
+            "✅ መልዕክትዎ ተቀብለናል። Admin ያነበበውን መልስ ይልክልዎታል።"
         )
-
 
     except Exception as e:
-
-        print(
-            "Admin forwarding error:",
-            e
-        )
-
-        try:
-
-            await update.message.reply_text(
-                "⚠️ መልዕክቱን መላክ አልተቻለም። "
-                "እባክዎ እንደገና ይሞክሩ።"
-            )
-
-        except Exception:
-            pass
+        print("Admin forwarding error:", e)
 
 
 # ============================================================
@@ -3084,119 +2563,48 @@ async def admin_reply(
     if not update.message:
         return
 
-
     if update.effective_user.id != ADMIN_ID:
         return
 
-
-    replied_msg = (
-        update.message.reply_to_message
-    )
-
+    replied_msg = update.message.reply_to_message
 
     if not replied_msg:
         return
 
-
-    user_mapping = context.bot_data.get(
-        "user_mapping",
-        {}
-    )
-
+    user_mapping = context.bot_data.get("user_mapping", {})
 
     target_user_id = None
 
-
-    replied_id_str = str(
-        replied_msg.message_id
-    )
-
+    replied_id_str = str(replied_msg.message_id)
 
     if replied_id_str in user_mapping:
+        target_user_id = user_mapping[replied_id_str]
 
-        target_user_id = user_mapping[
-            replied_id_str
-        ]
+    if not target_user_id and replied_msg.forward_from:
+        target_user_id = replied_msg.forward_from.id
 
-
-    if (
-        not target_user_id
-        and replied_msg.forward_from
-    ):
-
-        target_user_id = (
-            replied_msg.forward_from.id
-        )
-
-
-    if (
-        not target_user_id
-        and replied_msg.text
-        and "🆔 ID:" in replied_msg.text
-    ):
-
-        match = re.search(
-            r"🆔 ID:\s*<code>(\d+)</code>",
-            replied_msg.text
-        )
-
+    if not target_user_id and replied_msg.text and "🆔 ID:" in replied_msg.text:
+        match = re.search(r"🆔 ID:\s*<code>(\d+)</code>", replied_msg.text)
         if match:
+            target_user_id = int(match.group(1))
 
-            target_user_id = int(
-                match.group(1)
-            )
-
-
-    if (
-        not target_user_id
-        and replied_msg.caption
-        and "🆔 ID:" in replied_msg.caption
-    ):
-
-        match = re.search(
-            r"🆔 ID:\s*<code>(\d+)</code>",
-            replied_msg.caption
-        )
-
+    if not target_user_id and replied_msg.caption and "🆔 ID:" in replied_msg.caption:
+        match = re.search(r"🆔 ID:\s*<code>(\d+)</code>", replied_msg.caption)
         if match:
-
-            target_user_id = int(
-                match.group(1)
-            )
-
+            target_user_id = int(match.group(1))
 
     if target_user_id:
 
         try:
-
-            await update.message.copy(
-                chat_id=target_user_id
-            )
-
-
-            await update.message.reply_text(
-                "✅ Reply sent to the user."
-            )
-
-
+            await update.message.copy(chat_id=target_user_id)
+            await update.message.reply_text("✅ Reply sent to the user.")
         except Exception as e:
-
-            print(
-                "Admin reply error:",
-                e
-            )
-
-            await update.message.reply_text(
-                f"❌ Could not send reply.\n"
-                f"{e}"
-            )
+            await update.message.reply_text(f"❌ Could not send reply.\n{e}")
 
     else:
 
         await update.message.reply_text(
-            "❌ User ID could not be found.\n"
-            "Please reply directly to the user's "
-            "forwarded message or header."
+            "❌ User ID could not be found.\nPlease reply directly to the user's forwarded message or header."
         )
 
 
@@ -3209,27 +2617,19 @@ async def error_handler(
     context: ContextTypes.DEFAULT_TYPE
 ):
 
-    print(
-        "❌ ERROR:",
-        context.error
-    )
+    print("❌ ERROR:", context.error)
 
 
 # ============================================================
-# MAIN
+# MAIN EXECUTION
 # ============================================================
 
 def main():
 
     if not TOKEN:
-
-        raise RuntimeError(
-            "❌ BOT_TOKEN environment variable is missing!"
-        )
-
+        raise RuntimeError("❌ BOT_TOKEN environment variable is missing!")
 
     keep_alive()
-
 
     application = (
         ApplicationBuilder()
@@ -3238,112 +2638,27 @@ def main():
         .build()
     )
 
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("menu", start))
+    application.add_handler(CommandHandler("status", status_command))
+    application.add_handler(CommandHandler("rates", rates_command))
+    application.add_handler(CommandHandler("rate", rates_command))
+    application.add_handler(CommandHandler("payment", payment_command))
+    application.add_handler(CommandHandler("help", help_command))
+    application.add_handler(CommandHandler("broadcast", broadcast_command))
 
-    application.add_handler(
-        CommandHandler(
-            "start",
-            start
-        )
-    )
+    application.add_handler(CallbackQueryHandler(check_join, pattern=r"^check_join$"))
+    application.add_handler(CallbackQueryHandler(button_callback, pattern=r"^(cmd_|lang_)"))
 
-
-    application.add_handler(
-        CommandHandler(
-            "menu",
-            start
-        )
-    )
-
-
-    application.add_handler(
-        CommandHandler(
-            "status",
-            status_command
-        )
-    )
-
-
-    application.add_handler(
-        CommandHandler(
-            "rates",
-            rates_command
-        )
-    )
-
-
-    application.add_handler(
-        CommandHandler(
-            "rate",
-            rates_command
-        )
-    )
-
-
-    application.add_handler(
-        CommandHandler(
-            "payment",
-            payment_command
-        )
-    )
-
-
-    application.add_handler(
-        CommandHandler(
-            "help",
-            help_command
-        )
-    )
-
-
-    application.add_handler(
-        CommandHandler(
-            "broadcast",
-            broadcast_command
-        )
-    )
-
-
-    application.add_handler(
-        CallbackQueryHandler(
-            check_join,
-            pattern=r"^check_join$"
-        )
-    )
-
-
-    application.add_handler(
-        CallbackQueryHandler(
-            button_callback,
-            pattern=r"^(cmd_|lang_)"
-        )
-    )
-
-
-    admin_filter = (
-        filters.User(
-            user_id=ADMIN_ID
-        )
-        & filters.REPLY
-        & ~filters.COMMAND
-    )
-
+    admin_filter = filters.User(user_id=ADMIN_ID) & filters.REPLY & ~filters.COMMAND
+    application.add_handler(MessageHandler(admin_filter, admin_reply))
 
     application.add_handler(
         MessageHandler(
-            admin_filter,
-            admin_reply
-        )
-    )
-
-
-    application.add_handler(
-        MessageHandler(
-            filters.VIDEO
-            | filters.VIDEO_NOTE,
+            filters.VIDEO | filters.VIDEO_NOTE,
             convert_video_to_audio
         )
     )
-
 
     type_filter = (
         filters.TEXT
@@ -3354,7 +2669,6 @@ def main():
         | filters.Sticker.ALL
     ) & ~filters.COMMAND
 
-
     application.add_handler(
         MessageHandler(
             type_filter,
@@ -3362,25 +2676,12 @@ def main():
         )
     )
 
+    application.add_error_handler(error_handler)
 
-    application.add_error_handler(
-        error_handler
-    )
+    print("🤖 Mame Posts Bot is running...")
 
+    application.run_polling(drop_pending_updates=True)
 
-    print(
-        "🤖 Mame Posts Bot is running..."
-    )
-
-
-    application.run_polling(
-        drop_pending_updates=True
-    )
-
-
-# ============================================================
-# START PROGRAM
-# ============================================================
 
 if __name__ == "__main__":
     main()
