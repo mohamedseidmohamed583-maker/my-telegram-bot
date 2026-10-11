@@ -1476,7 +1476,7 @@ def clean_url(raw_url):
 
 
 # ============================================================
-# YT-DLP OPTIONS (FULLY FIXED & STABLE)
+# YT-DLP OPTIONS (YOUTUBE BLOCK & DOCUMENT_INVALID FIX)
 # ============================================================
 
 def get_video_options(
@@ -1498,8 +1498,9 @@ def get_video_options(
         "file_access_retries": 5,
         "socket_timeout": 60,
         "outtmpl": output_template,
-        # ቴሌግራም ላይ ሰርቨር ኤረር (Document_invalid) እንዳያመጣ ቀጥተኛውን 'best' ፎርማት መጠቀም
-        "format": "best",
+        # ቴሌግራም በቪዲዮ መልክ እንዲልከው ቀጥተኛ best ፎርማት
+        "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+        "merge_output_format": "mp4",
         "http_headers": {
             "User-Agent": (
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -1513,7 +1514,15 @@ def get_video_options(
     if ffmpeg_location:
         opts["ffmpeg_location"] = ffmpeg_location
 
-    if "tiktok.com" in url.lower():
+    # YouTube ብሎክ ማለፊያ (Android Client Impersonation)
+    if "youtube.com" in url.lower() or "youtu.be" in url.lower():
+        opts["extractor_args"] = {
+            "youtube": {
+                "player_client": ["android", "web"]
+            }
+        }
+
+    elif "tiktok.com" in url.lower():
         opts["extractor_args"] = {"tiktok": {"webpage_download": True}}
 
     elif "likee" in url.lower() or "likee.video" in url.lower():
@@ -1521,9 +1530,6 @@ def get_video_options(
 
     elif "vimeo.com" in url.lower():
         opts["http_headers"]["Referer"] = "https://vimeo.com/"
-
-    if os.path.exists("cookies.txt"):
-        opts["cookiefile"] = "cookies.txt"
 
     return opts
 
@@ -1641,7 +1647,7 @@ def pinterest_direct_image(url):
 
 
 # ============================================================
-# HANDLE URL DOWNLOAD (FIXED FOR DOCUMENT_INVALID & CRASH)
+# HANDLE URL DOWNLOAD (STABLE MP4 CONVERSION)
 # ============================================================
 
 async def handle_url_download(
@@ -1805,68 +1811,82 @@ async def handle_url_download(
                 )
             ]]
 
-            video_extensions = (".mp4", ".m4v", ".mov", ".webm", ".mkv", ".avi")
+            # Document_invalid ስህተት እንዳይመጣ ቪዲዮዎችን በ FFmpeg ወደ ትክክለኛ MP4 መለወጥ
+            clean_video_path = media_prefix + "fixed_video.mp4"
+            ffmpeg_bin = FFMPEG_PATH if FFMPEG_PATH else "ffmpeg"
+            
+            ffmpeg_cmd = [
+                ffmpeg_bin, "-y",
+                "-i", downloaded_file,
+                "-c:v", "libx264",
+                "-c:a", "aac",
+                "-strict", "experimental",
+                clean_video_path
+            ]
 
-            if downloaded_file.lower().endswith(video_extensions):
-                with open(downloaded_file, "rb") as video_file:
-                    await update.message.reply_video(
-                        video=video_file,
-                        caption=caption_video,
-                        parse_mode="HTML",
-                        supports_streaming=True,
-                        reply_markup=InlineKeyboardMarkup(keyboard_share)
-                    )
-            else:
-                with open(downloaded_file, "rb") as media_file:
-                    await update.message.reply_document(
-                        document=media_file,
-                        caption=caption_video,
-                        parse_mode="HTML",
-                        reply_markup=InlineKeyboardMarkup(keyboard_share)
-                    )
+            try:
+                res = await asyncio.to_thread(
+                    subprocess.run,
+                    ffmpeg_cmd,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    timeout=300
+                )
+                if res.returncode == 0 and os.path.exists(clean_video_path) and os.path.getsize(clean_video_path) > 0:
+                    downloaded_file = clean_video_path
+            except Exception as conv_e:
+                print("FFmpeg video cleanup failed, using raw file:", conv_e)
+
+            with open(downloaded_file, "rb") as video_file:
+                await update.message.reply_video(
+                    video=video_file,
+                    caption=caption_video,
+                    parse_mode="HTML",
+                    supports_streaming=True,
+                    reply_markup=InlineKeyboardMarkup(keyboard_share)
+                )
 
             sent_any = True
 
             # Extract Audio if video
-            if downloaded_file.lower().endswith(video_extensions):
-                audio_output = media_prefix + "audio.mp3"
-                ffmpeg_bin = FFMPEG_PATH if FFMPEG_PATH else "ffmpeg"
-                ffmpeg_cmd = [
-                    ffmpeg_bin,
-                    "-y",
-                    "-i",
-                    downloaded_file,
-                    "-vn",
-                    "-acodec",
-                    "libmp3lame",
-                    "-q:a",
-                    "2",
-                    audio_output,
-                ]
+            audio_output = media_prefix + "audio.mp3"
+            ffmpeg_audio_cmd = [
+                ffmpeg_bin,
+                "-y",
+                "-i",
+                downloaded_file,
+                "-vn",
+                "-acodec",
+                "libmp3lame",
+                "-q:a",
+                "2",
+                audio_output,
+            ]
 
-                try:
-                    result = await asyncio.to_thread(
-                        subprocess.run,
-                        ffmpeg_cmd,
-                        stdout=subprocess.DEVNULL,
-                        stderr=subprocess.PIPE,
-                        text=True,
-                        timeout=300
-                    )
+            try:
+                result = await asyncio.to_thread(
+                    subprocess.run,
+                    ffmpeg_audio_cmd,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    timeout=300
+                )
 
-                    if (
-                        result.returncode == 0
-                        and os.path.isfile(audio_output)
-                        and os.path.getsize(audio_output) > 0
-                    ):
-                        with open(audio_output, "rb") as audio_file:
-                            await update.message.reply_audio(
-                                audio=audio_file,
-                                caption=caption_audio,
-                                parse_mode="HTML"
-                            )
-                except Exception as audio_error:
-                    print("Audio extraction error:", repr(audio_error))
+                if (
+                    result.returncode == 0
+                    and os.path.isfile(audio_output)
+                    and os.path.getsize(audio_output) > 0
+                ):
+                    with open(audio_output, "rb") as audio_file:
+                        await update.message.reply_audio(
+                            audio=audio_file,
+                            caption=caption_audio,
+                            parse_mode="HTML"
+                        )
+            except Exception as audio_error:
+                print("Audio extraction error:", repr(audio_error))
 
     except Exception as e:
         print("Download Error:", repr(e))
