@@ -1572,14 +1572,26 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
             else:    
                 if os.path.getsize(actual_file) <= 50 * 1024 * 1024:    
                     await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.UPLOAD_DOCUMENT)    
-                    with open(actual_file, 'rb') as vf:    
-                        await update.message.reply_video(    
-                            video=vf,    
-                            caption=f'<tg-emoji emoji-id="530762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy!</b>',    
-                            reply_markup=reply_markup_share,    
-                            parse_mode="HTML"    
-                        )    
-                    sent_any = True    
+                    
+                    try:
+                        with open(actual_file, 'rb') as vf:    
+                            await update.message.reply_video(    
+                                video=vf,    
+                                caption=f'<tg-emoji emoji-id="530762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy!</b>',    
+                                reply_markup=reply_markup_share,    
+                                parse_mode="HTML"    
+                            )    
+                        sent_any = True    
+                    except Exception as vid_err:
+                        print("reply_video failed, falling back to document:", vid_err)
+                        with open(actual_file, 'rb') as doc_file:
+                            await update.message.reply_document(
+                                document=doc_file,
+                                caption=f'<tg-emoji emoji-id="530762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts',
+                                reply_markup=reply_markup_share,
+                                parse_mode="HTML"
+                            )
+                        sent_any = True
 
                     audio_output = f"audio_{user_id}_{update.message.message_id}.mp3"
                     ffmpeg_bin = FFMPEG_PATH if FFMPEG_PATH else "ffmpeg"
