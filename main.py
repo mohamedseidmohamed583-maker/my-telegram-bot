@@ -1443,478 +1443,184 @@ async def convert_video_to_audio(update, context):
 
 
 # ============================================================
-# URL CLEANING
+# URL CLEANING & DOWNLOAD ENGINE (FROM OLD WORKING CODE)
 # ============================================================
 
 def unshorten_url(url: str) -> str:
     try:
         session = requests.Session()
-
-        session.headers.update({
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/128.0.0.0 Safari/537.36"
-            )
-        })
-
-        response = session.head(
-            url,
-            allow_redirects=True,
-            timeout=10
-        )
-
-        return response.url
-
+        session.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'})
+        resp = session.head(url, allow_redirects=True, timeout=10)
+        return resp.url
     except Exception:
         return url
 
-
-def clean_url(raw_url):
-    raw_url = raw_url.strip().rstrip(".,!?;:)]}")
+def clean_url(raw_url: str) -> str:
     return unshorten_url(raw_url)
 
-
-# ============================================================
-# YT-DLP OPTIONS (YOUTUBE BLOCK & DOCUMENT_INVALID FIX)
-# ============================================================
-
-def get_video_options(
-    url: str,
-    output_template: str,
-    fallback=False
-):
-    ffmpeg_location = os.path.dirname(FFMPEG_PATH) if FFMPEG_PATH else None
-
+def get_video_options(url: str, output_template: str, fallback: bool = False):
     opts = {
-        "quiet": True,
-        "no_warnings": True,
-        "nocheckcertificate": True,
-        "geo_bypass": True,
-        "noplaylist": True,
-        "retries": 15,
-        "fragment_retries": 15,
-        "extractor_retries": 10,
-        "file_access_retries": 5,
-        "socket_timeout": 60,
-        "outtmpl": output_template,
-        # ቴሌግራም በቪዲዮ መልክ እንዲልከው ቀጥተኛ best ፎርማት
-        "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
-        "merge_output_format": "mp4",
-        "http_headers": {
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/131.0.0.0 Safari/537.36"
+        'quiet': True,
+        'no_warnings': True,
+        'nocheckcertificate': True,
+        'geo_bypass': True,
+        'concurrent_fragment_downloads': 5,
+        'outtmpl': output_template,
+        'merge_output_format': 'mp4',
+        'format': 'bestvideo+bestaudio/best',
+        'http_headers': {
+            'User-Agent': (
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                'AppleWebKit/537.36 (KHTML, like Gecko) '
+                'Chrome/128.0.0.0 Safari/537.36'
             ),
-            "Accept-Language": "en-US,en;q=0.9",
-        },
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
+        }
     }
 
-    if ffmpeg_location:
-        opts["ffmpeg_location"] = ffmpeg_location
-
-    # YouTube ብሎክ ማለፊያ (Android Client Impersonation)
-    if "youtube.com" in url.lower() or "youtu.be" in url.lower():
-        opts["extractor_args"] = {
-            "youtube": {
-                "player_client": ["android", "web"]
+    if "youtube.com" in url or "youtu.be" in url:
+        opts['extractor_args'] = {
+            'youtube': {
+                'player_client': ['android', 'ios', 'web']
             }
         }
+        opts['format'] = 'b/bv*+ba/best'
+    elif "likee" in url or "likee.video" in url:
+        opts['http_headers']['Referer'] = 'https://likee.video/'
+    elif "vimeo.com" in url:
+        opts['http_headers']['Referer'] = 'https://vimeo.com/'
 
-    elif "tiktok.com" in url.lower():
-        opts["extractor_args"] = {"tiktok": {"webpage_download": True}}
-
-    elif "likee" in url.lower() or "likee.video" in url.lower():
-        opts["http_headers"]["Referer"] = "https://likee.video/"
-
-    elif "vimeo.com" in url.lower():
-        opts["http_headers"]["Referer"] = "https://vimeo.com/"
+    if os.path.exists('cookies.txt'):
+        opts['cookiefile'] = 'cookies.txt'
 
     return opts
 
-
-# ============================================================
-# DOWNLOAD FUNCTION
-# ============================================================
-
-def download_media_func(
-    url,
-    output_template,
-    fallback=False
-):
-    options = get_video_options(
-        url,
-        output_template,
-        fallback=fallback
-    )
-
-    with yt_dlp.YoutubeDL(options) as ydl:
+def download_media_func(url: str, output_template: str, fallback: bool = False):
+    with yt_dlp.YoutubeDL(get_video_options(url, output_template, fallback)) as ydl:
         ydl.download([url])
 
-
-# ============================================================
-# FIND DOWNLOADED FILE
-# ============================================================
-
-def find_downloaded_file(prefix):
-
-    try:
-        files = os.listdir(".")
-    except Exception:
-        return None
-
-    valid_files = []
-
-    for filename in files:
-        if not filename.startswith(prefix):
-            continue
-
-        if filename.endswith(
-            (
-                ".part",
-                ".ytdl",
-                ".temp",
-                ".aria2",
-                ".webp",
-                ".json"
-            )
-        ):
-            continue
-
-        if os.path.isfile(filename):
-            valid_files.append(filename)
-
-    if not valid_files:
-        return None
-
-    valid_files.sort(
-        key=lambda x: os.path.getmtime(x),
-        reverse=True
-    )
-
-    return valid_files[0]
-
-
-# ============================================================
-# PINTEREST DIRECT IMAGE
-# ============================================================
-
-def pinterest_direct_image(url):
-
-    try:
-        response = requests.get(
-            url,
-            headers={
-                "User-Agent":
-                    "Mozilla/5.0"
-            },
-            timeout=15
-        )
-
-        if response.status_code != 200:
-            return None
-
-        html = response.text
-
-        patterns = [
-            r'https://i\.pinimg\.com/'
-            r'(?:originals|736x)/[^"\']+',
-
-            r'https:\\/\\/i\.pinimg\.com\\/'
-            r"""(?:originals|736x)\\/[^"']+"""
-        ]
-
-        for pattern in patterns:
-            match = re.search(
-                pattern,
-                html
-            )
-
-            if match:
-                image_url = match.group(0)
-                image_url = (
-                    image_url
-                    .replace("\\/", "/")
-                    .replace("\\u002F", "/")
-                )
-                return image_url
-
-    except Exception as e:
-        print("Pinterest Error:", e)
-
+def find_downloaded_file(prefix: str):
+    for f in os.listdir('.'):
+        if f.startswith(prefix) and not f.endswith(('.part', '.ytdl')):
+            return f
     return None
 
-
-# ============================================================
-# HANDLE URL DOWNLOAD (STABLE MP4 CONVERSION)
-# ============================================================
-
-async def handle_url_download(
-    update,
-    context,
-    target_url
-):
-    if not update.message:
-        return
-
+async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE, raw_url: str):
+    chat_id = update.effective_chat.id
     user_id = update.effective_user.id
-    record_user_activity(user_id)
 
-    status_msg = await update.message.reply_text(
-        get_trans(user_id, "loading"),
-        parse_mode="HTML"
-    )
+    await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.UPLOAD_DOCUMENT)    
+        
+    status_msg = await update.message.reply_text(    
+        get_trans(user_id, "loading"),    
+        parse_mode="HTML"    
+    )    
 
-    media_prefix = (
-        f"download_"
-        f"{user_id}_"
-        f"{update.message.message_id}_"
-    )
+    bot_username = get_bot_username(context)
+    share_url = f"https://t.me/share/url?url=https://t.me/{bot_username}?start=share&text=Try%20this%20awesome%20Downloader%20Bot!🔥"    
+    reply_markup_share = InlineKeyboardMarkup([[InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)]])    
 
-    output_template = (
-        media_prefix + "%(id)s.%(ext)s"
-    )
+    url = clean_url(raw_url)    
 
-    sent_any = False
+    if "pinterest.com" in url or "pin.it" in url:    
+        try:    
+            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}    
+            res = requests.get(url, headers=headers, timeout=10)    
+            img_matches = re.findall(r'https://i\.pinimg\.com/(?:originals|736x)/[^\s"\'\>]+\.(?:jpg|png|jpeg|webp)', res.text)    
+                
+            if img_matches:    
+                real_img_url = img_matches[0]    
+                await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.UPLOAD_DOCUMENT)    
+                await update.message.reply_photo(    
+                    photo=real_img_url,    
+                    caption=get_trans(user_id, "photo_download").format(bot_username=bot_username),    
+                    reply_markup=reply_markup_share,    
+                    parse_mode="HTML"    
+                )    
+                await status_msg.delete()    
+                return    
+        except Exception as pe:    
+            print("Pinterest Fetch Error:", pe)    
 
-    try:
-        target_url = target_url.strip().rstrip(".,!?)]}")
-        target_url = clean_url(target_url)
+    media_prefix = f"media_{user_id}_{update.message.message_id}"    
+    media_template = f"{media_prefix}.%(ext)s"    
+    sent_any = False    
 
-        if not target_url:
-            raise ValueError("Empty URL")
+    try:    
+        try:    
+            await asyncio.to_thread(download_media_func, url, media_template, False)    
+        except Exception as err1:
+            print("First download attempt failed, retrying with fallback...", err1)
+            await asyncio.to_thread(download_media_func, url, media_template, True)    
 
-        # Pinterest Check
-        if (
-            "pinterest.com" in target_url.lower()
-            or "pin.it" in target_url.lower()
-        ):
-            try:
-                image_url = pinterest_direct_image(target_url)
-                if image_url:
-                    image_response = requests.get(
-                        image_url,
-                        headers={"User-Agent": "Mozilla/5.0"},
-                        timeout=30
+        actual_file = find_downloaded_file(media_prefix)    
+
+        if actual_file and os.path.exists(actual_file):    
+            ext = os.path.splitext(actual_file)[1].lower()    
+                
+            if ext in ['.jpg', '.jpeg', '.png', '.webp']:    
+                await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.UPLOAD_DOCUMENT)    
+                with open(actual_file, 'rb') as pf:    
+                    await update.message.reply_photo(    
+                        photo=pf,    
+                        caption=get_trans(user_id, "photo_download").format(bot_username=bot_username),    
+                        reply_markup=reply_markup_share,    
+                        parse_mode="HTML"    
+                    )    
+                sent_any = True    
+            else:    
+                if os.path.getsize(actual_file) <= 50 * 1024 * 1024:    
+                    await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.UPLOAD_DOCUMENT)    
+                    with open(actual_file, 'rb') as vf:    
+                        await update.message.reply_video(    
+                            video=vf,    
+                            caption=f'<tg-emoji emoji-id="530762354187772738">🚀</tg-emoji> <b>Downloaded with</b> @{bot_username} & @mame_posts\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Enjoy!</b>',    
+                            reply_markup=reply_markup_share,    
+                            parse_mode="HTML"    
+                        )    
+                    sent_any = True    
+
+                    audio_output = f"audio_{user_id}_{update.message.message_id}.mp3"
+                    ffmpeg_bin = FFMPEG_PATH if FFMPEG_PATH else "ffmpeg"
+                    cmd = [ffmpeg_bin, "-y", "-i", actual_file, "-vn", "-acodec", "libmp3lame", "-q:a", "2", audio_output]    
+                    await asyncio.to_thread(subprocess.run, cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)    
+
+                    if os.path.exists(audio_output):    
+                        await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.UPLOAD_DOCUMENT)    
+                        with open(audio_output, 'rb') as af:    
+                            await update.message.reply_audio(    
+                                audio=af,    
+                                caption=f'<tg-emoji emoji-id="5307705891313721642">🎧</tg-emoji> <b>Extracted Audio (MP3)</b>\n\n<tg-emoji emoji-id="5260463209562776385">✅</tg-emoji> <b>Downloaded with</b> @{bot_username}',    
+                                reply_markup=reply_markup_share,    
+                                parse_mode="HTML"    
+                            )    
+                        os.remove(audio_output)    
+                        sent_any = True    
+                else:
+                    await status_msg.edit_text(
+                        get_trans(user_id, "size_limit"), 
+                        parse_mode="HTML"
                     )
-
-                    if (
-                        image_response.status_code == 200
-                        and image_response.content
-                    ):
-                        temp_image = media_prefix + "pinterest.jpg"
-                        with open(temp_image, "wb") as f:
-                            f.write(image_response.content)
-
-                        try:
-                            bot_username = get_bot_username(context)
-                            caption = get_trans(
-                                user_id,
-                                "photo_download"
-                            ).format(bot_username=bot_username)
-
-                            with open(temp_image, "rb") as photo:
-                                await update.message.reply_photo(
-                                    photo=photo,
-                                    caption=caption,
-                                    parse_mode="HTML"
-                                )
-                            sent_any = True
-                        finally:
-                            if os.path.exists(temp_image):
-                                os.remove(temp_image)
-                        return
-            except Exception as e:
-                print("Pinterest direct download failed:", repr(e))
-
-        # Download media safely
-        try:
-            await asyncio.to_thread(
-                download_media_func,
-                target_url,
-                output_template,
-                False
-            )
-        except Exception as dl_err:
-            print("Download inner error:", repr(dl_err))
-
-        downloaded_file = find_downloaded_file(media_prefix)
-
-        if not downloaded_file or not os.path.exists(downloaded_file) or os.path.getsize(downloaded_file) == 0:
-            await status_msg.edit_text(
-                get_trans(user_id, "fail_download"),
-                parse_mode="HTML"
-            )
-            return
-
-        file_size = os.path.getsize(downloaded_file)
-        max_size = 50 * 1024 * 1024
-
-        if file_size > max_size:
-            await status_msg.edit_text(
-                get_trans(user_id, "size_limit"),
-                parse_mode="HTML"
-            )
-            return
-
-        bot_username = get_bot_username(context)
-
-        caption_photo = get_trans(
-            user_id,
-            "photo_download"
-        ).format(bot_username=bot_username)
-
-        caption_video = get_trans(
-            user_id,
-            "video_downloaded"
-        ).format(bot_username=bot_username)
-
-        caption_audio = get_trans(
-            user_id,
-            "video_converted"
-        ).format(bot_username=bot_username)
-
-        image_extensions = (".jpg", ".jpeg", ".png", ".webp")
-
-        if downloaded_file.lower().endswith(image_extensions):
-            with open(downloaded_file, "rb") as photo:
-                await update.message.reply_photo(
-                    photo=photo,
-                    caption=caption_photo,
-                    parse_mode="HTML"
-                )
-            sent_any = True
-
-        elif downloaded_file.lower().endswith(
-            (".mp3", ".m4a", ".aac", ".wav", ".ogg", ".opus", ".flac")
-        ):
-            with open(downloaded_file, "rb") as audio:
-                await update.message.reply_audio(
-                    audio=audio,
-                    caption=caption_audio,
-                    parse_mode="HTML"
-                )
-            sent_any = True
-
-        else:
-            share_url = (
-                "https://t.me/share/url?"
-                f"url={quote(f'https://t.me/{bot_username}?start=share')}"
-                f"&text={quote('Try this awesome Downloader Bot!🔥')}"
-            )
-
-            keyboard_share = [[
-                InlineKeyboardButton(
-                    "🔗 Share Bot 🚀",
-                    url=share_url
-                )
-            ]]
-
-            # Document_invalid ስህተት እንዳይመጣ ቪዲዮዎችን በ FFmpeg ወደ ትክክለኛ MP4 መለወጥ
-            clean_video_path = media_prefix + "fixed_video.mp4"
-            ffmpeg_bin = FFMPEG_PATH if FFMPEG_PATH else "ffmpeg"
-            
-            ffmpeg_cmd = [
-                ffmpeg_bin, "-y",
-                "-i", downloaded_file,
-                "-c:v", "libx264",
-                "-c:a", "aac",
-                "-strict", "experimental",
-                clean_video_path
-            ]
-
-            try:
-                res = await asyncio.to_thread(
-                    subprocess.run,
-                    ffmpeg_cmd,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.PIPE,
-                    text=True,
-                    timeout=300
-                )
-                if res.returncode == 0 and os.path.exists(clean_video_path) and os.path.getsize(clean_video_path) > 0:
-                    downloaded_file = clean_video_path
-            except Exception as conv_e:
-                print("FFmpeg video cleanup failed, using raw file:", conv_e)
-
-            with open(downloaded_file, "rb") as video_file:
-                await update.message.reply_video(
-                    video=video_file,
-                    caption=caption_video,
-                    parse_mode="HTML",
-                    supports_streaming=True,
-                    reply_markup=InlineKeyboardMarkup(keyboard_share)
-                )
-
-            sent_any = True
-
-            # Extract Audio if video
-            audio_output = media_prefix + "audio.mp3"
-            ffmpeg_audio_cmd = [
-                ffmpeg_bin,
-                "-y",
-                "-i",
-                downloaded_file,
-                "-vn",
-                "-acodec",
-                "libmp3lame",
-                "-q:a",
-                "2",
-                audio_output,
-            ]
-
-            try:
-                result = await asyncio.to_thread(
-                    subprocess.run,
-                    ffmpeg_audio_cmd,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.PIPE,
-                    text=True,
-                    timeout=300
-                )
-
-                if (
-                    result.returncode == 0
-                    and os.path.isfile(audio_output)
-                    and os.path.getsize(audio_output) > 0
-                ):
-                    with open(audio_output, "rb") as audio_file:
-                        await update.message.reply_audio(
-                            audio=audio_file,
-                            caption=caption_audio,
-                            parse_mode="HTML"
-                        )
-            except Exception as audio_error:
-                print("Audio extraction error:", repr(audio_error))
-
-    except Exception as e:
-        print("Download Error:", repr(e))
-        if not sent_any:
-            try:
-                await status_msg.edit_text(
-                    get_trans(user_id, "fail_download"),
-                    parse_mode="HTML"
-                )
-            except Exception:
-                pass
+                    return
+    except Exception as e:    
+        print("Media Download Error:", e)    
 
     finally:
-        try:
-            for filename in os.listdir("."):
-                if filename.startswith(media_prefix):
-                    try:
-                        os.remove(filename)
-                    except Exception:
-                        pass
-        except Exception:
-            pass
+        for f in os.listdir('.'):    
+            if f.startswith(media_prefix):    
+                try:    
+                    os.remove(f)    
+                except Exception:    
+                    pass    
 
-        if sent_any:
-            try:
-                await status_msg.delete()
-            except Exception:
-                pass
+    if sent_any:    
+        await status_msg.delete()    
+    else:    
+        await status_msg.edit_text(    
+            get_trans(user_id, "fail_download"),    
+            parse_mode="HTML"    
+        )
 
 
 # ============================================================
