@@ -1,7 +1,4 @@
 import os
-import shutil
-import asyncio
-import yt_dlp
 import re
 import json
 import asyncio
@@ -1479,75 +1476,56 @@ def clean_url(raw_url):
 
 
 # ============================================================
-# YT-DLP OPTIONS (SIMPLIFIED & HIGHLY STABLE)
+# YT-DLP OPTIONS (FULLY FIXED FOR TIKTOK, YOUTUBE & OTHERS)
 # ============================================================
 
 def get_video_options(
-        url: str,
+    url: str,
     output_template: str,
-    fallback: bool = False,
-    max_height: int = 720,
+    fallback=False
 ):
-    u = url.lower()
-    is_youtube = "youtube.com" in u or "youtu.be" in u
+    ffmpeg_location = os.path.dirname(FFMPEG_PATH) if FFMPEG_PATH else None
 
     opts = {
-        "quiet": False,
-        "no_warnings": False,
-
+        "quiet": True,
+        "no_warnings": True,
         "nocheckcertificate": True,
         "geo_bypass": True,
         "noplaylist": True,
-        "continuedl": True,
-
-        "retries": 10,
-        "fragment_retries": 10,
-        "file_access_retries": 3,
-        "extractor_retries": 3,
-        "socket_timeout": 30,
-        "concurrent_fragment_downloads": 4,
-
+        "retries": 15,
+        "fragment_retries": 15,
+        "extractor_retries": 10,
+        "file_access_retries": 5,
+        "socket_timeout": 60,
         "outtmpl": output_template,
+        # ተስተካክሏል፡ ቪዲዮዎችን ያለችግር ለማውረድ ቀላል እና ፕራይመሪ የሆነውን format መጠቀም
+        "format": "best" if fallback else "bestvideo+bestaudio/best",
         "merge_output_format": "mp4",
-
-        "format": (
-            f"bv*[height<={max_height}]+ba/"
-            f"b[height<={max_height}]/"
-            "bv*+ba/b"
-        ),
-        "format_sort": ["res", "ext:mp4:m4a"],
-
         "http_headers": {
             "User-Agent": (
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                 "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/128.0.0.0 Safari/537.36"
+                "Chrome/131.0.0.0 Safari/537.36"
             ),
             "Accept-Language": "en-US,en;q=0.9",
         },
     }
 
-    if is_youtube:
-        runtimes = {}
-        if shutil.which("deno"):
-            runtimes["deno"] = {}
-        if shutil.which("node"):
-            runtimes["node"] = {}
-        if runtimes:
-            opts["js_runtimes"] = runtimes
-            opts["remote_components"] = ["ejs:github"]
+    if ffmpeg_location:
+        opts["ffmpeg_location"] = ffmpeg_location
 
-    elif "likee" in u:
+    if "tiktok.com" in url.lower():
+        # ለቲክቶክ የተለየ ኢምፐርሰኔሽን እና ማለፊያ ቅንብር
+        opts["extractor_args"] = {"tiktok": {"webpage_download": True}}
+
+    elif "likee" in url.lower() or "likee.video" in url.lower():
         opts["http_headers"]["Referer"] = "https://likee.video/"
-    elif "vimeo.com" in u:
+
+    elif "vimeo.com" in url.lower():
         opts["http_headers"]["Referer"] = "https://vimeo.com/"
 
     if fallback:
-        opts["format"] = "b[height<=480]/b"
-        if is_youtube:
-            opts["extractor_args"] = {
-                "youtube": {"player_client": ["android_vr", "tv"]}
-            }
+        opts["format"] = "best"
 
     if os.path.exists("cookies.txt"):
         opts["cookiefile"] = "cookies.txt"
@@ -1570,26 +1548,8 @@ def download_media_func(
         fallback=fallback
     )
 
-    with yt_dlp.YoutubeDL(get_video_options(url, template, fallback)) as ydl:
-        info = ydl.extract_info(url, download=True)
-        path = ydl.prepare_filename(info)
-        base = os.path.splitext(path)[0]
-        # merge ከተደረገ በኋላ ቅጥያው mp4 ይሆናል
-        if os.path.exists(base + ".mp4"):
-            return base + ".mp4"
-        return path
-
-
-async def download_video(url, template):
-    for fb in (False, True):
-        try:
-            return await asyncio.wait_for(
-                asyncio.to_thread(_download, url, template, fb),
-                timeout=600,
-            )
-        except Exception as e:
-            print("Download error:", e)
-    return None
+    with yt_dlp.YoutubeDL(options) as ydl:
+        ydl.download([url])
 
 
 # ============================================================
@@ -1686,7 +1646,7 @@ def pinterest_direct_image(url):
 
 
 # ============================================================
-# HANDLE URL DOWNLOAD (FIXED FOR DOCUMENT_INVALID)
+# HANDLE URL DOWNLOAD
 # ============================================================
 
 async def handle_url_download(
@@ -1767,19 +1727,42 @@ async def handle_url_download(
             except Exception as e:
                 print("Pinterest direct download failed:", repr(e))
 
-        # Download media
-        await asyncio.to_thread(
-            download_media_func,
-            target_url,
-            output_template,
-            False
-        )
+        # Download with fallback options
+        try:
+            await asyncio.to_thread(
+                download_media_func,
+                target_url,
+                output_template,
+                False
+            )
+        except Exception as first_error:
+            print("Download attempt 1 failed:", repr(first_error))
+            await asyncio.to_thread(
+                download_media_func,
+                target_url,
+                output_template,
+                True
+            )
 
- 
         downloaded_file = find_downloaded_file(media_prefix)
 
-        if not downloaded_file or not os.path.exists(downloaded_file):
-            await update.message.reply_text("❌ ማውረድ አልቻልኩም:: ቆይቶ እንደገና ይሞክሩ::")
+        if (
+            not downloaded_file
+            or not os.path.isfile(downloaded_file)
+        ):
+            raise RuntimeError("Download completed without a usable output file")
+
+        file_size = os.path.getsize(downloaded_file)
+        max_size = 50 * 1024 * 1024
+
+        if file_size <= 0:
+            raise RuntimeError("Downloaded file is empty")
+
+        if file_size > max_size:
+            await status_msg.edit_text(
+                get_trans(user_id, "size_limit"),
+                parse_mode="HTML"
+            )
             return
 
         bot_username = get_bot_username(context)
@@ -1835,8 +1818,7 @@ async def handle_url_download(
                 )
             ]]
 
-            # ፋይሉን እንደ ቪዲዮ ወይም ዶክመንት ሲልክ እንዳይሳሳት ትክክለኛውን ማረጋገጫ መስጠት
-            video_extensions = (".mp4", ".m4v", ".mov", ".webm", ".mkv", ".avi")
+            video_extensions = (".mp4", ".m4v", ".mov", ".webm", ".mkv")
 
             if downloaded_file.lower().endswith(video_extensions):
                 with open(downloaded_file, "rb") as video_file:
@@ -1848,7 +1830,6 @@ async def handle_url_download(
                         reply_markup=InlineKeyboardMarkup(keyboard_share)
                     )
             else:
-                # ቪዲዮ ያልሆነ ሌላ ፎርማት ከሆነ በዶክመንት መልክ መላክ
                 with open(downloaded_file, "rb") as media_file:
                     await update.message.reply_document(
                         document=media_file,
