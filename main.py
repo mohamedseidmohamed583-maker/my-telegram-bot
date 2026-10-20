@@ -65,46 +65,66 @@ FORCE_CHANNEL_LINK = "https://t.me/mame_posts"
 # ============================================================
 # DATABASE MANAGEMENT
 # ============================================================
-DATA_FILE = "user_data.json"
-def load_data():
-    if os.path.exists(DATA_FILE):
-        try:
-            with open(DATA_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            return {}
-    return {}
-def save_data(data):
-    try:
-        with open(DATA_FILE, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-    except Exception as e:
-        print("Save Error:", e)
+from pymongo import MongoClient
+
+MONGO_URI = os.environ.get("MONGO_URI")
+if not MONGO_URI:
+    raise RuntimeError("❌ MONGO_URI environment variable is missing!")
+
+mongo_client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+users_col = mongo_client["mamebot"]["users"]
+_lang_cache = {}
+
 def record_user_activity(user_id):
-    data = load_data()
-    uid_str = str(user_id)
-    if uid_str not in data:
-        data[uid_str] = {"msg_count": 0, "started": True, "lang": None}
-    data[uid_str]["msg_count"] = data[uid_str].get("msg_count", 0) + 1
-    data[uid_str]["started"] = True
-    save_data(data)
+    try:
+        users_col.update_one(
+            {"_id": user_id},
+            {"$inc": {"msg_count": 1}, "$set": {"started": True}},
+            upsert=True
+        )
+    except Exception as e:
+        print("DB record error:", e)
+
 def set_user_language(user_id, lang_code):
-    data = load_data()
-    uid_str = str(user_id)
-    if uid_str not in data:
-        data[uid_str] = {"msg_count": 1, "started": True, "lang": lang_code}
-    else:
-        data[uid_str]["lang"] = lang_code
-    save_data(data)
+    _lang_cache[user_id] = lang_code
+    try:
+        users_col.update_one(
+            {"_id": user_id},
+            {"$set": {"lang": lang_code},
+             "$setOnInsert": {"msg_count": 1, "started": True}},
+            upsert=True
+        )
+    except Exception as e:
+        print("DB lang set error:", e)
+
 def get_user_language(user_id):
-    data = load_data()
-    return data.get(str(user_id), {}).get("lang", None)
+    if user_id in _lang_cache:
+        return _lang_cache[user_id]
+    try:
+        doc = users_col.find_one({"_id": user_id}, {"lang": 1})
+        lang = doc.get("lang") if doc else None
+    except Exception as e:
+        print("DB lang get error:", e)
+        return None
+    if lang:
+        _lang_cache[user_id] = lang
+    return lang
+
 def get_user_stats(user_id):
-    data = load_data()
-    uid_str = str(user_id)
-    total_users = len(data)
-    user_msg_count = data.get(uid_str, {}).get("msg_count", 0)
-    return total_users, user_msg_count
+    try:
+        total_users = users_col.count_documents({})
+        doc = users_col.find_one({"_id": user_id}, {"msg_count": 1})
+        return total_users, (doc.get("msg_count", 0) if doc else 0)
+    except Exception as e:
+        print("DB stats error:", e)
+        return 0, 0
+
+def get_all_user_ids():
+    try:
+        return [d["_id"] for d in users_col.find({}, {"_id": 1})]
+    except Exception as e:
+        print("DB list error:", e)
+        return []
 # ============================================================
 # TRANSLATIONS
 # ============================================================
@@ -448,7 +468,7 @@ async def broadcast_command(update, context):
     if not reply_msg and not has_args:
         await update.message.reply_text("❌ Reply to a message or use:\n/broadcast your message")
         return
-    data = load_data()
+    data = {str(uid): {} for uid in get_all_user_ids()}
     success_count = 0
     fail_count = 0
     status_msg = await update.message.reply_text("📢 Broadcasting...")
