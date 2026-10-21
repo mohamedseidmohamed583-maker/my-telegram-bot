@@ -293,7 +293,7 @@ def get_bot_username(context):
     username = context.bot.username
     return username if username else "mame_posts_bot"
 def get_main_menu_keyboard(bot_username, user_id, use_custom_emoji=True):
-    def btn(text, callback_data=None, url=None, emoji_id=None):
+    def btn(text, callback_data=None, url=None, emoji_id=None, style=None):
         kwargs = {"text": text}
         if callback_data:
             kwargs["callback_data"] = callback_data
@@ -301,19 +301,21 @@ def get_main_menu_keyboard(bot_username, user_id, use_custom_emoji=True):
             kwargs["url"] = url
         if use_custom_emoji and emoji_id:
             kwargs["icon_custom_emoji_id"] = emoji_id
+        if style:
+            kwargs["api_kwargs"] = {"style": style}
         return InlineKeyboardButton(**kwargs)
     keyboard = [
-        [btn(get_trans(user_id, "btn_add"), url=f"https://t.me/{bot_username}?startgroup=true", emoji_id="5305545479814161889")],
-        [btn(get_trans(user_id, "btn_order"), callback_data="cmd_order", emoji_id="5267442591548320083")],
+        [btn(get_trans(user_id, "btn_add"), url=f"https://t.me/{bot_username}?startgroup=true", emoji_id="5305545479814161889", style="success")],
+        [btn(get_trans(user_id, "btn_order"), callback_data="cmd_order", emoji_id="5267442591548320083", style="primary")],
         [
-            btn(get_trans(user_id, "btn_price"), callback_data="cmd_price", emoji_id="5447458260200214425"),
-            btn(get_trans(user_id, "btn_payment"), callback_data="cmd_payment", emoji_id="5186349709169525403")
+            btn(get_trans(user_id, "btn_price"), callback_data="cmd_price", emoji_id="5447458260200214425", style="primary"),
+            btn(get_trans(user_id, "btn_payment"), callback_data="cmd_payment", emoji_id="5186349709169525403", style="success")
         ],
         [
-            btn(get_trans(user_id, "btn_status"), callback_data="cmd_status", emoji_id="5431577498364158238"),
-            btn(get_trans(user_id, "btn_lang"), callback_data="cmd_change_lang", emoji_id="5431577498364158238")
+            btn(get_trans(user_id, "btn_status"), callback_data="cmd_status", emoji_id="5431577498364158238", style="primary"),
+            btn(get_trans(user_id, "btn_lang"), callback_data="cmd_change_lang", emoji_id="5431577498364158238", style="primary")
         ],
-        [btn(get_trans(user_id, "btn_support"), callback_data="cmd_support", emoji_id="5949327894567195412")]
+        [btn(get_trans(user_id, "btn_support"), callback_data="cmd_support", emoji_id="5949327894567195412", style="danger")]
     ]
     return InlineKeyboardMarkup(keyboard)
 def get_language_keyboard():
@@ -324,6 +326,7 @@ def get_language_keyboard():
         ],
         [InlineKeyboardButton("🇸🇦 العربية", callback_data="lang_ar")]
     ]
+    kwargs["api_kwargs"] = {"style": "danger"}
     return InlineKeyboardMarkup(keyboard)
 def get_back_keyboard(user_id, use_custom_emoji=True):
     kwargs = {"text": get_trans(user_id, "btn_back"), "callback_data": "cmd_back"}
