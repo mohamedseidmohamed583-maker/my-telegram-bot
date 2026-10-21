@@ -525,9 +525,16 @@ async def convert_video_to_audio(update, context):
         share_url = f"https://t.me/share/url?url={quote(f'https://t.me/{bot_username}?start=share')}&text={quote('Try this awesome Bot!🔥')}"
         keyboard_share = [[InlineKeyboardButton("🔗 Share Bot 🚀", url=share_url)]]
         caption_text = get_trans(user_id, "video_converted").format(bot_username=bot_username)
+        raw_name = getattr(video, "file_name", None)
+        base_title = os.path.splitext(raw_name)[0] if raw_name else (update.message.caption or "")
+        base_title = base_title.strip() or "Audio"
+        safe_name = re.sub(r'[\\/:*?"<>|\r\n]+', ' ', base_title).strip()[:60] or "audio"
         with open(output_path, "rb") as audio_file:
             await update.message.reply_audio(
                 audio=audio_file,
+                title=base_title[:64],
+                performer="🎧 Mame Posts Bot",
+                filename=f"{safe_name}.mp3",
                 caption=caption_text,
                 parse_mode="HTML",
                 reply_markup=InlineKeyboardMarkup(keyboard_share)
@@ -602,7 +609,9 @@ def get_video_options(url: str, output_template: str, fallback: bool = False):
     return opts
 def download_media_func(url: str, output_template: str, fallback: bool = False):
     with yt_dlp.YoutubeDL(get_video_options(url, output_template, fallback)) as ydl:
-        ydl.download([url])
+        info = ydl.extract_info(url, download=True)
+    return info
+    
 def find_downloaded_file(prefix: str):
     for f in os.listdir('.'):
         if f.startswith(prefix) and not f.endswith(('.part', '.ytdl', '.temp')):
@@ -642,12 +651,15 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
     media_prefix = f"media_{user_id}_{update.message.message_id}"
     media_template = f"{media_prefix}.%(ext)s"
     sent_any = False
+    video_title = None
     try:
         try:
-            await asyncio.to_thread(download_media_func, url, media_template, False)
+            info = await asyncio.to_thread(download_media_func, url, media_template, False)
         except Exception as err1:
             print("Download primary failed, trying client fallback:", err1)
-            await asyncio.to_thread(download_media_func, url, media_template, True)
+            info = await asyncio.to_thread(download_media_func, url, media_template, True)
+        if info:
+            video_title = info.get("title")
         actual_file = find_downloaded_file(media_prefix)
         if actual_file and os.path.exists(actual_file):
             ext = os.path.splitext(actual_file)[1].lower()
@@ -691,9 +703,13 @@ async def handle_url_download(update: Update, context: ContextTypes.DEFAULT_TYPE
                     await asyncio.to_thread(subprocess.run, cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                     if os.path.exists(audio_output) and os.path.getsize(audio_output) > 0:
                         await context.bot.send_chat_action(chat_id=chat_id, action=ChatAction.UPLOAD_DOCUMENT)
+                        safe_name = re.sub(r'[\\/:*?"<>|\r\n]+', ' ', video_title or "audio").strip()[:60] or "audio"
                         with open(audio_output, 'rb') as af:
                             await update.message.reply_audio(
                                 audio=af,
+                                title=(video_title or "Audio")[:64],
+                                performer="🎧 Mame Posts Bot",
+                                filename=f"{safe_name}.mp3",
                                 caption=f'🎧 Extracted Audio (MP3)\n\n✅ Downloaded with @{bot_username}',
                                 reply_markup=reply_markup_share,
                                 parse_mode="HTML"
