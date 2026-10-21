@@ -32,6 +32,7 @@ from telegram.ext import (
     filters
 )
 import yt_dlp
+from admin_panel import setup_admin
 # ============================================================
 # CREATE COOKIES FILE FROM RENDER ENVIRONMENT VARIABLE
 # ============================================================
@@ -326,7 +327,6 @@ def get_language_keyboard():
         ],
         [InlineKeyboardButton("🇸🇦 العربية", callback_data="lang_ar")]
     ]
-    kwargs["api_kwargs"] = {"style": "danger"}
     return InlineKeyboardMarkup(keyboard)
 def get_back_keyboard(user_id, use_custom_emoji=True):
     kwargs = {"text": get_trans(user_id, "btn_back"), "callback_data": "cmd_back"}
@@ -925,6 +925,7 @@ def main():
         .post_init(post_init)
         .build()
     )
+    setup_admin(application, users_col, ADMIN_ID)
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("menu", start))
     application.add_handler(CommandHandler("status", status_command))
